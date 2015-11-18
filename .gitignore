@@ -2,3 +2,6 @@ cluster.ini
 
 # Emacs
 *~
+
+# Python
+*.pyc

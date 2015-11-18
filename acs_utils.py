@@ -43,3 +43,12 @@ def createDeployment(config):
     command = command + " -p '" + json.dumps(getClusterParams(config)) + "'"
     
     os.system(command)
+
+def getManagementEndpoint(config):
+    return config.get('Cluster', 'dns_prefix') + 'man.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+
+def marathonCommand(config, command, method = 'GET'):
+    url = getManagementEndpoint(config)
+    curl = 'curl -s -X ' + method + ' localhost:8080/v2/' + command
+    cmd = 'ssh ' + config.get('Cluster', 'username') + '@' + url + ' -p 2211 ' + curl
+    os.system(cmd)

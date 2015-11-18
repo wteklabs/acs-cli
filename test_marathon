@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import acs_utils as acs
+
+def log(msg):
+    print msg
+    print
+
+config = acs.getConfig()
+
+log("Check curent apps")
+acs.marathonCommand(config, 'apps')
+log("End test")
+

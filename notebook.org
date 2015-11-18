@@ -1,3 +1,15 @@
 A set of test scripts for Azure Container Service.
 
+* DONE add a 'test' for deploying a container
 
+In test_marathon
+
+log("Put an app")
+acs.marathonCommand(config, 'apps', 'PUT', )
+log("End test")
+
+* TODO turn 'test_marathon' in to real tests
+
+* TODO test deploying OMS
+
+This will require us to deploy a container to every node in the cluster.

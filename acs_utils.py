@@ -20,8 +20,8 @@ def getClusterParams(config):
     params["adminUsername"] = value(config.get('Cluster', 'username'))
     params["adminPassword"] = value(config.get('Cluster', 'password'))
     params["DNSNamePrefix"] = value(config.get('Cluster', 'dns_prefix'))
-    params["agentCount"] = value(int(config.get('Cluster', 'agent_count')))
-    params["masterCount"] = value(int(config.get('Cluster', 'master_count')))
+    params["agentCount"] = value(config.getint('Cluster', 'agent_count'))
+    params["masterCount"] = value(config.getint('Cluster', 'master_count'))
     params["sshRSAPublicKey"] = value(config.get('Cluster', 'ssh_public_key'))
     return params
 
@@ -31,9 +31,6 @@ def createResourceGroup(config):
 
 def createDeployment(config):
     createResourceGroup(config)
-
-    print config
-    print getClusterParams(config)
 
     command = "azure group deployment create"
     command = command + " " + config.get('Cluster', 'dns_prefix')

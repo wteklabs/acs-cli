@@ -1,0 +1,58 @@
+#!/usr/bin/python
+
+import ConfigParser
+import json
+import os
+
+def value(set_to):
+    value = {}
+    value["value"] = set_to
+    return value
+
+config = ConfigParser.ConfigParser()
+config.read("cluster.ini")
+
+deployment_number = config.get('Cluster', 'deployment_number')
+
+username = config.get('Cluster', 'username')
+password = config.get('Cluster', 'password')
+
+region = config.get('Cluster', 'region')
+
+agent_count = int(config.get('Cluster', 'agent_count'))
+master_count = int(config.get('Cluster', 'master_count'))
+
+dns_prefix = config.get('Cluster', 'dns_prefix') + deployment_number
+resource_group = dns_prefix
+
+ssh_key = config.get('Cluster', 'ssh_public_key')
+
+deployment = resource_group
+
+template_base_url = config.get('Template', 'base_url')
+
+params = {}
+params["adminUsername"] = value(username)
+params["adminPassword"] = value(password)
+params["DNSNamePrefix"] = value(dns_prefix)
+params["agentCount"] = value(agent_count)
+params["masterCount"] = value(master_count)
+params["adminUsername"] = value(username)
+params["sshRSAPublicKey"] = value(ssh_key)
+
+# Create resource group
+
+command = "azure group create " + resource_group + " " + region
+os.system(command)
+
+# Create Deployment
+
+command = "azure group deployment create"
+command = command + " " + resource_group
+command = command + " " + deployment
+command = command + " --template-uri " + template_base_url + "azuredeploy.json"
+command = command + " -p '" + json.dumps(params) + "'"
+
+os.system(command)
+
+

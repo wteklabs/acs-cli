@@ -29,6 +29,10 @@ def createResourceGroup(config):
     command = "azure group create " + config.get('Cluster', 'dns_prefix') + " " + config.get('Cluster', 'region')
     os.system(command)
 
+def deleteResourceGroup(config):
+    command = "azure group delete " + config.get('Cluster', 'dns_prefix')
+    os.system(command)
+
 def createDeployment(config):
     createResourceGroup(config)
 
@@ -39,4 +43,3 @@ def createDeployment(config):
     command = command + " -p '" + json.dumps(getClusterParams(config)) + "'"
     
     os.system(command)
-

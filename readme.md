@@ -25,3 +25,6 @@ current resource group with the name provided in `dns_prefix` in
 `config.ini` then a new resource group will be created. If the
 resource group already exists then the existing group will be updated.
 
+# Delete a cluster
+
+`delete` will delete the cluster and all associated resource.

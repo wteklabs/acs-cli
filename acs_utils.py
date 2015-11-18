@@ -10,9 +10,9 @@ def value(set_to):
     value["value"] = set_to
     return value
 
-def getConfig():
+def getConfig(filename):
     config = ConfigParser.ConfigParser()
-    config.read("cluster.ini")
+    config.read(filename)
     return config
 
 def getClusterParams(config):

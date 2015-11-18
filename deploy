@@ -1,6 +1,18 @@
 #!/usr/bin/python
 
 import acs_utils as acs
+import optparse
+         
+def main():
+    """Starts a new deployent."""
 
-config = acs.getConfig()
-acs.createDeployment(config)
+    p = optparse.OptionParser()
+    p.add_option('--config_file', '-c', default="mesos_cluster.ini",
+                 help="Define the configuration file to use.")
+    options, arguments = p.parse_args()
+
+    config = acs.getConfig(options.config_file)
+    acs.createDeployment(config)
+
+if __name__ == '__main__':
+    main()

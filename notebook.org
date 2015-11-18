@@ -1,12 +1,17 @@
 A set of test scripts for Azure Container Service.
 
-* DONE add a 'test' for deploying a container
+* TODO add a 'test' for deploying a container
 
 In test_marathon
 
 log("Put an app")
 acs.marathonCommand(config, 'apps', 'PUT', )
 log("End test")
+
+* TODO add a test to deploy the donater application
+
+The donater application is run by chronos and will deploy rgardler/fah
+containers on agents with spare capacity.
 
 * TODO turn 'test_marathon' in to real tests
 

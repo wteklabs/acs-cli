@@ -12,8 +12,6 @@ def value(set_to):
 config = ConfigParser.ConfigParser()
 config.read("cluster.ini")
 
-deployment_number = config.get('Cluster', 'deployment_number')
-
 username = config.get('Cluster', 'username')
 password = config.get('Cluster', 'password')
 
@@ -22,7 +20,7 @@ region = config.get('Cluster', 'region')
 agent_count = int(config.get('Cluster', 'agent_count'))
 master_count = int(config.get('Cluster', 'master_count'))
 
-dns_prefix = config.get('Cluster', 'dns_prefix') + deployment_number
+dns_prefix = config.get('Cluster', 'dns_prefix')
 resource_group = dns_prefix
 
 ssh_key = config.get('Cluster', 'ssh_public_key')

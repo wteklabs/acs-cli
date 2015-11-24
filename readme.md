@@ -1,4 +1,6 @@
-A set of convenience scripts for creating and testing ACS clusters.
+A set of convenience scripts for creating and testing ACS
+clusters. These scripts can also be helpful in working out how to use
+the REST API interfaces for managing applicaitons on an ACS cluster.
 
 # Pre-requisites
 
@@ -15,7 +17,7 @@ A set of convenience scripts for creating and testing ACS clusters.
 
 Create a config.ini by copying config.ini.tmpl and editing accoringly.
 
-We strongly recommend you edit the value of `dns_prefix` as this needs
+You will need to edit (at least) the value of `dnsPrefix` as this needs
 to be world unique.
 
 # Create or update a cluster

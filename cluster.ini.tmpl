@@ -1,0 +1,18 @@
+[Cluster]
+dnsPrefix: <FIXME: make dnsPrefix in config.ini world unique>
+
+username: azureuser
+password: Password1234
+
+region: JapanEast
+
+; The kind of orchestrator you want, e.g. 'Mesos', 'Swarm'
+orchestratorType: Mesos
+
+agentCount: 2
+masterCount: 3
+
+sshPublicKey: <FIXME: Enter your public SSH key into sshPublicKey in config.ini>
+
+[Template]
+templateUrl: https://raw.githubusercontent.com/rgardler/azure-quickstart-templates/acs/acs-base-template/azuredeploy.json

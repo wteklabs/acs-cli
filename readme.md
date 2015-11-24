@@ -31,8 +31,10 @@ resource group already exists then the existing group will be updated.
 
 `delete` will delete the cluster and all associated resource.
 
-# Running Example Scripts
+# Running Example Framework Scripts
 
-The `example` folder contains some simple example scripts. These will
-deploy applications to the cluster and verify they are working as
-expected. 
+There two scripts that container examples, `marathon` and
+`swarm`. These are primarily useful in testing a cluster once it has
+been created. They are not intended to be adapted for real-life
+use. However, they may be useful in learning the API for each
+framework.

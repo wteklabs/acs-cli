@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import acs_utils as acs
+import logging
 import optparse
          
 def main():
@@ -10,8 +11,9 @@ def main():
     p.add_option('--config_file', '-c', default="mesos_cluster.ini",
                  help="Define the configuration file to use.")
     options, arguments = p.parse_args()
-
+ 
     config = acs.getConfig(options.config_file)
+    logging.debug("config file: " + options.config_file)
     acs.createDeployment(config)
 
 if __name__ == '__main__':

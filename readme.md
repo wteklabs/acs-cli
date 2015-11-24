@@ -30,3 +30,9 @@ resource group already exists then the existing group will be updated.
 # Delete a cluster
 
 `delete` will delete the cluster and all associated resource.
+
+# Running Example Scripts
+
+The `example` folder contains some simple example scripts. These will
+deploy applications to the cluster and verify they are working as
+expected. 

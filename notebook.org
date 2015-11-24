@@ -1,12 +1,21 @@
 A set of test scripts for Azure Container Service.
 
-* TODO add a 'test' for deploying a container
+* TODO add a 'test' for deploying a container app
 
+** TODO test Docker on Marathon
 In test_marathon
 
 log("Put an app")
 acs.marathonCommand(config, 'apps', 'PUT', )
 log("End test")
+
+** TODO Test Docker on Swarm
+
+** TODO Deploying a multi-container application on Mesos
+
+
+
+** TODO Deploying a multi-container application on Swarm
 
 * TODO add a test to deploy the donater application
 

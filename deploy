@@ -8,7 +8,7 @@ def main():
     """Starts a new deployent."""
 
     p = optparse.OptionParser()
-    p.add_option('--config_file', '-c', default="mesos_cluster.ini",
+    p.add_option('--config_file', '-c', default="cluster.ini",
                  help="Define the configuration file to use.")
     options, arguments = p.parse_args()
  

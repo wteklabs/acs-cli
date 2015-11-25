@@ -61,7 +61,7 @@ def createResourceGroup(config):
     os.system(command)
 
 def deleteResourceGroup(config):
-    command = "azure group delete " + config.get('Cluster', 'dns_prefix')
+    command = "azure group delete " + config.get('Cluster', 'dnsPrefix')
     os.system(command)
 
 def createDeployment(config):
@@ -79,7 +79,7 @@ def createDeployment(config):
     os.system(command)
 
 def getManagementEndpoint(config):
-    return config.get('Cluster', 'dns_prefix') + 'man.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+    return config.get('Cluster', 'dnsPrefix') + 'man.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
 
 def marathonCommand(config, command, method = 'GET'):
     url = getManagementEndpoint(config)

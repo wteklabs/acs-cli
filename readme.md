@@ -33,8 +33,17 @@ resource group already exists then the existing group will be updated.
 
 # Running Example Framework Scripts
 
-There two scripts that container examples, `marathon` and
-`swarm`. These are primarily useful in testing a cluster once it has
-been created. They are not intended to be adapted for real-life
-use. However, they may be useful in learning the API for each
-framework.
+There two scripts that provide various examples of using ACS.
+`mesos` and `swarm`. These are primarily useful in testing a
+cluster once it has been created. They are not intended to be adapted
+for real-life use. However, they may be useful in learning the API for
+each framework.
+
+## Mesos Examples
+
+The `mesos` script uses `mesos_cluster.ini` to define the cluser to
+use (you should first create the cluster with `deploy -c
+mesos_cluster.ini). Running `./mesos` will perform the following
+actions:
+
+  * Lists the apps currently managed by Marathon

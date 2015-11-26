@@ -6,9 +6,9 @@ def log(msg):
     print msg
     print
 
-config = acs.getConfig()
+config = acs.getConfig('mesos_cluster.ini')
 
-log("Check curent apps")
+log("Check current apps")
 acs.marathonCommand(config, 'apps')
 log("End test")
 

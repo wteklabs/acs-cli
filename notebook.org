@@ -2,35 +2,21 @@ A set of test scripts for Azure Container Service.
 
 * TODO add a 'test' for deploying a container app
 
-** TODO test Docker on Marathon
-In test_marathon
+** DONE test Docker on Marathon
 
-log("Put an app")
-acs.marathonCommand(config, 'apps', 'PUT', )
-log("End test")
+https://mesosphere.github.io/marathon/docs/native-docker.html
 
 ** TODO Test Docker on Swarm
 
-** TODO Deploying a multi-container application on Mesos
-
-
+** DONE Deploying a multi-container application on Mesos using Marathon
 
 ** TODO Deploying a multi-container application on Swarm
-
-* TODO Start a 5 sleep 100 containers using Marathon
 
 * TODO Starts the Donater script using Chronos
 
 The Donater script is designed to use spare resources in a cluster to
 help find therapies for various diseases such as Cancer and
 Alzheimers.
-
-* TODO add a test to deploy the donater application
-
-The donater application is run by chronos and will deploy rgardler/fah
-containers on agents with spare capacity.
-
-* TODO turn 'test_marathon' in to real tests
 
 * TODO test deploying OMS
 

@@ -1,14 +1,45 @@
 #!/usr/bin/python
 
 import acs_utils as acs
+import requests
+import sys
+import time
 
-def log(msg):
-    print msg
-    print
+global logger 
+logger = acs.getLogger()
 
 config = acs.getConfig('mesos_cluster.ini')
 
-log("Check current apps")
-acs.marathonCommand(config, 'apps')
-log("End test")
+logger.info("Start: Check current apps")
+logger.debug(acs.marathonCommand(config, 'apps'))
+logger.info("End")
 
+logger.info("Deploy a two container app")
+with open ('marathon-app.json', "r") as marathonfile:
+    data=marathonfile.read().replace('\n', '').replace("\"", "\\\"")
+
+logger.debug(acs.marathonCommand(config, 'groups', 'POST', data))
+logger.debug("End")
+
+logger.debug("Check the application is running")
+for i in range (0,10):
+    logger.debug("Attempt to access service " + str(i) + " of 10")
+    try:
+        r = requests.get("http://" + acs.getClusterURN(config))
+        if r.status_code == 200:
+            logger.debug("Got a 200 response from the application")
+            break
+    except:
+        logger.debug("Attempt failed, sleeping for 5 seconds")
+        time.sleep (5)
+
+if i >= 9: 
+    logger.error("TESTING: Application never responded")
+    sys.exit()
+logger.info("End")
+
+logger.info("Remove the app")
+acs.marathonCommand(config, 'groups/azure', 'DELETE')
+logger.info("End")
+
+logger.info("Mesos with Marathon appears to be working")

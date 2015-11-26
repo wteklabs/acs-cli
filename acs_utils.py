@@ -4,33 +4,36 @@ import ConfigParser
 import json
 import logging
 import os
+import subprocess
 
+output_dir = 'logs'
+global logger 
 logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
-def initializeLog(output_dir):
-    global logger
-    logger.setLevel(logging.DEBUG)
+# create console handler and set level to info
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-    # create console handler and set level to info
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+# create error file handler and set level to error
+handler = logging.FileHandler(os.path.join(output_dir, "error.log"),"w", encoding=None, delay="true")
+handler.setLevel(logging.ERROR)
+formatter = logging.Formatter("%(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-    # create error file handler and set level to error
-    handler = logging.FileHandler(os.path.join(output_dir, "error.log"),"w", encoding=None, delay="true")
-    handler.setLevel(logging.ERROR)
-    formatter = logging.Formatter("%(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
- 
-    # create debug file handler and set level to debug
-    handler = logging.FileHandler(os.path.join(output_dir, "all.log"),"w")
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+# create debug file handler and set level to debug
+handler = logging.FileHandler(os.path.join(output_dir, "all.log"),"w")
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+def getLogger():
+    return logger
 
 def value(set_to):
     value = {}
@@ -38,7 +41,7 @@ def value(set_to):
     return value
 
 def getConfig(filename = "cluster.ini"):
-    initializeLog('logs')
+    logger = getLogger()
     defaults = {"orchestratorType": "Mesos", "jumpboxOS": "Linux"}
     config = ConfigParser.ConfigParser(defaults)
     config.read(filename)
@@ -65,7 +68,7 @@ def deleteResourceGroup(config):
     os.system(command)
 
 def createDeployment(config):
-    global logger
+    logger = getLogger()
     logger.debug("Creating Deployment")
     logger.debug(json.dumps(getClusterParams(config)))
     createResourceGroup(config)
@@ -81,10 +84,16 @@ def createDeployment(config):
 def getManagementEndpoint(config):
     return config.get('Cluster', 'dnsPrefix') + 'man.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
 
-def marathonCommand(config, command, method = 'GET'):
+def marathonCommand(config, command, method = 'GET', data = None):
+    logger = getLogger()
     url = getManagementEndpoint(config)
-    curl = 'curl -s -X ' + method + ' localhost:8080/v2/' + command
-    cmd = 'ssh ' + config.get('Cluster', 'username') + '@' + url + ' -p 2211 ' + curl
-    os.system(cmd)
+    curl = 'curl -s -X ' + method 
+    if data != None:
+        curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
+    curl = curl + ' localhost:8080/v2/' + command
+    cmd = 'ssh ' + config.get('Cluster', 'username') + '@' + url + ' -p 2211 \'' + curl + '\''
+    logger.debug('Command to execute: ' + cmd)
+    return subprocess.check_output(cmd, shell=True)
 
-    
+def getClusterURN(config):
+    return config.get('Cluster', 'dnsPrefix') + '.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'

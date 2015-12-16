@@ -22,10 +22,29 @@ to be world unique.
 
 # Create or update a cluster
 
-The `deploy` command will start a new deployment. If there is no
-current resource group with the name provided in `dns_prefix` in
-`config.ini` then a new resource group will be created. If the
-resource group already exists then the existing group will be updated.
+The `deploy` command will create or update a deployment. 
+
+```
+$ ./deploy --help
+Usage: deploy [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config_file=CONFIG_FILE
+                        Define the configuration file to use.
+```
+
+## Create
+
+In order to create a new cluster ensure that the `dns_prefix` in
+CONFIG_FILE  does not already exist.
+
+## Update
+
+In order to update a new cluster you will run the deployment using a
+`dns_prefix` in CONFIG_FILE that already exists. The cluster will be
+modified to match any updated parameters. For example, you can
+increase the agent count.
 
 # Delete a cluster
 

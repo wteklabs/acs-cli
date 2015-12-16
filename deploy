@@ -9,7 +9,7 @@ def main():
 
     p = optparse.OptionParser()
     p.add_option('--config_file', '-c', default="cluster.ini",
-                 help="Define the configuration file to use.")
+                 help="define the configuration file to use. Default is 'cluster.ini'")
     options, arguments = p.parse_args()
  
     config = acs.getConfig(options.config_file)

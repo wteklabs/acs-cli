@@ -50,6 +50,17 @@ increase the agent count.
 
 `delete` will delete the cluster and all associated resource.
 
+```
+$ ./delete --help
+Usage: delete [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config_file=CONFIG_FILE
+                        define the configuration file to use. Default is
+                        'cluster.ini'
+```
+
 # Running Example Framework Scripts
 
 There two scripts that provide various examples of using ACS.

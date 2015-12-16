@@ -1,6 +1,20 @@
 #!/usr/bin/python
 
 import acs_utils as acs
+import logging
+import optparse
+         
+def main():
+    """Delete resource group"""
 
-config = acs.getConfig()
-acs.deleteResourceGroup(config)
+    p = optparse.OptionParser()
+    p.add_option('--config_file', '-c', default="cluster.ini",
+                 help="define the configuration file to use. Default is 'cluster.ini'")
+    options, arguments = p.parse_args()
+ 
+    config = acs.getConfig(options.config_file)
+    logging.debug("config file: " + options.config_file)
+    acs.deleteResourceGroup(config)
+
+if __name__ == '__main__':
+    main()

@@ -49,14 +49,13 @@ def getConfig(filename = "cluster.ini"):
 
 def getClusterParams(config):
     params = {}
-    params["serviceName"] = value(config.get('Cluster', 'dnsPrefix'))
-    params["orchestratorType"] = value(config.get('Cluster', 'orchestratorType'))
-    params["adminUsername"] = value(config.get('Cluster', 'username'))
-    params["adminPassword"] = value(config.get('Cluster', 'password'))
-    params["DNSNamePrefix"] = value(config.get('Cluster', 'dnsPrefix'))
+    params["dnsNamePrefix"] = value(config.get('Cluster', 'dnsPrefix'))
     params["agentCount"] = value(config.getint('Cluster', 'agentCount'))
+    params["agentVMSize"] = value(config.get('Cluster', 'agentVMSize'))
     params["masterCount"] = value(config.getint('Cluster', 'masterCount'))
     params["sshRSAPublicKey"] = value(config.get('Cluster', 'sshPublicKey'))
+    if config.get('Cluster', 'orchestratorType') == 'mesos':
+        params["adminPassword"] = value(config.get('Cluster', 'password'))
     return params
 
 def createResourceGroup(config):

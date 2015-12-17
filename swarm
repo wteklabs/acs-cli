@@ -2,12 +2,36 @@
 
 import acs_utils as acs
 
-def log(msg):
-    print msg
-    print
+global logger 
+logger = acs.getLogger()
 
 config = acs.getConfig("swarm_cluster.ini")
 
-log("docker ps")
-acs.swarmCommand(config, 'ps')
-log("End test")
+response = acs.openSwarmTunnel(config)
+logger.info(response);
+
+logger.info("docker ps")
+response = acs.dockerCommand(config, 'ps')
+logger.info(response);
+logger.info("End test")
+
+logger.info("Deploy a two container app")
+response = acs.composeCommand(config, 'up')
+logger.info(response);
+logger.info("End")
+
+logger.info("docker ps")
+response = acs.dockerCommand(config, 'ps')
+logger.info(response);
+logger.info("End test")
+
+logger.info("Stop the applicaton")
+response = acs.composeCommand(config, 'stop')
+logger.info(response);
+logger.info("End test")
+
+
+logger.info("docker ps")
+response = acs.dockerCommand(config, 'ps')
+logger.info(response);
+logger.info("End test")

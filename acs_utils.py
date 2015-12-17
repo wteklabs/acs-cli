@@ -85,12 +85,10 @@ def getManagementEndpoint(config):
 
 def marathonCommand(config, command, method = 'GET', data = None):
     logger = getLogger()
-    url = getManagementEndpoint(config)
     curl = 'curl -s -X ' + method 
     if data != None:
         curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
-    curl = curl + ' localhost:8080/v2/' + command
-    cmd = 'ssh ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200 \'' + curl + '\''
+    cmd = curl + ' localhost:8080/v2/' + command
     logger.debug('Command to execute: ' + cmd)
     return subprocess.check_output(cmd, shell=True)
 
@@ -109,9 +107,9 @@ def composeCommand(config, command, file = 'docker-compose.yml'):
     logger.debug('Command to execute: ' + cmd)
     return subprocess.check_output(cmd, shell=True)
 
-def openSwarmTunnel(config):
+def openSSHTunnel(config):
     url = getManagementEndpoint(config)
-    cmd = 'ssh -L 2375:localhost:2375 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    cmd = 'ssh -L 2375:localhost:2375 -L 8080:localhost:8080 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
     return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
 
 def getClusterURN(config):

@@ -7,7 +7,7 @@ logger = acs.getLogger()
 
 config = acs.getConfig("swarm_cluster.ini")
 
-response = acs.openSwarmTunnel(config)
+response = acs.openSSHTunnel(config)
 logger.info(response);
 
 logger.info("docker ps")

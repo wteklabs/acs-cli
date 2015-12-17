@@ -10,7 +10,7 @@ logger = acs.getLogger()
 
 config = acs.getConfig('mesos_cluster.ini')
 
-response = acs.openSSHTunnel(config)
+response = acs.openMesosTunnel(config)
 logger.info(response);
 
 logger.info("Start: Check current apps")

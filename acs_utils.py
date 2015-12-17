@@ -94,22 +94,26 @@ def marathonCommand(config, command, method = 'GET', data = None):
 
 def dockerCommand(config, command):
     url = getManagementEndpoint(config)
-    cmd = 'docker -H :2375 ' + command
+    cmd = 'docker ' + command
 
     logger.debug('Command to execute: ' + cmd)
-    return subprocess.check_output(cmd, shell=True)
+    return subprocess.check_output(cmd, env={'DOCKER_HOST': ':2375'}, shell=True)
 
 def composeCommand(config, command, file = 'docker-compose.yml'):
     url = getManagementEndpoint(config)
-    home = 'DOCKER_HOME=:2375'
     cmd = 'docker-compose -f ' + file + ' ' + command + ' -d'
 
     logger.debug('Command to execute: ' + cmd)
-    return subprocess.check_output(cmd, shell=True)
+    return subprocess.check_output(cmd, env={'DOCKER_HOST': ':2375'}, shell=True)
 
-def openSSHTunnel(config):
+def openSwarmTunnel(config):
     url = getManagementEndpoint(config)
-    cmd = 'ssh -L 2375:localhost:2375 -L 8080:localhost:8080 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    cmd = 'ssh -L 2375:localhost:2375 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
+
+def openMesosTunnel(config):
+    url = getManagementEndpoint(config)
+    cmd = 'ssh -L 8080:localhost:8080 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
     return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
 
 def getAgentsFQDN(config):

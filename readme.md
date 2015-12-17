@@ -72,8 +72,43 @@ each framework.
 ## Mesos Examples
 
 The `mesos` script uses `mesos_cluster.ini` to define the cluser to
-use (you should first create the cluster with `deploy -c
-mesos_cluster.ini). Running `./mesos` will perform the following
-actions:
+use. This cluster must first be created using:
+
+```
+deploy -c mesos_cluster.ini
+```
+
+Once created you can run the mesos tests with `./mesos`. This will
+perform the following actions:
 
   * Lists the apps currently managed by Marathon
+  * Deploy a simple 2 container application using Marathon
+  * Verify the application is running correctly
+  * Delete the application
+
+### Examples to add
+
+  * Deploy a script on Chronos that runs a container when resources are available
+  * Rolling upgrades of an application
+
+## Swarm Examples
+
+The `swarm` script uses `swarm_cluster.ini` to define the cluser to
+use. This cluster must first be created using:
+
+```
+deploy -c swarm_cluster.ini
+```
+
+Once created you can run the mesos tests with `./mesos`. This will
+perform the following actions:
+
+  * Lists the containers currently deployed
+  * Deploy a two container application using Docker Compose
+  * List the containers currently running
+
+### Examples to add
+
+  * Verify the application is running
+  * Remove the application using Docker Compose
+  * Scale the application using Docker Compose

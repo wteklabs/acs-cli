@@ -21,7 +21,7 @@ logger.info(response);
 logger.info("End test")
 
 logger.info("Deploy a two container app")
-response = acs.composeCommand(config, 'up')
+response = acs.composeCommand(config, 'up', options = '-d')
 logger.info(response);
 logger.info("End")
 

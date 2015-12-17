@@ -99,9 +99,9 @@ def dockerCommand(config, command):
     logger.debug('Command to execute: ' + cmd)
     return subprocess.check_output(cmd, env={'DOCKER_HOST': ':2375'}, shell=True)
 
-def composeCommand(config, command, file = 'docker-compose.yml'):
+def composeCommand(config, command, file = 'docker-compose.yml', options = ''):
     url = getManagementEndpoint(config)
-    cmd = 'docker-compose -f ' + file + ' ' + command + ' -d'
+    cmd = 'docker-compose -f ' + file + ' ' + command + ' ' + options
 
     logger.debug('Command to execute: ' + cmd)
     return subprocess.check_output(cmd, env={'DOCKER_HOST': ':2375'}, shell=True)

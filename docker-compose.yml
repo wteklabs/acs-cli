@@ -1,0 +1,10 @@
+web:
+  image: adtd/web:stage
+  ports:
+    - "80:80"
+  links:
+    - rest:rest-demo-azure.marathon.mesos
+rest:
+  image: adtd/rest:stage
+  ports:
+    - "8080:8080"

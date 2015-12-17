@@ -112,5 +112,5 @@ def openSSHTunnel(config):
     cmd = 'ssh -L 2375:localhost:2375 -L 8080:localhost:8080 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
     return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
 
-def getClusterURN(config):
-    return config.get('Cluster', 'dnsPrefix') + '.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+def getAgentsFQDN(config):
+    return config.get('Cluster', 'dnsPrefix') + 'agents.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'

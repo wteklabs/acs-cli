@@ -28,7 +28,7 @@ logger.debug("Check the application is running")
 for i in range (0,10):
     logger.debug("Attempt to access service " + str(i) + " of 10")
     try:
-        r = requests.get("http://" + acs.getClusterURN(config))
+        r = requests.get("http://" + acs.getAgentsFQDN(config))
         if r.status_code == 200:
             logger.debug("Got a 200 response from the application")
             break

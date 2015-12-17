@@ -81,7 +81,7 @@ def createDeployment(config):
     os.system(command)
 
 def getManagementEndpoint(config):
-    return config.get('Cluster', 'dnsPrefix') + 'man.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+    return config.get('Cluster', 'dnsPrefix') + 'mgmt.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
 
 def marathonCommand(config, command, method = 'GET', data = None):
     logger = getLogger()
@@ -90,9 +90,29 @@ def marathonCommand(config, command, method = 'GET', data = None):
     if data != None:
         curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
     curl = curl + ' localhost:8080/v2/' + command
-    cmd = 'ssh ' + config.get('Cluster', 'username') + '@' + url + ' -p 2211 \'' + curl + '\''
+    cmd = 'ssh ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200 \'' + curl + '\''
     logger.debug('Command to execute: ' + cmd)
     return subprocess.check_output(cmd, shell=True)
+
+def dockerCommand(config, command):
+    url = getManagementEndpoint(config)
+    cmd = 'docker -H :2375 ' + command
+
+    logger.debug('Command to execute: ' + cmd)
+    return subprocess.check_output(cmd, shell=True)
+
+def composeCommand(config, command, file = 'docker-compose.yml'):
+    url = getManagementEndpoint(config)
+    home = 'DOCKER_HOME=:2375'
+    cmd = 'docker-compose -f ' + file + ' ' + command + ' -d'
+
+    logger.debug('Command to execute: ' + cmd)
+    return subprocess.check_output(cmd, shell=True)
+
+def openSwarmTunnel(config):
+    url = getManagementEndpoint(config)
+    cmd = 'ssh -L 2375:localhost:2375 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
 
 def getClusterURN(config):
     return config.get('Cluster', 'dnsPrefix') + '.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'

@@ -71,7 +71,7 @@ each framework.
 
 ## Mesos Examples
 
-The `mesos` script uses `mesos_cluster.ini` to define the cluser to
+The `test-mesos` script uses `mesos_cluster.ini` to define the cluster to
 use. This cluster must first be created using:
 
 ```
@@ -93,14 +93,14 @@ perform the following actions:
 
 ## Swarm Examples
 
-The `swarm` script uses `swarm_cluster.ini` to define the cluser to
+The `test-swarm` script uses `swarm_cluster.ini` to define the cluser to
 use. This cluster must first be created using:
 
 ```
 deploy -c swarm_cluster.ini
 ```
 
-Once created you can run the mesos tests with `./mesos`. This will
+Once created you can run the mesos tests with `./test-mesos`. This will
 perform the following actions:
 
   * Lists the containers currently deployed

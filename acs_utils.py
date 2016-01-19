@@ -45,6 +45,7 @@ def getConfig(filename = "cluster.ini"):
     defaults = {"orchestratorType": "Mesos", "jumpboxOS": "Linux"}
     config = ConfigParser.ConfigParser(defaults)
     config.read(filename)
+    config.set('Cluster', 'resourceGroup', config.get('Cluster', 'dnsPrefix'))
     return config
 
 def getClusterParams(config):
@@ -59,11 +60,11 @@ def getClusterParams(config):
     return params
 
 def createResourceGroup(config):
-    command = "azure group create " + config.get('Cluster', 'dnsPrefix') + " " + config.get('Cluster', 'region')
+    command = "azure group create " + config.get('Cluster', 'resourceGroup')  + " " + config.get('Cluster', 'region')
     os.system(command)
 
 def deleteResourceGroup(config):
-    command = "azure group delete " + config.get('Cluster', 'dnsPrefix')
+    command = "azure group delete " + config.get('Cluster', 'resourceGroup')
     os.system(command)
 
 def createDeployment(config):
@@ -81,7 +82,7 @@ def createDeployment(config):
     os.system(command)
 
 def getManagementEndpoint(config):
-    return config.get('Cluster', 'dnsPrefix') + 'mgmt.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+    return config.get('Cluster', 'dnsPrefix') + 'mgmt.' + config.get('Cluster', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
 def marathonCommand(config, command, method = 'GET', data = None):
     logger = getLogger()
@@ -109,7 +110,7 @@ def composeCommand(config, command, file = 'docker-compose.yml', options = ''):
 def openSwarmTunnel(config):
     url = getManagementEndpoint(config)
     cmd = 'ssh -L 2375:localhost:2375 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
-    return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
+    return "If you get errors ensure that you have craeted an SSH tunnel to your master by running '" + cmd + "'"
 
 def openMesosTunnel(config):
     url = getManagementEndpoint(config)
@@ -118,3 +119,21 @@ def openMesosTunnel(config):
 
 def getAgentsFQDN(config):
     return config.get('Cluster', 'dnsPrefix') + 'agents.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+
+def getAgentHostNames(config):
+    # WIP - do not use
+    # return a list of Agent Host Names in this cluster
+    cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + config.get('Cluster', 'resourceGroup') +  " --json"
+    os.system(cmd)
+
+def installPackage(config):
+    # WIP - do not use
+    # Install a driver or other OS level package that is needed on the cluster
+    logger = getLogger()
+    url = getManagementEndpoint(config)
+    package = "cifs-utils"
+    sshConnection = "ssh " + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    logger.info("SSH Connection: " + sshConnection)
+    sshCommand = "sudo apt-get install -qqq cifs-utils"
+    command = sshConnection + " '" + sshCommand + "'"
+    os.system(command)

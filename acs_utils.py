@@ -95,13 +95,7 @@ def createStorage(config):
     
     os.system(command)
 
-    command = "azure storage account keys list"
-    command = command + " --resource-group " + config.get('Group', 'name')
-    command = command + " " + config.get('Storage', 'name')
-    command = command + " --json"
-
-    keys = json.loads(subprocess.check_output(command, shell=True))
-    key = keys['storageAccountKeys']['key1']
+    key = getStorageAccountKey(config)
 
     try:
         command = "azure storage share create"
@@ -114,6 +108,16 @@ def createStorage(config):
         # FIXME: test if the share already exists, if it does then don't try to recreate it
         # For now we just assume that an error is always that the share alrady exists 
         logger.warning("Failed to create share, assuming it is because it already exists")
+
+def getStorageAccountKey(config):
+    command = "azure storage account keys list"
+    command = command + " --resource-group " + config.get('Group', 'name')
+    command = command + " " + config.get('Storage', 'name')
+    command = command + " --json"
+
+    keys = json.loads(subprocess.check_output(command, shell=True))
+    return keys['storageAccountKeys']['key1']
+
 
 def getShareEndpoint(config):
     command = "azure storage account show"
@@ -196,12 +200,8 @@ def configureSSH(config):
 
     out = subprocess.check_output(cmd, shell=True)
 
-def installPackage(config, hosts):
-    # WIP - do not use
-    # FIXME - copy private key (id_rsa) to .ssh and chmod 600
-    # FIXME - move mount, urn, username, password into config.ini
-    # FIXME - test using a fileshare in the same region as the cluster
-    # Install a driver or other OS level package that is needed on each host in hosts
+def addAzureFileService(config, hosts):
+    # Add an Azure File Service to identified agents
     logger = getLogger()
     url = getManagementEndpoint(config)
     package = "cifs-utils"
@@ -213,18 +213,18 @@ def installPackage(config, hosts):
         sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + config.get('ACS', 'username') + '@' + host
         logger.debug("SSH Agent Connection: " + sshAgentConnection)
 
-        mount = "/mnt/azure/acstests"
-        sshCommand = "sudo mkdir -p " + mount
+        mount = config.get("Storage", "mount")
+        sshCommand = "mkdir -p " + mount
         logger.debug("Command to run: " + sshCommand)
     
         cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
         out = subprocess.check_output(cmd, shell=True)
         logger.debug("Output:\n" + out)
 
-        urn = "//acstestfiles.file.core.windows.net/acstestshare"
-        username = "acstestfiles"
-        password = "JwFtVAcgbnHvJsk2d/isLsCuqkKJmah+25MdSiS7x2+6YV//A8HyHGktahmr9/uEPfkG9Zkcad8GgZi2Fqw6og=="
-        sshCommand = "sudo mount -t cifs " + urn + " " + mount + " -o vers=2.1,username=" + username + ",password=" + password
+        urn = getShareEndpoint(config).replace("https:", "") + config.get("Storage", "shareName")
+        username = config.get("Storage", "name")
+        password = getStorageAccountKey(config)
+        sshCommand = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
         logger.debug("Command to run: " + sshCommand)
         cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
         out = subprocess.check_output(cmd, shell=True)

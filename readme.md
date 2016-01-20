@@ -8,9 +8,11 @@ the REST API interfaces for managing applicaitons on an ACS cluster.
     * install Node and NPM
     * `sudo npm install azure-cli -g'
   * Install jq
-    * apt-get install jq
+    * `apt-get install jq`
   * Install Python
-    * apt-get install python
+    * `apt-get install python`
+  * Install required Python libraries
+    * `pip install -r requirements.txt`
   * Whitelisted for ACS preview
 
 # Preparation

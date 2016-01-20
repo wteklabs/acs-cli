@@ -82,6 +82,50 @@ def createDeployment(config):
     
     os.system(command)
 
+def createStorage(config):
+    logger = getLogger()
+    logger.debug("Creating Storage Account")
+    createResourceGroup(config)
+    
+    command = "azure storage account create"
+    command = command + " --type " + config.get('Storage', 'type')
+    command = command + " --resource-group " + config.get('Group', 'name')
+    command = command + " --location " + config.get('Group', 'region')
+    command = command + " " + config.get('Storage', 'name')
+    
+    os.system(command)
+
+    command = "azure storage account keys list"
+    command = command + " --resource-group " + config.get('Group', 'name')
+    command = command + " " + config.get('Storage', 'name')
+    command = command + " --json"
+
+    keys = json.loads(subprocess.check_output(command, shell=True))
+    key = keys['storageAccountKeys']['key1']
+
+    try:
+        command = "azure storage share create"
+        command = command + " --account-name " + config.get('Storage', 'name')
+        command = command + " --account-key " + key
+        command = command + " " + config.get('Storage', 'shareName')
+
+        out = subprocess.check_output(command, shell=True)
+    except:
+        # FIXME: test if the share already exists, if it does then don't try to recreate it
+        # For now we just assume that an error is always that the share alrady exists 
+        logger.warning("Failed to create share, assuming it is because it already exists")
+
+def getShareEndpoint(config):
+    command = "azure storage account show"
+    command = command + " --resource-group " + config.get('Group', 'name')
+    command = command + " " + config.get('Storage', 'name')
+    command = command + " --json"
+
+    data = json.loads(subprocess.check_output(command, shell=True))
+    endpoint = data['primaryEndpoints']['file']
+
+    return endpoint
+
 def getManagementEndpoint(config):
     return config.get('ACS', 'dnsPrefix') + 'mgmt.' + config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
@@ -124,7 +168,7 @@ def getAgentsFQDN(config):
 def getAgentHostNames(config):
     # return a list of Agent Host Names in this cluster
     
-    cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + config.get('ACS', 'resourceGroup') +  " --json"
+    cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + config.get('Group', 'name') +  " --json"
     logger.debug("Execute command: " + cmd)
 
     agents = json.loads(subprocess.check_output(cmd, shell=True))

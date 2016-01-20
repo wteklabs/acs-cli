@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import acs_utils as acs
+from acs_utils import ACSUtils
 import logging
 import optparse
          
@@ -12,9 +12,8 @@ def main():
                  help="define the configuration file to use. Default is 'cluster.ini'")
     options, arguments = p.parse_args()
  
-    config = acs.getConfig(options.config_file)
-    logging.debug("config file: " + options.config_file)
-    acs.deleteResourceGroup(config)
+    acs = ACSUtils(options.config_file)
+    acs.deleteResourceGroup()
 
 if __name__ == '__main__':
     main()

@@ -4,6 +4,7 @@ import ConfigParser
 import json
 import logging
 import os
+import paramiko
 import subprocess
 
 output_dir = 'logs'
@@ -13,7 +14,7 @@ logger.setLevel(logging.DEBUG)
 
 # create console handler and set level to info
 handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -121,19 +122,49 @@ def getAgentsFQDN(config):
     return config.get('Cluster', 'dnsPrefix') + 'agents.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
 
 def getAgentHostNames(config):
-    # WIP - do not use
     # return a list of Agent Host Names in this cluster
+    
     cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + config.get('Cluster', 'resourceGroup') +  " --json"
-    os.system(cmd)
+    logger.debug("Execute command: " + cmd)
 
-def installPackage(config):
+    agents = json.loads(subprocess.check_output(cmd, shell=True))
+    names = []
+    for agent in agents:
+        name = agent['name']
+        if "-agent-" in name:
+            names.append(name)
+    return names
+
+def installPackage(config, hosts):
     # WIP - do not use
-    # Install a driver or other OS level package that is needed on the cluster
+    # FIXME - copy private key (id_rsa) to .ssh and chmod 600
+    # FIXME - move mount, urn, username, password into config.ini
+    # FIXME - test using a fileshare in the same region as the cluster
+    # Install a driver or other OS level package that is needed on each host in hosts
     logger = getLogger()
     url = getManagementEndpoint(config)
     package = "cifs-utils"
-    sshConnection = "ssh " + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
-    logger.info("SSH Connection: " + sshConnection)
-    sshCommand = "sudo apt-get install -qqq cifs-utils"
-    command = sshConnection + " '" + sshCommand + "'"
-    os.system(command)
+
+    sshMasterConnection = "ssh " + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    logger.debug("SSH Master Connection: " + sshMasterConnection)
+
+    for host in hosts:
+        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + config.get('Cluster', 'username') + '@' + host
+        logger.debug("SSH Agent Connection: " + sshAgentConnection)
+
+        mount = "/mnt/azure/acstests"
+        sshCommand = "sudo mkdir -p " + mount
+        logger.debug("Command to run: " + sshCommand)
+    
+        cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
+        out = subprocess.check_output(cmd, shell=True)
+        logger.debug("Output:\n" + out)
+
+        urn = "//acstestfiles.file.core.windows.net/acstestshare"
+        username = "acstestfiles"
+        password = "JwFtVAcgbnHvJsk2d/isLsCuqkKJmah+25MdSiS7x2+6YV//A8HyHGktahmr9/uEPfkG9Zkcad8GgZi2Fqw6og=="
+        sshCommand = "sudo mount -t cifs " + urn + " " + mount + " -o vers=2.1,username=" + username + ",password=" + password
+        logger.debug("Command to run: " + sshCommand)
+        cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
+        out = subprocess.check_output(cmd, shell=True)
+        logger.debug("Output:\n" + out)

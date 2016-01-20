@@ -27,7 +27,7 @@ to be world unique.
 The `deploy` command will create or update a deployment. 
 
 ```
-$ ./deploy --help
+$ ./acs/deploy --help
 Usage: deploy [options]
 
 Options:
@@ -53,7 +53,7 @@ increase the agent count.
 `delete` will delete the cluster and all associated resource.
 
 ```
-$ ./delete --help
+$ ./acs/delete --help
 Usage: delete [options]
 
 Options:
@@ -77,7 +77,7 @@ The `test-mesos` script uses `mesos_cluster.ini` to define the cluster to
 use. This cluster must first be created using:
 
 ```
-deploy -c mesos_cluster.ini
+./acs/deploy -c mesos_cluster.ini
 ```
 
 Once created you can run the mesos tests with `./mesos`. This will
@@ -99,7 +99,7 @@ The `test-swarm` script uses `swarm_cluster.ini` to define the cluser to
 use. This cluster must first be created using:
 
 ```
-deploy -c swarm_cluster.ini
+./acs/deploy -c swarm_cluster.ini
 ```
 
 Once created you can run the mesos tests with `./test-mesos`. This will

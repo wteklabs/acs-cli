@@ -147,8 +147,8 @@ class ACSUtils:
         curl = 'curl -s -X ' + method 
         if data != None:
             curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
-            cmd = curl + ' localhost:8080/v2/' + command
-            self.log.debug('Command to execute: ' + cmd)
+        cmd = curl + ' localhost:8080/v2/' + command 
+        self.log.debug('Command to execute: ' + cmd)
         return subprocess.check_output(cmd, shell=True)
 
     def dockerCommand(self, command):

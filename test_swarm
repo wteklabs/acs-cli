@@ -1,42 +1,40 @@
 #!/usr/bin/python
 
-import acs_utils as acs
+from acs_utils import *
 
-global logger 
-logger = acs.getLogger()
+acs = ACSUtils("swarm_cluster.ini")
+log = ACSLog()
 
-config = acs.getConfig("swarm_cluster.ini")
+response = acs.openSwarmTunnel(      )
+log.info(response);
 
-response = acs.openSwarmTunnel(config)
-logger.info(response);
+log.info("docker info")
+response = acs.dockerCommand('info')
+log.info(response);
+log.info("End test")
 
-logger.info("docker info")
-response = acs.dockerCommand(config, 'info')
-logger.info(response);
-logger.info("End test")
+log.info("docker ps")
+response = acs.dockerCommand('ps')
+log.info(response);
+log.info("End test")
 
-logger.info("docker ps")
-response = acs.dockerCommand(config, 'ps')
-logger.info(response);
-logger.info("End test")
+log.info("Deploy a two container app")
+response = acs.composeCommand('up', options = '-d')
+log.info(response);
+log.info("End")
 
-logger.info("Deploy a two container app")
-response = acs.composeCommand(config, 'up', options = '-d')
-logger.info(response);
-logger.info("End")
+log.info("docker ps")
+response = acs.dockerCommand('ps')
+log.info(response);
+log.info("End test")
 
-logger.info("docker ps")
-response = acs.dockerCommand(config, 'ps')
-logger.info(response);
-logger.info("End test")
-
-logger.info("Stop the applicaton")
-response = acs.composeCommand(config, 'stop')
-logger.info(response);
-logger.info("End test")
+log.info("Stop the applicaton")
+response = acs.composeCommand('stop')
+log.info(response);
+log.info("End test")
 
 
-logger.info("docker ps")
-response = acs.dockerCommand(config, 'ps')
-logger.info(response);
-logger.info("End test")
+log.info("docker ps")
+response = acs.dockerCommand('ps')
+log.info(response);
+log.info("End test")

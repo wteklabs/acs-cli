@@ -46,44 +46,44 @@ def getConfig(filename = "cluster.ini"):
     defaults = {"orchestratorType": "Mesos", "jumpboxOS": "Linux"}
     config = ConfigParser.ConfigParser(defaults)
     config.read(filename)
-    config.set('Cluster', 'resourceGroup', config.get('Cluster', 'dnsPrefix'))
+    config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
     return config
 
-def getClusterParams(config):
+def getACSParams(config):
     params = {}
-    params["dnsNamePrefix"] = value(config.get('Cluster', 'dnsPrefix'))
-    params["agentCount"] = value(config.getint('Cluster', 'agentCount'))
-    params["agentVMSize"] = value(config.get('Cluster', 'agentVMSize'))
-    params["masterCount"] = value(config.getint('Cluster', 'masterCount'))
-    params["sshRSAPublicKey"] = value(config.get('Cluster', 'sshPublicKey'))
-    if config.get('Cluster', 'orchestratorType') == 'mesos':
-        params["adminPassword"] = value(config.get('Cluster', 'password'))
+    params["dnsNamePrefix"] = value(config.get('ACS', 'dnsPrefix'))
+    params["agentCount"] = value(config.getint('ACS', 'agentCount'))
+    params["agentVMSize"] = value(config.get('ACS', 'agentVMSize'))
+    params["masterCount"] = value(config.getint('ACS', 'masterCount'))
+    params["sshRSAPublicKey"] = value(config.get('ACS', 'sshPublicKey'))
+    if config.get('ACS', 'orchestratorType') == 'mesos':
+        params["adminPassword"] = value(config.get('ACS', 'password'))
     return params
 
 def createResourceGroup(config):
-    command = "azure group create " + config.get('Cluster', 'resourceGroup')  + " " + config.get('Cluster', 'region')
+    command = "azure group create " + config.get('Group', 'name')  + " " + config.get('Group', 'region')
     os.system(command)
 
 def deleteResourceGroup(config):
-    command = "azure group delete " + config.get('Cluster', 'resourceGroup')
+    command = "azure group delete " + config.get('Group', 'name')
     os.system(command)
 
 def createDeployment(config):
     logger = getLogger()
     logger.debug("Creating Deployment")
-    logger.debug(json.dumps(getClusterParams(config)))
+    logger.debug(json.dumps(getACSParams(config)))
     createResourceGroup(config)
 
     command = "azure group deployment create"
-    command = command + " " + config.get('Cluster', 'dnsPrefix')
-    command = command + " " + config.get('Cluster', 'dnsPrefix')
+    command = command + " " + config.get('ACS', 'dnsPrefix')
+    command = command + " " + config.get('ACS', 'dnsPrefix')
     command = command + " --template-uri " + config.get('Template', 'templateUrl')
-    command = command + " -p '" + json.dumps(getClusterParams(config)) + "'"
+    command = command + " -p '" + json.dumps(getACSParams(config)) + "'"
     
     os.system(command)
 
 def getManagementEndpoint(config):
-    return config.get('Cluster', 'dnsPrefix') + 'mgmt.' + config.get('Cluster', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
+    return config.get('ACS', 'dnsPrefix') + 'mgmt.' + config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
 def marathonCommand(config, command, method = 'GET', data = None):
     logger = getLogger()
@@ -110,21 +110,21 @@ def composeCommand(config, command, file = 'docker-compose.yml', options = ''):
 
 def openSwarmTunnel(config):
     url = getManagementEndpoint(config)
-    cmd = 'ssh -L 2375:localhost:2375 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    cmd = 'ssh -L 2375:localhost:2375 -N ' + config.get('ACS', 'username') + '@' + url + ' -p 2200'
     return "If you get errors ensure that you have craeted an SSH tunnel to your master by running '" + cmd + "'"
 
 def openMesosTunnel(config):
     url = getManagementEndpoint(config)
-    cmd = 'ssh -L 8080:localhost:8080 -N ' + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    cmd = 'ssh -L 8080:localhost:8080 -N ' + config.get('ACS', 'username') + '@' + url + ' -p 2200'
     return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
 
 def getAgentsFQDN(config):
-    return config.get('Cluster', 'dnsPrefix') + 'agents.' + config.get('Cluster', 'region') + '.cloudapp.azure.com'
+    return config.get('ACS', 'dnsPrefix') + 'agents.' + config.get('Group', 'region') + '.cloudapp.azure.com'
 
 def getAgentHostNames(config):
     # return a list of Agent Host Names in this cluster
     
-    cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + config.get('Cluster', 'resourceGroup') +  " --json"
+    cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + config.get('ACS', 'resourceGroup') +  " --json"
     logger.debug("Execute command: " + cmd)
 
     agents = json.loads(subprocess.check_output(cmd, shell=True))
@@ -145,11 +145,11 @@ def installPackage(config, hosts):
     url = getManagementEndpoint(config)
     package = "cifs-utils"
 
-    sshMasterConnection = "ssh " + config.get('Cluster', 'username') + '@' + url + ' -p 2200'
+    sshMasterConnection = "ssh " + config.get('ACS', 'username') + '@' + url + ' -p 2200'
     logger.debug("SSH Master Connection: " + sshMasterConnection)
 
     for host in hosts:
-        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + config.get('Cluster', 'username') + '@' + host
+        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + config.get('ACS', 'username') + '@' + host
         logger.debug("SSH Agent Connection: " + sshAgentConnection)
 
         mount = "/mnt/azure/acstests"

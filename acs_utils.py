@@ -179,6 +179,23 @@ def getAgentHostNames(config):
             names.append(name)
     return names
 
+def getMasterSSHConnection(config):
+    url = getManagementEndpoint(config)
+    return "ssh " + config.get('ACS', 'username') + '@' + url + ' -p 2200'
+
+def configureSSH(config):
+    # Configure SSH on the master
+    logger = getLogger()
+    url = getManagementEndpoint(config)
+    conn = "scp -P 2200"
+    localfile = "~/.ssh/id_rsa"
+    remotefile = config.get('ACS', 'username') + '@' + url + ":~/.ssh/id_rsa"
+    
+    cmd = conn + " " + localfile + " " + remotefile
+    logger.debug("SCP command: " + cmd)
+
+    out = subprocess.check_output(cmd, shell=True)
+
 def installPackage(config, hosts):
     # WIP - do not use
     # FIXME - copy private key (id_rsa) to .ssh and chmod 600
@@ -189,7 +206,7 @@ def installPackage(config, hosts):
     url = getManagementEndpoint(config)
     package = "cifs-utils"
 
-    sshMasterConnection = "ssh " + config.get('ACS', 'username') + '@' + url + ' -p 2200'
+    sshMasterConnection = getMasterSSHConnection(config)
     logger.debug("SSH Master Connection: " + sshMasterConnection)
 
     for host in hosts:

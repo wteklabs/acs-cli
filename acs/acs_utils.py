@@ -73,12 +73,17 @@ class ACSUtils:
             params["adminPassword"] = self.value(self.config.get('ACS', 'password'))
         return params
 
+    def getMode(self):
+        """Get the orchestrator mode for this instance of ACS"""
+        return self.config.get("ACS", "orchestratorType")
+
     def createResourceGroup(self):
         command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
         os.system(command)
 
     def deleteResourceGroup(self):
         command = "azure group delete " + self.config.get('Group', 'name')
+        self.log.info("Command: " + command)
         os.system(command)
 
     def createDeployment(self):

@@ -22,39 +22,11 @@ Create a config.ini by copying config.ini.tmpl and editing accoringly.
 You will need to edit (at least) the value of `dnsPrefix` as this needs
 to be world unique.
 
-# Create or update a cluster
-
-The `deploy` command will create or update a deployment. 
+# Command Line
 
 ```
-$ ./acs/deploy --help
-Usage: deploy [options]
-
-Options:
-  -h, --help            show this help message and exit
-  -c CONFIG_FILE, --config_file=CONFIG_FILE
-                        Define the configuration file to use.
-```
-
-## Create
-
-In order to create a new cluster ensure that the `dns_prefix` in
-CONFIG_FILE  does not already exist.
-
-## Update
-
-In order to update a new cluster you will run the deployment using a
-`dns_prefix` in CONFIG_FILE that already exists. The cluster will be
-modified to match any updated parameters. For example, you can
-increase the agent count.
-
-# Delete a cluster
-
-`delete` will delete the cluster and all associated resource.
-
-```
-$ ./acs/delete --help
-Usage: delete [options]
+$ ./acs.py --help
+Usage: acs.py [options] command
 
 Options:
   -h, --help            show this help message and exit
@@ -63,54 +35,36 @@ Options:
                         'cluster.ini'
 ```
 
-# Running Example Framework Scripts
+There are a number of accepted commands, as follows
 
-There two scripts that provide various examples of using ACS.
-`mesos` and `swarm`. These are primarily useful in testing a
-cluster once it has been created. They are not intended to be adapted
-for real-life use. However, they may be useful in learning the API for
-each framework.
+## deploy: Create or update a cluster
 
-## Mesos Examples
+The `deploy` command will create or update a deployment. 
 
-The `test-mesos` script uses `mesos_cluster.ini` to define the cluster to
-use. This cluster must first be created using:
+### Create
 
-```
-./acs/deploy -c mesos_cluster.ini
-```
+In order to create a new cluster ensure that the `dns_prefix` in
+CONFIG_FILE does not already exist.
 
-Once created you can run the mesos tests with `./mesos`. This will
-perform the following actions:
+### Update
 
-  * Lists the apps currently managed by Marathon
-  * Deploy a simple 2 container application using Marathon
-  * Verify the application is running correctly
-  * Delete the application
+In order to update a new cluster you will run the deployment using a
+`dns_prefix` in CONFIG_FILE that already exists. The cluster will be
+modified to match any updated parameters. For example, you can
+increase the agent count.
 
-### Examples to add
+## delete: Delete a cluster
 
-  * Deploy a script on Chronos that runs a container when resources are available
-  * Rolling upgrades of an application
+`delete` will delete the cluster and all associated resource.
 
-## Swarm Examples
+## test: Running Tests in Clusters
 
-The `test-swarm` script uses `swarm_cluster.ini` to define the cluser to
-use. This cluster must first be created using:
+`test` will deploy some test applications and ensure they are started
+correctly on the cluster. The tests will be run against a cluster
+defined in the cluster.ini file (or the file specified with -c).
 
-```
-./acs/deploy -c swarm_cluster.ini
-```
+Each script performs various actions, such as deploying a
+multi-container application and verifying it is working correctly.
 
-Once created you can run the mesos tests with `./test-mesos`. This will
-perform the following actions:
-
-  * Lists the containers currently deployed
-  * Deploy a two container application using Docker Compose
-  * List the containers currently running
-
-### Examples to add
-
-  * Verify the application is running
-  * Remove the application using Docker Compose
-  * Scale the application using Docker Compose
+The log outputs of these test scripts detail the commands being run
+and can therefore be useful as a learning excercise.

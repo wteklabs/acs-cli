@@ -26,6 +26,7 @@ def main():
         acs.deleteResourceGroup()
     elif cmd == "deploy":
         acs.createDeployment()
+        acs.addFeatures()
     elif cmd == "test":
         mode = acs.getMode()
         if mode == "mesos":
@@ -39,15 +40,9 @@ def main():
         else:
             log.error("Don't know how to test mode " + mode)
     elif cmd == "addFeature":
-        feature = arguments[1]
-        log.debug("Feature: " + feature)
-        if (feature == "afs"):
-            acs.createStorage()
-            acs.configureSSH()
-            hosts = acs.getAgentHostNames()
-            acs.addAzureFileService(hosts)
-        else:
-            log.error("Unknown feature: " + feature)
+        featureList = arguments[1]
+        log.debug("Features: " + featureList)
+        addFeatures(feature)
     else:
         log.error("Unkown command: " + cmd)
 

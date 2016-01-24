@@ -56,7 +56,14 @@ increase the agent count.
 ## addFeature
 
 Adds a feature to the ACS cluster. Possible features are described
-below:
+below. Features can be added at deployment time by specifiying them in
+a comma separated list in the cluster ini file.
+
+```bash
+./acs.py addFeature FEATURE_LIST
+```
+
+Where FEATURE_LIST is a comma separated list of features required.
 
 ### Azure File Service
 

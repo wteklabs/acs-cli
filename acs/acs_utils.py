@@ -217,6 +217,25 @@ class ACSUtils:
 
         out = subprocess.check_output(cmd, shell=True)
 
+    def addFeatures(self, features = None):
+        """Add all fetures specified in the config file or the features
+        parameter (as a comma separated list) to this cluster. """
+        if (features == None):
+            features = self.config.get('Features', "featureList")
+        self.log.info("Adding features to ACS: " + features)
+        
+        featureList = [x.strip() for x in features.split(',')]
+        for feature in featureList:
+            self.log.debug("Adding feature: " + feature)
+            hosts = self.getAgentHostNames()
+            if (feature == "afs"):
+                self.createStorage()
+                self.configureSSH()
+                hosts = self.getAgentHostNames()
+                self.addAzureFileService(hosts)
+            else:
+                self.log.error("Unknown feature: " + feature)
+
     def addAzureFileService(self, hosts):
         # Add an Azure File Service to identified agents
         url = self.getManagementEndpoint()

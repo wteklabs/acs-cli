@@ -38,6 +38,16 @@ def main():
             test.testAll()
         else:
             log.error("Don't know how to test mode " + mode)
+    elif cmd == "addFeature":
+        feature = arguments[1]
+        log.debug("Feature: " + feature)
+        if (feature == "afs"):
+            acs.createStorage()
+            acs.configureSSH()
+            hosts = acs.getAgentHostNames()
+            acs.addAzureFileService(hosts)
+        else:
+            log.error("Unknown feature: " + feature)
     else:
         log.error("Unkown command: " + cmd)
 

@@ -53,6 +53,29 @@ In order to update a new cluster you will run the deployment using a
 modified to match any updated parameters. For example, you can
 increase the agent count.
 
+## addFeature
+
+Adds a feature to the ACS cluster. Possible features are described
+below:
+
+### Azure File Service
+
+Azure File Service is a storage driver that enables multiple Docker
+containers to read and write to a shared folder. To add this feature
+simply run:
+
+```bash
+./acs.py addFeature afs
+```
+
+This will create a Storage Account on Azure, crate a share and mount
+that share on each of the agents in your cluster.
+
+#### Known Issues
+
+If an agent is added to the cluster it will not have the Azure File
+Service feature added by default.
+
 ## delete: Delete a cluster
 
 `delete` will delete the cluster and all associated resource.

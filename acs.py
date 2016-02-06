@@ -27,12 +27,13 @@ def main():
     elif cmd == "deploy":
         acs.createDeployment()
         acs.addFeatures()
+        acs.openMesosTunnel()
     elif cmd == "test":
         mode = acs.getMode()
         if mode == "mesos":
             log.debug("Test Mesos mode")
             test = MesosTest(acs)
-            test.testAll()
+            test.test_all()
         elif mode == "swarm":
             log.debug("Test Swarm mode")
             test = SwarmTest(acs)
@@ -42,7 +43,7 @@ def main():
     elif cmd == "addFeature":
         featureList = arguments[1]
         log.debug("Features: " + featureList)
-        addFeatures(feature)
+        acs.addFeatures(featureList)
     else:
         log.error("Unkown command: " + cmd)
 

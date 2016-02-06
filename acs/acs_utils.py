@@ -217,6 +217,25 @@ class ACSUtils:
 
         out = subprocess.check_output(cmd, shell=True)
 
+    def pull(self, container):
+        """ Pull a single container on each of the agents """
+        url = self.getManagementEndpoint()
+
+        sshMasterConnection = self.getMasterSSHConnection()
+        self.log.debug("SSH Master Connection: " + sshMasterConnection)
+
+        hosts = self.getAgentHostNames()
+        for host in hosts:
+            sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
+            self.log.debug("SSH Agent Connection: " + sshAgentConnection)
+
+            sshCommand = "docker pull " + container
+            self.log.debug("Command to run: " + sshCommand)
+        
+            cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
+            out = subprocess.check_output(cmd, shell=True)
+            self.log.debug("Output:\n" + out)        
+
     def addFeatures(self, features = None):
         """Add all fetures specified in the config file or the features
         parameter (as a comma separated list) to this cluster. """
@@ -228,11 +247,14 @@ class ACSUtils:
         for feature in featureList:
             self.log.debug("Adding feature: " + feature)
             hosts = self.getAgentHostNames()
-            if (feature == "afs"):
+            if feature == "afs":
                 self.createStorage()
                 self.configureSSH()
                 hosts = self.getAgentHostNames()
                 self.addAzureFileService(hosts)
+            elif feature[:5] == "pull ":
+                self.configureSSH()
+                self.pull(feature[5:])
             else:
                 self.log.error("Unknown feature: " + feature)
 

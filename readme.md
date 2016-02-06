@@ -19,9 +19,6 @@ the REST API interfaces for managing applicaitons on an ACS cluster.
 
 Create a config.ini by copying config.ini.tmpl and editing accoringly.
 
-You will need to edit (at least) the value of `dnsPrefix` as this needs
-to be world unique.
-
 # Command Line
 
 ```
@@ -81,6 +78,17 @@ python acs.py addFeature afs
 
 This will create a Storage Account on Azure, crate a share and mount
 that share on each of the agents in your cluster.
+
+### Pull docker images
+
+You can pull a docker container to all nodes in a cluster by running
+the following command. This is not a necessary step, Mesos will pull
+the container image automatically for you, however pulling the
+container ahead of time makes the first starup on each node faster.
+
+```bash
+python acs.py addFeature "pull CONTAINER_NAME"
+```
 
 #### Known Issues
 

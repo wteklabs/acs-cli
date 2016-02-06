@@ -178,7 +178,7 @@ class ACSUtils:
     def openMesosTunnel(self):
         url = self.getManagementEndpoint()
         cmd = 'ssh -L 8080:localhost:8080 -N ' + self.config.get('ACS', 'username') + '@' + url + ' -p 2200'
-        return "If you get errors ensure that you have created an SSH tunnel to your master by running '" + cmd + "'"
+        return "If you get errors eIn order to manage your cluster you need to open an SSH tunnel to it using the command  '" + cmd + "'"
 
     def getAgentsFQDN(self):
         return self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region') + '.cloudapp.azure.com'

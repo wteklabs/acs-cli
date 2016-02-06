@@ -41,6 +41,10 @@ There are a number of accepted commands, as follows
 
 The `deploy` command will create or update a deployment. 
 
+```bash
+python acs.py deploy [-c CONFIG_FILE]
+```
+
 ### Create
 
 In order to create a new cluster ensure that the `dns_prefix` in
@@ -72,7 +76,7 @@ containers to read and write to a shared folder. To add this feature
 simply run:
 
 ```bash
-./acs.py addFeature afs
+python acs.py addFeature afs
 ```
 
 This will create a Storage Account on Azure, crate a share and mount
@@ -87,14 +91,26 @@ Service feature added by default.
 
 `delete` will delete the cluster and all associated resource.
 
+```bash
+python acs.py delete [-c CONFIG_FILE]
+```
+
 ## test: Running Tests in Clusters
+
+NOTE: for this command to work you must have opened an SSH Tunnel to
+your cluster, or you must run the command from a VM inside the
+clusters VNET.
 
 `test` will deploy some test applications and ensure they are started
 correctly on the cluster. The tests will be run against a cluster
 defined in the cluster.ini file (or the file specified with -c).
 
-Each script performs various actions, such as deploying a
-multi-container application and verifying it is working correctly.
+```bash
+python acs.py test [-c CONFIG_FILE]
+```
 
-The log outputs of these test scripts detail the commands being run
-and can therefore be useful as a learning excercise.
+This command performs various actions, such as deploying a
+multi-container application and verifying it is working correctly. The
+log outputs of these test scripts detail the commands being run and
+can therefore be useful as a learning excercise, as well as testing
+whether the cluster is correctly configured.

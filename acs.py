@@ -44,6 +44,8 @@ def main():
         featureList = arguments[1]
         log.debug("Features: " + featureList)
         acs.addFeatures(featureList)
+    elif cmd == "docker":
+        acs.agentDockerCommand(arguments[1])
     else:
         log.error("Unkown command: " + cmd)
 

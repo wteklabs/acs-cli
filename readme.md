@@ -54,6 +54,21 @@ In order to update a new cluster you will run the deployment using a
 modified to match any updated parameters. For example, you can
 increase the agent count.
 
+## Execute Docker commands on the agents
+
+You can execute arbitrary docker commands on each agent using the
+`doocker` command. This is a pass through of the standard Docker
+CLI.
+
+It can be used, for example, to pull a docker container to all nodes
+in a cluster. This is not a necessary step, Mesos will pull the
+container image automatically for you, however pulling the container
+ahead of time makes the first starup on each node faster.
+
+```bash
+python acs.py docker "pull CONTAINER_NAME"
+```
+
 ## addFeature
 
 Adds a feature to the ACS cluster. Possible features are described
@@ -78,17 +93,6 @@ python acs.py addFeature afs
 
 This will create a Storage Account on Azure, crate a share and mount
 that share on each of the agents in your cluster.
-
-### Pull docker images
-
-You can pull a docker container to all nodes in a cluster by running
-the following command. This is not a necessary step, Mesos will pull
-the container image automatically for you, however pulling the
-container ahead of time makes the first starup on each node faster.
-
-```bash
-python acs.py addFeature "pull CONTAINER_NAME"
-```
 
 #### Known Issues
 

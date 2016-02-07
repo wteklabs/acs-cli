@@ -217,8 +217,8 @@ class ACSUtils:
 
         out = subprocess.check_output(cmd, shell=True)
 
-    def pull(self, container):
-        """ Pull a single container on each of the agents """
+    def agentDockerCommand(self, cmd):
+        """ Run a Docker command on each of the agents """
         url = self.getManagementEndpoint()
 
         sshMasterConnection = self.getMasterSSHConnection()
@@ -229,7 +229,7 @@ class ACSUtils:
             sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
             self.log.debug("SSH Agent Connection: " + sshAgentConnection)
 
-            sshCommand = "docker pull " + container
+            sshCommand = "docker " + cmd
             self.log.debug("Command to run: " + sshCommand)
         
             cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
@@ -253,8 +253,8 @@ class ACSUtils:
                 hosts = self.getAgentHostNames()
                 self.addAzureFileService(hosts)
             elif feature[:5] == "pull ":
-                self.configureSSH()
-                self.pull(feature[5:])
+                print("'addFeature pull' is deprecated. Please use 'docker pull' instead")
+                agentDockerCommand(feature)
             else:
                 self.log.error("Unknown feature: " + feature)
 

@@ -10,8 +10,16 @@ import sys
 def main():
     """ACS command line tool"""
 
-    usage = "usage: %prog [options] command"
-    p = optparse.OptionParser(usage=usage)
+    usage = "usage: %prog [options] command\n\n"
+    usage = usage + "Commands:\n\n"
+    usage = usage + "deploy: deploy a cluster\n\n"
+    usage = usage + "delete: delete a cluster\n\n"
+    usage = usage + "test [mesos|swarm]: test a mesos or swarm cluster\n\n"
+    usage = usage + "addFeature FEATURES: add one or mroe features to a cluster\n"
+    usage = usage + "\tFEATURES is a comma separated list of features to add.\n\n"
+    usage = usage + "docker 'DOCKER COMMAND': run a Docker CLI command on all agents.\n\n"
+
+    p = optparse.OptionParser(usage=usage, version="%prog 0.1")
     p.add_option('--config_file', '-c', default="cluster.ini",
                  help="define the configuration file to use. Default is 'cluster.ini'")
     options, arguments = p.parse_args()

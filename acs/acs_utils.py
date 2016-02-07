@@ -254,7 +254,7 @@ class ACSUtils:
                 self.addAzureFileService(hosts)
             elif feature[:5] == "pull ":
                 print("'addFeature pull' is deprecated. Please use 'docker pull' instead")
-                agentDockerCommand(feature)
+                self.agentDockerCommand(feature)
             else:
                 self.log.error("Unknown feature: " + feature)
 

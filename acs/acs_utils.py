@@ -217,7 +217,7 @@ class ACSUtils:
 
         out = subprocess.check_output(cmd, shell=True)
 
-    def agentDockerCommand(self, cmd):
+    def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """
         url = self.getManagementEndpoint()
 
@@ -229,7 +229,7 @@ class ACSUtils:
             sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
             self.log.debug("SSH Agent Connection: " + sshAgentConnection)
 
-            sshCommand = "docker " + cmd
+            sshCommand = "docker " + docker_cmd
             self.log.debug("Command to run: " + sshCommand)
         
             cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'

@@ -1,3 +1,9 @@
+[Subscription]
+tenant_id: <your_tenant_id>
+app_id: <your_application_id>
+app_secret: <your_app_secret>
+subscription_id: <your_sub_id>
+
 [Group]
 region: westus
 
@@ -26,8 +32,5 @@ shareName: files
 mount: ~/sharedfiles
 
 [Template]
-; FOR SWARM
-templateUrl: https://raw.githubusercontent.com/rgardler/azure-quickstart-templates/acs/acs-swarm-full-template/azuredeploy.json
+templateUrl: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-acs-mesos/azuredeploy.json
 
-; FOR MESOS
-; templateUrl: https://raw.githubusercontent.com/rgardler/azure-quickstart-templates/acs/acs-mesos-full-template/azuredeploy.windowsjumpbox.json 

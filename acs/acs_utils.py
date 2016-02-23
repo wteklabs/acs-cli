@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from AgentPool import *
+
 import ConfigParser
 import json
 import logging
@@ -183,11 +185,10 @@ class ACSUtils:
 
     def getAgentHostNames(self):
         # return a list of Agent Host Names in this cluster
-    
-        cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + self.config.get('Group', 'name') +  " --json"
-        self.log.debug("Execute command: " + cmd)
+        
+        agentPool = AgentPool()
+        agents = agentPool.getAgents()
 
-        agents = json.loads(subprocess.check_output(cmd, shell=True))
         names = []
         for agent in agents:
             name = agent['name']

@@ -284,20 +284,19 @@ class ACSUtils:
 
             #  sshCommand = "md5sum ./omsagent-1.0.0-47.universal.x64.sh"
 
-            workspace_id = self.config.get('Features', "omsWorkspaceId")
-            workspace_key = self.config.get('Features', "omsWorkspacePrimaryKey")
+            workspace_id = self.config.get('OMS', "workspace_id")
+            workspace_key = self.config.get('OMS', "workspace_primary_key")
 
-            sshCommand = "./omsagent-1.0.0-47.universal.x64.sh --install -w workspace_id -s workspace_key"
+            sshCommand = "sudo ./omsagent-1.0.0-47.universal.x64.sh --install -w workspace_id -s workspace_key"
             self.executeOnAgent(sshCommand, host)
 
-            sshCommand = "service omsagent restart"
+            sshCommand = "sudo service omsagent restart"
             self.executeOnAgent(sshCommand, host)
 
-            # FIXME: DOCKER_OPTS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
             sshCommand = "echo 'DOCKER_OPTS=\"$DOCKER_OPTS --log-driver=fluentd --log-opt fluentd-address=localhost:25225\"' | sudo tee -a /etc/default/docker"
             self.executeOnAgent(sshCommand, host)
 
-            sshCommand = "service docker restart"
+            sshCommand = "sudo service docker restart"
             self.executeOnAgent(sshCommand, host)
 
     def addAzureFileService(self, hosts):

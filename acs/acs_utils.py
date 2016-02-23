@@ -191,14 +191,14 @@ class ACSUtils:
 
         names = []
         for agent in agents:
-            name = agent['name']
+            name = agent['properties']['osProfile']['computerName']
             if "-agent-" in name:
                 names.append(name)
         return names
 
     def getMasterSSHConnection(self):
         url = self.getManagementEndpoint()
-        return "ssh -o StrictHostKeyChecking=no -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + url + ' -p 2200'
+        return "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + url + ' -p 2200'
 
     def configureSSH(self):
         """Configure SSH on the master so that it can connect to the agents"""
@@ -223,7 +223,7 @@ class ACSUtils:
         sshMasterConnection = self.getMasterSSHConnection()
         self.log.debug("SSH Master Connection: " + sshMasterConnection)
 
-        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
+        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
         self.log.debug("SSH Connection: " + sshAgentConnection)
 
         self.log.debug("Command to run: " + cmd)
@@ -234,7 +234,9 @@ class ACSUtils:
 
     def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """
-        url = self.getManagementEndpoint()
+        self.configureSSH()
+        sshMasterConnection = self.getMasterSSHConnection()
+        self.log.debug("SSH Master Connection: " + sshMasterConnection)
 
         hosts = self.getAgentHostNames()
         for host in hosts:

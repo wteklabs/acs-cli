@@ -51,7 +51,7 @@ class ACSUtils:
     def __init__(self, configfile = "cluster.ini"):
         self.log = ACSLog()
         self.log.debug("Reading config from " + configfile)
-        defaults = {"orchestratorType": "Mesos", "jumpboxOS": "Linux"}
+        defaults = {"orchestratorType": "Mesos"}
         config = ConfigParser.ConfigParser(defaults)
         config.read(configfile)
         config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
@@ -215,32 +215,40 @@ class ACSUtils:
 
         out = subprocess.check_output(cmd, shell=True)
 
+    def executeOnAgent(self, cmd, agent_name):
+        """
+        Execute command on an agent identified by agent_name
+        """
+        sshMasterConnection = self.getMasterSSHConnection()
+        self.log.debug("SSH Master Connection: " + sshMasterConnection)
+
+        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
+        self.log.debug("SSH Connection: " + sshAgentConnection)
+
+        self.log.debug("Command to run: " + cmd)
+        
+        sshCmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + cmd + '\'"'
+        out = subprocess.check_output(sshCmd, shell=True)
+        self.log.debug("Output:\n" + out)
+
     def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """
         url = self.getManagementEndpoint()
 
-        sshMasterConnection = self.getMasterSSHConnection()
-        self.log.debug("SSH Master Connection: " + sshMasterConnection)
-
         hosts = self.getAgentHostNames()
         for host in hosts:
-            sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
-            self.log.debug("SSH Agent Connection: " + sshAgentConnection)
-
-            sshCommand = "docker " + docker_cmd
-            self.log.debug("Command to run: " + sshCommand)
-        
-            cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
-            out = subprocess.check_output(cmd, shell=True)
-            self.log.debug("Output:\n" + out)        
+            self.executeOnAgent("docker " + docker_cmd, host)
 
     def addFeatures(self, features = None):
-        """Add all fetures specified in the config file or the features
+        """Add all features specified in the config file or the features
         parameter (as a comma separated list) to this cluster. """
         if (features == None):
             features = self.config.get('Features', "featureList")
-        self.log.info("Adding features to ACS: " + features)
-        
+        if features == "":
+            self.log.info("No features to add")
+        else:
+            self.log.info("Adding features to ACS: " + features)
+
         featureList = [x.strip() for x in features.split(',')]
         for feature in featureList:
             self.log.debug("Adding feature: " + feature)
@@ -250,11 +258,44 @@ class ACSUtils:
                 self.configureSSH()
                 hosts = self.getAgentHostNames()
                 self.addAzureFileService(hosts)
+            elif feature == "oms":
+                self.addOMS()
             elif feature[:5] == "pull ":
                 print("'addFeature pull' is deprecated. Please use 'docker pull' instead")
                 self.agentDockerCommand(feature)
             else:
                 self.log.error("Unknown feature: " + feature)
+
+    def addOMS(self):
+        """
+        Add OMS to all Agents using the details defined in the config
+        file (OMS_WORKSPACE_ID and OMS_WORKSPACE_PRIMARY_KEY).
+        """
+        hosts = self.getAgentHostNames()
+        for host in hosts:
+            sshCommand = "wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh"
+            self.executeOnAgent(sshCommand, host)
+                        
+            sshCommand = "chmod +x ./omsagent-1.0.0-47.universal.x64.sh"
+            self.executeOnAgent(sshCommand, host)
+
+            #  sshCommand = "md5sum ./omsagent-1.0.0-47.universal.x64.sh"
+
+            workspace_id = self.config.get('Features', "omsWorkspaceId")
+            workspace_key = self.config.get('Features', "omsWorkspacePrimaryKey")
+
+            sshCommand = "./omsagent-1.0.0-47.universal.x64.sh --install -w workspace_id -s workspace_key"
+            self.executeOnAgent(sshCommand, host)
+
+            sshCommand = "service omsagent restart"
+            self.executeOnAgent(sshCommand, host)
+
+            # FIXME: DOCKER_OPTS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
+            sshCommand = "echo 'DOCKER_OPTS=\"$DOCKER_OPTS --log-driver=fluentd --log-opt fluentd-address=localhost:25225\"' | sudo tee -a /etc/default/docker"
+            self.executeOnAgent(sshCommand, host)
+
+            sshCommand = "service docker restart"
+            self.executeOnAgent(sshCommand, host)
 
     def addAzureFileService(self, hosts):
         # Add an Azure File Service to identified agents
@@ -265,23 +306,11 @@ class ACSUtils:
         self.log.debug("SSH Master Connection: " + sshMasterConnection)
 
         for host in hosts:
-            sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + host
-            self.log.debug("SSH Agent Connection: " + sshAgentConnection)
-
-            mount = self.config.get("Storage", "mount")
             sshCommand = "mkdir -p " + mount
-            self.log.debug("Command to run: " + sshCommand)
-        
-            cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
-            out = subprocess.check_output(cmd, shell=True)
-            self.log.debug("Output:\n" + out)
+            self.executeOnAgent(sshCommand, host)
 
             urn = self.getShareEndpoint().replace("https:", "") + self.config.get("Storage", "shareName")
             username = self.config.get("Storage", "name")
             password = self.getStorageAccountKey()
             sshCommand = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
-            self.log.debug("Command to run: " + sshCommand)
-            cmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + sshCommand + '\'"'
-            out = subprocess.check_output(cmd, shell=True)
-            self.log.debug("Output:\n" + out)
-        
+            self.executeOnAgent(sshCommand, host)

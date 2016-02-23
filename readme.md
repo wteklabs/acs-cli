@@ -19,6 +19,10 @@ the REST API interfaces for managing applicaitons on an ACS cluster.
 
 Create a config.ini by copying config.ini.tmpl and editing accoringly.
 
+Create a [service principle for the
+application](http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure)
+and add the details to your config.ini.
+
 # Command Line
 
 ```

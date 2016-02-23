@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from AgentPool import *
+
 import ConfigParser
 import json
 import logging
@@ -51,7 +53,7 @@ class ACSUtils:
     def __init__(self, configfile = "cluster.ini"):
         self.log = ACSLog()
         self.log.debug("Reading config from " + configfile)
-        defaults = {"orchestratorType": "Mesos", "jumpboxOS": "Linux"}
+        defaults = {"orchestratorType": "Mesos"}
         config = ConfigParser.ConfigParser(defaults)
         config.read(configfile)
         config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
@@ -183,11 +185,10 @@ class ACSUtils:
 
     def getAgentHostNames(self):
         # return a list of Agent Host Names in this cluster
-    
-        cmd = "azure resource list -r Microsoft.Compute/virtualMachines " + self.config.get('Group', 'name') +  " --json"
-        self.log.debug("Execute command: " + cmd)
+        
+        agentPool = AgentPool()
+        agents = agentPool.getAgents()
 
-        agents = json.loads(subprocess.check_output(cmd, shell=True))
         names = []
         for agent in agents:
             name = agent['name']

@@ -69,8 +69,6 @@ class ACSUtils:
         params["agentVMSize"] = self.value(self.config.get('ACS', 'agentVMSize'))
         params["masterCount"] = self.value(self.config.getint('ACS', 'masterCount'))
         params["sshRSAPublicKey"] = self.value(self.config.get('ACS', 'sshPublicKey'))
-        if self.config.get('ACS', 'orchestratorType') == 'mesos':
-            params["adminPassword"] = self.value(self.config.get('ACS', 'password'))
         return params
 
     def getMode(self):

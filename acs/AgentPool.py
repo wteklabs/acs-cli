@@ -2,6 +2,7 @@ from ACSLogs import *
 
 import azurerm
 import ConfigParser
+import json
 
 class AgentPool:
     """
@@ -28,11 +29,13 @@ class AgentPool:
         app_secret = self.config.get('Subscription', 'app_secret')
         subscription_id = self.config.get('Subscription', 'subscription_id')
         rgname = self.config.get('Group', 'name')
-        vmssname = 'mesos-agent-52E91123-vmss' # FIXME: need to look up vmssname
-
-        self.log.debug("Looking up VMs in VMSS called " + vmssname)
-
         access_token = azurerm.get_access_token(tenant_id, app_id, app_secret)
+
+        # TODO: This assumes only a single VMSS in the resource group, this will not always be the
+        # case and will never be the case if when there are multiple Agent Pools
+        vmsslist = azurerm.list_vm_scale_sets(access_token, subscription_id, rgname)['value']
+        vmssname = vmsslist[0]['name']
+        self.log.debug("Looking up VMs in VMSS called (currently only supports a single VMSS)" + json.dumps(vmssname))
 
         vms = azurerm.list_vmss_vms(access_token, subscription_id, rgname, vmssname)
         return vms['value']

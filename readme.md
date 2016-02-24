@@ -98,6 +98,19 @@ python acs.py addFeature afs
 This will create a Storage Account on Azure, crate a share and mount
 that share on each of the agents in your cluster.
 
+### Operations Management Suite (oms)
+
+Add the
+[OMS](https://blogs.technet.microsoft.com/momteam/2015/11/03/announcing-linux-docker-container-management-with-oms/)
+monitoring solution to the cluster. You will first need to register
+for the OMS service and then complete the OMS section of the
+cluster.ini file. Finally, run the following command.
+
+```bash
+python acs.py addFeature afs
+```
+
+
 #### Known Issues
 
 If an agent is added to the cluster it will not have the Azure File

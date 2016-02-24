@@ -29,7 +29,6 @@ class AgentPool:
 
         access_token = azurerm.get_access_token(tenant_id, app_id, app_secret)
 
-        print('Virtual machines...')
         vms = azurerm.list_vmss_vms(access_token, subscription_id, rgname, vmssname)
         return vms['value']
 

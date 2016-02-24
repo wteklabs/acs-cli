@@ -226,9 +226,11 @@ class ACSUtils:
         sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
         self.log.debug("SSH Connection: " + sshAgentConnection)
 
-        self.log.debug("Command to run: " + cmd)
-        
+        self.log.debug("Command to run on agent: " + cmd)
+
+        cmd = cmd.replace("\"", "\\\"")
         sshCmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + cmd + '\'"'
+        self.log.info("Command to run on client: " + sshCmd)
         out = subprocess.check_output(sshCmd, shell=True)
         self.log.debug("Output:\n" + out)
 
@@ -274,29 +276,33 @@ class ACSUtils:
         Add OMS to all Agents using the details defined in the config
         file (OMS_WORKSPACE_ID and OMS_WORKSPACE_PRIMARY_KEY).
         """
+        f = open('installOMS.sh', 'w')
+        f.write("wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh\n")
+        f.write("chmod +x ./omsagent-1.0.0-47.universal.x64.sh\n")
+        workspace_id = self.config.get('OMS', "workspace_id")
+        workspace_key = self.config.get('OMS', "workspace_primary_key")
+        f.write("sudo ./omsagent-1.0.0-47.universal.x64.sh --install -w " + workspace_id + " -s " + workspace_key + "\n")
+        f.write("sudo service omsagent restart\n")
+        f.write("sudo sed -i -E \"s/(DOCKER_OPTS=)(.*)/\1\\\"\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\"/g\" /etc/default/docker\n")
+        f.write("sudo cat /etc/default/docker\n")
+        f.write("sudo service docker restart\n")
+        f.close()
+
+        url = self.getManagementEndpoint()
+        conn = "scp -P 2200"
+        localfile = "installOMS.sh"
+        remotefile = self.config.get('ACS', 'username') + '@' + url + ":~/installOMS.sh"
+        cmd = conn + " " + localfile + " " + remotefile
+        self.log.debug("SCP command: " + cmd)
+        out = subprocess.check_output(cmd, shell=True)
+
+        sshCommand = "chmod 755 ~/installOMS.sh"
+        # FIXME: this should be executed on the master not the agent
+        self.executeOnAgent(sshCommand, host)
+
         hosts = self.getAgentHostNames()
         for host in hosts:
-            sshCommand = "wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh"
-            self.executeOnAgent(sshCommand, host)
-                        
-            sshCommand = "chmod +x ./omsagent-1.0.0-47.universal.x64.sh"
-            self.executeOnAgent(sshCommand, host)
-
-            #  sshCommand = "md5sum ./omsagent-1.0.0-47.universal.x64.sh"
-
-            workspace_id = self.config.get('OMS', "workspace_id")
-            workspace_key = self.config.get('OMS', "workspace_primary_key")
-
-            sshCommand = "sudo ./omsagent-1.0.0-47.universal.x64.sh --install -w workspace_id -s workspace_key"
-            self.executeOnAgent(sshCommand, host)
-
-            sshCommand = "sudo service omsagent restart"
-            self.executeOnAgent(sshCommand, host)
-
-            sshCommand = "echo 'DOCKER_OPTS=\"$DOCKER_OPTS --log-driver=fluentd --log-opt fluentd-address=localhost:25225\"' | sudo tee -a /etc/default/docker"
-            self.executeOnAgent(sshCommand, host)
-
-            sshCommand = "sudo service docker restart"
+            sshCommand = "sudo ./installOMS.sh"
             self.executeOnAgent(sshCommand, host)
 
     def addAzureFileService(self, hosts):

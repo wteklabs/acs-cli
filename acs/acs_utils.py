@@ -207,7 +207,7 @@ class ACSUtils:
         subprocess.check_output(cmd, shell=True)
 
         url = self.getManagementEndpoint()
-        conn = "scp -P 2200"
+        conn = "scp -P 2200 -o StrictHostKeyChecking=no"
         localfile = "~/.ssh/id_rsa"
         remotefile = self.config.get('ACS', 'username') + '@' + url + ":~/.ssh/id_rsa"
     
@@ -216,29 +216,36 @@ class ACSUtils:
 
         out = subprocess.check_output(cmd, shell=True)
 
-    def executeOnAgent(self, cmd, agent_name):
+    def executeOnMaster(self, cmd):
         """
-        Execute command on an agent identified by agent_name
+        Execute command on the current master leader
         """
         sshMasterConnection = self.getMasterSSHConnection()
         self.log.debug("SSH Master Connection: " + sshMasterConnection)
 
-        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
-        self.log.debug("SSH Connection: " + sshAgentConnection)
-
-        self.log.debug("Command to run on agent: " + cmd)
-
-        cmd = cmd.replace("\"", "\\\"")
-        sshCmd = sshMasterConnection + ' "' + sshAgentConnection + ' \'' + cmd + '\'"'
+        sshCmd = sshMasterConnection + ' "' + cmd + '"'
         self.log.info("Command to run on client: " + sshCmd)
         out = subprocess.check_output(sshCmd, shell=True)
         self.log.debug("Output:\n" + out)
 
+
+    def executeOnAgent(self, cmd, agent_name):
+        """
+        Execute command on an agent identified by agent_name
+        """
+        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
+        self.log.debug("SSH Connection to agent: " + sshAgentConnection)
+
+        self.log.debug("Command to run on agent: " + cmd)
+
+        cmd = cmd.replace("\"", "\\\"")
+        sshCmd = sshAgentConnection + ' \'' + cmd + '\''
+        self.log.info("Command to run on master: " + sshCmd)
+        self.executeOnMaster(sshCmd)
+
     def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """
         self.configureSSH()
-        sshMasterConnection = self.getMasterSSHConnection()
-        self.log.debug("SSH Master Connection: " + sshMasterConnection)
 
         hosts = self.getAgentHostNames()
         for host in hosts:
@@ -283,25 +290,31 @@ class ACSUtils:
         workspace_key = self.config.get('OMS', "workspace_primary_key")
         f.write("sudo ./omsagent-1.0.0-47.universal.x64.sh --install -w " + workspace_id + " -s " + workspace_key + "\n")
         f.write("sudo service omsagent restart\n")
-        f.write("sudo sed -i -E \"s/(DOCKER_OPTS=)(.*)/\1\\\"\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\"/g\" /etc/default/docker\n")
+        f.write("sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n")
         f.write("sudo cat /etc/default/docker\n")
         f.write("sudo service docker restart\n")
         f.close()
 
         url = self.getManagementEndpoint()
-        conn = "scp -P 2200"
+        conn = "scp -P 2200 -o StrictHostKeyChecking=no"
         localfile = "installOMS.sh"
         remotefile = self.config.get('ACS', 'username') + '@' + url + ":~/installOMS.sh"
         cmd = conn + " " + localfile + " " + remotefile
-        self.log.debug("SCP command: " + cmd)
+        self.log.debug("SCP command to copy install script to master: " + cmd)
         out = subprocess.check_output(cmd, shell=True)
-
-        sshCommand = "chmod 755 ~/installOMS.sh"
-        # FIXME: this should be executed on the master not the agent
-        self.executeOnAgent(sshCommand, host)
 
         hosts = self.getAgentHostNames()
         for host in hosts:
+            conn = "scp -o StrictHostKeyChecking=no"
+            localfile = "installOMS.sh"
+            remotefile = self.config.get('ACS', 'username') + '@' + host + ":~/installOMS.sh"
+            cmd = conn + " " + localfile + " " + remotefile
+            self.log.debug("SCP command to copy install script to agent: " + cmd)
+            self.executeOnMaster(cmd)
+
+            sshCommand = "chmod 755 ~/installOMS.sh"
+            self.executeOnAgent(sshCommand, host)
+
             sshCommand = "sudo ./installOMS.sh"
             self.executeOnAgent(sshCommand, host)
 

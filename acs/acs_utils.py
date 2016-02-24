@@ -146,7 +146,7 @@ class ACSUtils:
     def getAgentHostNames(self):
         # return a list of Agent Host Names in this cluster
         
-        agentPool = AgentPool()
+        agentPool = AgentPool(self.config)
         agents = agentPool.getAgents()
 
         names = []
@@ -162,6 +162,8 @@ class ACSUtils:
 
     def configureSSH(self):
         """Configure SSH on the master so that it can connect to the agents"""
+        self.log.warning("Currently configure SSH on every call, this is wasteful, should maintain state of machines and only configure once")
+
         cmd = self.getMasterSSHConnection() + " " + "echo Hello Master"
         self.log.debug("Making an SSH call to verify all is OK: " + cmd)
         subprocess.check_output(cmd, shell=True)
@@ -243,6 +245,8 @@ OA        Execute command on the current master leader
         Add OMS to all Agents using the details defined in the config
         file (OMS_WORKSPACE_ID and OMS_WORKSPACE_PRIMARY_KEY).
         """
+        self.configureSSH()
+
         f = open('installOMS.sh', 'w')
         f.write("wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh\n")
         f.write("chmod +x ./omsagent-1.0.0-47.universal.x64.sh\n")

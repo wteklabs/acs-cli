@@ -12,12 +12,9 @@ class AgentPool:
     (VMSS).
 
     """
-    def __init__(self, configfile = "cluster.ini"):
+    def __init__(self, config):
         self.log = ACSLog()
         defaults = {"orchestratorType": "Mesos"}
-        config = ConfigParser.ConfigParser(defaults)
-        config.read(configfile)
-        config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
         self.config = config
 
     def getAgents(self):
@@ -34,8 +31,9 @@ class AgentPool:
         # TODO: This assumes only a single VMSS in the resource group, this will not always be the
         # case and will never be the case if when there are multiple Agent Pools
         vmsslist = azurerm.list_vm_scale_sets(access_token, subscription_id, rgname)['value']
+        # self.log.debug("List of VMSS: " + json.dumps(vmsslist, indent=True))
         vmssname = vmsslist[0]['name']
-        self.log.debug("Looking up VMs in VMSS called (currently only supports a single VMSS)" + json.dumps(vmssname))
+        self.log.debug("Looking up VMs in VMSS called " + vmssname + " (if this is wrong maybe it is because AgentPool.py currently only supports a single VMSS)")
 
         vms = azurerm.list_vmss_vms(access_token, subscription_id, rgname, vmssname)
         return vms['value']

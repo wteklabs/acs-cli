@@ -1,5 +1,6 @@
 *.ini
 logs/
+installOMS.sh
 
 # Emacs
 *~

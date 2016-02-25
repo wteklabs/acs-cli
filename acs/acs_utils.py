@@ -27,6 +27,7 @@ class ACSUtils:
     def getACSParams(self):
         params = {}
         params["dnsNamePrefix"] = self.value(self.config.get('ACS', 'dnsPrefix'))
+        params["orchestratorType"] = self.value(self.config.get('ACS', 'orchestratorType'))
         params["agentCount"] = self.value(self.config.getint('ACS', 'agentCount'))
         params["agentVMSize"] = self.value(self.config.get('ACS', 'agentVMSize'))
         params["masterCount"] = self.value(self.config.getint('ACS', 'masterCount'))

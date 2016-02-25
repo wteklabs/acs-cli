@@ -39,6 +39,7 @@ class ACSUtils:
         Return a dictionary of usefel information about the ACS configuration.
         """
         out = {}
+        
         out["orchestratorType"] = self.getMode()
         if self.getMode() == "SwarmPreview":
             sshTunnel = "ssh -l 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
@@ -47,6 +48,10 @@ class ACSUtils:
         else:
             sshTunnel = "(Need to add support to CLI to generate tunnel info for this orchestrator type)"
         out["sshTunnel"] = sshTunnel
+        
+        public = self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
+        out["publicFQDN"] = public
+
         return out
 
     def getMode(self):

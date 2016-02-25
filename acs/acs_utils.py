@@ -27,11 +27,32 @@ class ACSUtils:
     def getACSParams(self):
         params = {}
         params["dnsNamePrefix"] = self.value(self.config.get('ACS', 'dnsPrefix'))
+        params["orchestratorType"] = self.value(self.config.get('ACS', 'orchestratorType'))
         params["agentCount"] = self.value(self.config.getint('ACS', 'agentCount'))
         params["agentVMSize"] = self.value(self.config.get('ACS', 'agentVMSize'))
         params["masterCount"] = self.value(self.config.getint('ACS', 'masterCount'))
         params["sshRSAPublicKey"] = self.value(self.config.get('ACS', 'sshPublicKey'))
         return params
+
+    def getEnvironmentSettings(self):
+        """
+        Return a dictionary of usefel information about the ACS configuration.
+        """
+        out = {}
+        
+        out["orchestratorType"] = self.getMode()
+        if self.getMode() == "SwarmPreview":
+            sshTunnel = "ssh -l 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
+        elif self.getMode() == "Mesos":
+            sshTunnel = "ssh -l 80:localhost:80 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
+        else:
+            sshTunnel = "(Need to add support to CLI to generate tunnel info for this orchestrator type)"
+        out["sshTunnel"] = sshTunnel
+        
+        public = self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
+        out["publicFQDN"] = public
+
+        return out
 
     def getMode(self):
         """Get the orchestrator mode for this instance of ACS"""

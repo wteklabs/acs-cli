@@ -107,7 +107,7 @@ for the OMS service and then complete the OMS section of the
 cluster.ini file. Finally, run the following command.
 
 ```bash
-python acs.py addFeature afs
+python acs.py addFeature oms
 ```
 
 

@@ -106,6 +106,13 @@ monitoring solution to the cluster. You will first need to register
 for the OMS service and then complete the OMS section of the
 cluster.ini file. Finally, run the following command.
 
+Visit http://mms.microsoft.com and sign up for a free OMS
+account. Then click "Settings" and then "Connected Sources". You will
+need to copy your Workspace ID and your Workspace Primary Key into
+your config file. Finally, run the following command to install OMS on
+each of your agents (please note that this command restarts the Docker
+Engine and thus any containers on it will be stopped).
+
 ```bash
 python acs.py addFeature oms
 ```

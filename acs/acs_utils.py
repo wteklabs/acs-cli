@@ -126,6 +126,13 @@ class ACSUtils:
 
         return endpoint
 
+    def scale(self, capacity):
+        """
+        Scale the number of Agents availalbe to the supplied number
+        """
+        agentPool = AgentPool(self.config)
+        agentPool.scale(capacity)
+
     def getManagementEndpoint(self):
         return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 

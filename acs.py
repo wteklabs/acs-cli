@@ -36,6 +36,8 @@ def main():
         acs.createDeployment()
         acs.addFeatures()
         print(acs.getEnvironmentSettings)
+    elif cmd == "scale":
+        acs.scale(arguments[1])
     elif cmd == "test":
         mode = acs.getMode()
         if mode == "mesos":

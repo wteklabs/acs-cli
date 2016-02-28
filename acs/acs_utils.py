@@ -269,14 +269,12 @@ OA        Execute command on the current master leader
         self.configureSSH()
 
         f = open('installOMS.sh', 'w')
-        f.write("wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh\n")
-        f.write("chmod +x ./omsagent-1.0.0-47.universal.x64.sh\n")
+        f.write("wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh\n")
+        f.write("chmod +x ./omsagent-1.1.0-28.universal.x64.sh\n")
         workspace_id = self.config.get('OMS', "workspace_id")
         workspace_key = self.config.get('OMS', "workspace_primary_key")
-        f.write("sudo ./omsagent-1.0.0-47.universal.x64.sh --install -w " + workspace_id + " -s " + workspace_key + "\n")
-        f.write("sudo service omsagent restart\n")
+        f.write("sudo ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w " + workspace_id + " -s " + workspace_key + "\n")
         f.write("sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n")
-        f.write("sudo cat /etc/default/docker\n")
         f.write("sudo service docker restart\n")
         f.close()
 
@@ -290,6 +288,7 @@ OA        Execute command on the current master leader
 
         hosts = self.getAgentHostNames()
         for host in hosts:
+            self.log.debug("Installing OMS on: " + host)
             conn = "scp -o StrictHostKeyChecking=no"
             localfile = "installOMS.sh"
             remotefile = self.config.get('ACS', 'username') + '@' + host + ":~/installOMS.sh"

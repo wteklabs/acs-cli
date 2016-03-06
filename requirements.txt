@@ -1,1 +1,3 @@
 azurerm
+paramiko
+scp

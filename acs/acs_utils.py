@@ -2,6 +2,7 @@
 
 from AgentPool import *
 from ACSLogs import *
+import afs
 
 import ConfigParser
 import json
@@ -81,6 +82,10 @@ class ACSUtils:
         os.system(command)
 
     def createStorage(self):
+        """
+        Create a storage account for this cluster as defined in the config file.
+        FIXME: this and related storage methods should move to their own module or class
+        """
         self.log.debug("Creating Storage Account")
         self.createResourceGroup()
     
@@ -107,15 +112,24 @@ class ACSUtils:
             self.log.warning("Failed to create share, assuming it is because it already exists")
 
     def getStorageAccountKey(self):
+        """
+        Get the storage account key for the storage account defined in the ini file
+        FIXME: this and related storage methods should move to their own module or class
+        """
         command = "azure storage account keys list"
         command = command + " --resource-group " + self.config.get('Group', 'name')
         command = command + " " + self.config.get('Storage', 'name')
         command = command + " --json"
+        self.log.debug("Command to get storage keys: " + command)
 
         keys = json.loads(subprocess.check_output(command, shell=True))
-        return keys['storageAccountKeys']['key1']
+        return keys['key1']
 
     def getShareEndpoint(self):
+        """
+        Get the a share endpoint for the storage account defined in the ini file
+        FIXME: this and related storage methods should move to their own module or class
+        """
         command = "azure storage account show"
         command = command + " --resource-group " + self.config.get('Group', 'name')
         command = command + " " + self.config.get('Storage', 'name')
@@ -258,8 +272,7 @@ OA        Execute command on the current master leader
             if feature == "afs":
                 self.createStorage()
                 self.configureSSH()
-                hosts = self.getAgentHostNames()
-                self.addAzureFileService(hosts)
+                afs.addTo(self)
             elif feature == "oms":
                 self.addOMS()
             elif feature[:5] == "pull ":
@@ -309,20 +322,3 @@ OA        Execute command on the current master leader
             sshCommand = "sudo ./installOMS.sh"
             self.executeOnAgent(sshCommand, host)
 
-    def addAzureFileService(self, hosts):
-        # Add an Azure File Service to identified agents
-        url = self.getManagementEndpoint()
-        package = "cifs-utils"
-
-        sshMasterConnection = self.getMasterSSHConnection()
-        self.log.debug("SSH Master Connection: " + sshMasterConnection)
-
-        for host in hosts:
-            sshCommand = "mkdir -p " + mount
-            self.executeOnAgent(sshCommand, host)
-
-            urn = self.getShareEndpoint().replace("https:", "") + self.config.get("Storage", "shareName")
-            username = self.config.get("Storage", "name")
-            password = self.getStorageAccountKey()
-            sshCommand = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
-            self.executeOnAgent(sshCommand, host)

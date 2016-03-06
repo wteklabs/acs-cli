@@ -42,48 +42,30 @@ for each feature.
 ### Writing the Code to Install Your Feature
 
 In most cases features are likely to need to run commands on the
-agents. to do this you need to build the command and then pass it to
+agents. To do this you need to build the command and then pass it to
 the management nodes for execution on the agents (the agents are not
-publicly accessible). We have provided a set of helper methods in
-`acs_utils.py` to enable this. These are discussed in the next
-section, but first let's look at some code tho install feature 'foo'.
+publicly accessible). Here we will look at how to add a feature called
+Foo.
 
 Feature Foo is just an example, it doesn't actually do anything
-useful, but it serves as a good example. We will create a script and
-run it on each of the agents. For this document the script will simply
-touch a file on the agents, for your feature the script is where you
-do the work to install and configure the necessary software. 
+useful, but it serves as a good example. The feature simply touches a
+couple of files on the agents. This demonstrates how to run a command
+on agents. All you need to do to add your feature is run each command
+required.
 
 The example below is not exhaustive, if you need further assistance
 raise an [issue](https://github.com/rgardler/acs-scripts/issues) and
 ask for help.
 
 ```
-self.configureSSH()
-
 agents = self.getAgentHostNames()
 for agent in agents:
-  scriptname = "fooScript.sh"
   self.log.debug("Installing foo on: " + host)
 
-  # Write the script we want to execute
-  f = open(scriptname, w)
-  f.write("touch fooVisited" + agent + ".txt\n")
-  f.close
+  cmd = "touch fooVisted" + host
+  acs.executeOnAgent(cmd)
 
-  # Execute the script on the agent
-  url = self.getManagementEndpoint()
-  conn = "scp -P 2200 -o StrictHostKeyChecking=no"
-  remotefile = self.config.get('ACS', 'username') + '@' + url + ":~/" + scriptname
-  cmd = conn + " " + sshCommand = "chmod 755 ~/installOMS.sh"
-  self.executeOnAgent(sshCommand, host)
-
-  sshCommand = "sudo ./" + scriptname
-  self.executeOnAgent(sshCommand, agent)
-
+  cmd = "touch fooLeftAPresent"
+  acs.executeOnAgent(cmd)
 ```
-
-FIXME: we should probably write a helper method with the signature
-`executeOnAgent(scriptname, agentname)` to replace the section "#
-Execute a script on the agent"
 

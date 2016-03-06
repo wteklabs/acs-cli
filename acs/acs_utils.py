@@ -6,7 +6,10 @@ from ACSLogs import *
 import ConfigParser
 import json
 import os
+from os.path import expanduser
 import paramiko
+from paramiko import SSHClient
+from scp import SCPClient
 import subprocess
 
 class ACSUtils:
@@ -18,6 +21,12 @@ class ACSUtils:
         config.read(configfile)
         config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
         self.config = config
+        
+        self.ssh = SSHClient()
+        self.ssh.load_system_host_keys()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.connect(self.getManagementEndpoint(), username = self.config.get('ACS', "username"), port=2200)
+        self._configureSSH()
 
     def value(self, set_to):
         value = {}
@@ -188,36 +197,25 @@ class ACSUtils:
         url = self.getManagementEndpoint()
         return "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + url + ' -p 2200'
 
-    def configureSSH(self):
+    def _configureSSH(self):
         """Configure SSH on the master so that it can connect to the agents"""
-        self.log.warning("Currently configure SSH on every call, this is wasteful, should maintain state of machines and only configure once")
+        home = expanduser("~")
+        localfile = home + "/.ssh/id_rsa"
+        remotefile = "~/.ssh/id_rsa"
+        with SCPClient(self.ssh.get_transport()) as scp:
+            scp.put(localfile, remotefile)
 
-        cmd = self.getMasterSSHConnection() + " " + "echo Hello Master"
-        self.log.debug("Making an SSH call to verify all is OK: " + cmd)
-        subprocess.check_output(cmd, shell=True)
-
-        url = self.getManagementEndpoint()
-        conn = "scp -P 2200 -o StrictHostKeyChecking=no"
-        localfile = "~/.ssh/id_rsa"
-        remotefile = self.config.get('ACS', 'username') + '@' + url + ":~/.ssh/id_rsa"
-    
-        cmd = conn + " " + localfile + " " + remotefile
-        self.log.debug("SCP command: " + cmd)
-
-        out = subprocess.check_output(cmd, shell=True)
 
     def executeOnMaster(self, cmd):
         """
 OA        Execute command on the current master leader
         """
-        sshMasterConnection = self.getMasterSSHConnection()
-        self.log.debug("SSH Master Connection: " + sshMasterConnection)
+        self.log.debug("Running on master: " + cmd)
+        stdin, sterr, stdout = self.ssh.exec_command(cmd)
+        stdin.close()
 
-        sshCmd = sshMasterConnection + ' "' + cmd + '"'
-        self.log.info("Command to run on client: " + sshCmd)
-        out = subprocess.check_output(sshCmd, shell=True)
-        self.log.debug("Output:\n" + out)
-
+        for line in stdout.read().splitlines():
+            self.log.debug(line)
 
     def executeOnAgent(self, cmd, agent_name):
         """
@@ -230,13 +228,10 @@ OA        Execute command on the current master leader
 
         cmd = cmd.replace("\"", "\\\"")
         sshCmd = sshAgentConnection + ' \'' + cmd + '\''
-        self.log.info("Command to run on master: " + sshCmd)
         self.executeOnMaster(sshCmd)
 
     def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """
-        self.configureSSH()
-
         hosts = self.getAgentHostNames()
         for host in hosts:
             self.executeOnAgent("docker " + docker_cmd, host)
@@ -257,7 +252,6 @@ OA        Execute command on the current master leader
             hosts = self.getAgentHostNames()
             if feature == "afs":
                 self.createStorage()
-                self.configureSSH()
                 hosts = self.getAgentHostNames()
                 self.addAzureFileService(hosts)
             elif feature == "oms":
@@ -273,41 +267,24 @@ OA        Execute command on the current master leader
         Add OMS to all Agents using the details defined in the config
         file (OMS_WORKSPACE_ID and OMS_WORKSPACE_PRIMARY_KEY).
         """
-        self.configureSSH()
-
-        f = open('installOMS.sh', 'w')
-        f.write("wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh\n")
-        f.write("chmod +x ./omsagent-1.1.0-28.universal.x64.sh\n")
-        workspace_id = self.config.get('OMS', "workspace_id")
-        workspace_key = self.config.get('OMS', "workspace_primary_key")
-        f.write("sudo ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w " + workspace_id + " -s " + workspace_key + "\n")
-        f.write("sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n")
-        f.write("sudo service docker restart\n")
-        f.close()
-
-        url = self.getManagementEndpoint()
-        conn = "scp -P 2200 -o StrictHostKeyChecking=no"
-        localfile = "installOMS.sh"
-        remotefile = self.config.get('ACS', 'username') + '@' + url + ":~/installOMS.sh"
-        cmd = conn + " " + localfile + " " + remotefile
-        self.log.debug("SCP command to copy install script to master: " + cmd)
-        out = subprocess.check_output(cmd, shell=True)
-
         hosts = self.getAgentHostNames()
         for host in hosts:
-            self.log.debug("Installing OMS on: " + host)
-            conn = "scp -o StrictHostKeyChecking=no"
-            localfile = "installOMS.sh"
-            remotefile = self.config.get('ACS', 'username') + '@' + host + ":~/installOMS.sh"
-            cmd = conn + " " + localfile + " " + remotefile
-            self.log.debug("SCP command to copy install script to agent: " + cmd)
-            self.executeOnMaster(cmd)
+            cmd = "wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh\n"
+            self.executeOnAgent(cmd, host)
 
-            sshCommand = "chmod 755 ~/installOMS.sh"
-            self.executeOnAgent(sshCommand, host)
+            cmd = "chmod +x ./omsagent-1.1.0-28.universal.x64.sh\n"
+            self.executeOnAgent(cmd, host)
 
-            sshCommand = "sudo ./installOMS.sh"
-            self.executeOnAgent(sshCommand, host)
+            workspace_id = self.config.get('OMS', "workspace_id")
+            workspace_key = self.config.get('OMS', "workspace_primary_key")
+            cmd = "sudo ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w " + workspace_id + " -s " + workspace_key + "\n"
+            self.executeOnAgent(cmd, host)
+
+            cmd = "sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n"
+            self.executeOnAgent(cmd, host)
+
+            cmd = "sudo service docker restart\n"
+            self.executeOnAgent(cmd, host)
 
     def addAzureFileService(self, hosts):
         # Add an Azure File Service to identified agents

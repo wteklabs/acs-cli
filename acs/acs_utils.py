@@ -2,7 +2,7 @@
 
 from AgentPool import *
 from ACSLogs import *
-import afs
+import feature_afs as afs
 
 import ConfigParser
 import json

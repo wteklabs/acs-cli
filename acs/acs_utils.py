@@ -20,7 +20,8 @@ class ACSUtils:
         defaults = {"orchestratorType": "Mesos"}
         config = ConfigParser.ConfigParser(defaults)
         config.read(configfile)
-        config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
+        if not config.has_option('Group', 'name'):
+            config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
         self.config = config
         
         self.ssh = SSHClient()

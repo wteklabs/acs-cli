@@ -1,3 +1,7 @@
+NOTE: NOT FOR PRODUCTION USE
+
+Please note these scripts are intended to allow experimentation with Azure Container Service. They are not intended for production use.
+
 A set of convenience scripts for creating and testing ACS
 clusters. These scripts can also be helpful in working out how to use
 the REST API interfaces for managing applicaitons on an ACS cluster.

@@ -23,7 +23,7 @@ class ACSUtils:
         if not config.has_option('Group', 'name'):
             config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
         self.config = config
-        
+
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -43,6 +43,7 @@ class ACSUtils:
         params["agentVMSize"] = self.value(self.config.get('ACS', 'agentVMSize'))
         params["masterCount"] = self.value(self.config.getint('ACS', 'masterCount'))
         params["sshRSAPublicKey"] = self.value(self.config.get('ACS', 'sshPublicKey'))
+        params["linuxAdminUsername"] = self.value(self.config.get('ACS', 'username'))
         return params
 
     def getEnvironmentSettings(self):
@@ -50,7 +51,7 @@ class ACSUtils:
         Return a dictionary of usefel information about the ACS configuration.
         """
         out = {}
-        
+
         out["orchestratorType"] = self.getMode()
         if self.getMode() == "SwarmPreview":
             sshTunnel = "ssh -L 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
@@ -59,7 +60,7 @@ class ACSUtils:
         else:
             sshTunnel = "(Need to add support to CLI to generate tunnel info for this orchestrator type)"
         out["sshTunnel"] = sshTunnel
-        
+
         public = self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
         out["publicFQDN"] = public
 
@@ -88,7 +89,7 @@ class ACSUtils:
         command = command + " " + self.config.get('ACS', 'dnsPrefix')
         command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
         command = command + " -p '" + json.dumps(self.getACSParams()) + "'"
-    
+
         os.system(command)
 
     def createStorage(self):
@@ -98,13 +99,13 @@ class ACSUtils:
         """
         self.log.debug("Creating Storage Account")
         self.createResourceGroup()
-    
+
         command = "azure storage account create"
         command = command + " --type " + self.config.get('Storage', 'type')
         command = command + " --resource-group " + self.config.get('Group', 'name')
         command = command + " --location " + self.config.get('Group', 'region')
         command = command + " " + self.config.get('Storage', 'name')
-    
+
         os.system(command)
 
         key = self.getStorageAccountKey()
@@ -118,7 +119,7 @@ class ACSUtils:
             out = subprocess.check_output(command, shell=True)
         except:
             # FIXME: test if the share already exists, if it does then don't try to recreate it
-            # For now we just assume that an error is always that the share alrady exists 
+            # For now we just assume that an error is always that the share alrady exists
             self.log.warning("Failed to create share, assuming it is because it already exists")
 
     def getStorageAccountKey(self):
@@ -144,7 +145,7 @@ class ACSUtils:
         command = command + " --resource-group " + self.config.get('Group', 'name')
         command = command + " " + self.config.get('Storage', 'name')
         command = command + " --json"
-        
+
         data = json.loads(subprocess.check_output(command, shell=True))
         endpoint = data['primaryEndpoints']['file']
 
@@ -161,10 +162,10 @@ class ACSUtils:
         return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
     def marathonCommand(self, command, method = 'GET', data = None):
-        curl = 'curl -s -X ' + method 
+        curl = 'curl -s -X ' + method
         if data != None:
             curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
-        cmd = curl + ' localhost:8080/v2/' + command 
+        cmd = curl + ' localhost:8080/v2/' + command
         self.log.debug('Command to execute: ' + cmd)
         return subprocess.check_output(cmd, shell=True)
 
@@ -197,7 +198,7 @@ class ACSUtils:
 
     def getAgentHostNames(self):
         # return a list of Agent Host Names in this cluster
-        
+
         agentPool = AgentPool(self.config)
         agents = agentPool.getAgents()
 

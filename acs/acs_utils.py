@@ -7,6 +7,7 @@ import feature_afs as afs
 import ConfigParser
 import json
 import os
+import time
 from os.path import expanduser
 import paramiko
 from paramiko import SSHClient
@@ -34,6 +35,27 @@ class ACSUtils:
         value = {}
         value["value"] = set_to
         return value
+
+    def initSsh(self):
+        if self.hostnameResolves(self.getManagementEndpoint()):
+            self.ssh = SSHClient()
+            self.ssh.load_system_host_keys()
+            self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh.connect(
+                self.getManagementEndpoint(),
+                username = self.config.get('ACS', "username"),
+                port = 2200,
+                key_filename = expanduser(self.config.get('SSH', "privatekey")))
+            self._configureSSH()
+        else:
+            self.log.debug("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
+
+    def hostnameResolves(self, hostname):
+        try:
+            socket.gethostbyname(hostname)
+            return 1
+        except socket.error:
+            return 0
 
     def getACSParams(self):
         params = {}
@@ -90,6 +112,12 @@ class ACSUtils:
         command = command + " -p '" + json.dumps(self.getACSParams()) + "'"
 
         os.system(command)
+
+        while not self.hostnameResolves(self.getManagementEndpoint()):
+            self.log.debug("WARN: Management endpoint not available. Waiting for 10 s before next try.")
+            time.sleep(10)
+
+        self.initSsh()
 
     def createStorage(self):
         """
@@ -216,6 +244,9 @@ class ACSUtils:
         """Configure SSH on the master so that it can connect to the agents"""
         localfile = expanduser(self.config.get('SSH', 'privatekey'))
         remotefile = "~/.ssh/id_rsa"
+
+        self.log.debug("Copying " + localfile + " to remote " + remotefile)
+
         with SCPClient(self.ssh.get_transport()) as scp:
             scp.put(localfile, remotefile)
 

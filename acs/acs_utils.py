@@ -75,9 +75,9 @@ class ACSUtils:
 
         out["orchestratorType"] = self.getMode()
         if self.getMode() == "SwarmPreview":
-            sshTunnel = "ssh -L 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
+            sshTunnel = "ssh -L 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200 -i " + expanduser(self.config.get('SSH', "privatekey"))
         elif self.getMode() == "Mesos":
-            sshTunnel = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
+            sshTunnel = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200 -i " + expanduser(self.config.get('SSH', "privatekey"))
         else:
             sshTunnel = "(Need to add support to CLI to generate tunnel info for this orchestrator type)"
         out["sshTunnel"] = sshTunnel

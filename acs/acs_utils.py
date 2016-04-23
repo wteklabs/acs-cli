@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-from AgentPool import *
-from ACSLogs import *
-import feature_afs as afs
+from .AgentPool import *
+from .ACSLogs import *
+from .commands.afs import *
 
 import ConfigParser
 import json
@@ -15,7 +15,7 @@ import subprocess
 
 class ACSUtils:
     def __init__(self, configfile = "cluster.ini"):
-        self.log = ACSLog()
+        self.log = ACSLog("ACSUtils")
         self.log.debug("Reading config from " + configfile)
         defaults = {"orchestratorType": "Mesos"}
         config = ConfigParser.ConfigParser(defaults)

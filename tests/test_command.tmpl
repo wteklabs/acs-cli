@@ -1,0 +1,18 @@
+"""Tests for `acs foo` subcommand."""
+
+from subprocess import check_output
+from unittest import TestCase
+
+class TestFoo(TestCase):
+    def test_doit_returns_single_line(self):
+        output = self.execute(['acs', 'doit'])
+        lines = output.split('\n')
+        self.assertTrue(len(lines) == 1)
+
+    def test_delegate_result_includes_name(self):
+        output = self.execute(['acs', 'delegate', '--name=Bar'])
+        self.assertTrue('Bar' in output)
+
+    def execute(self, command):
+        result = check_output(command)
+        return result.decode("utf-8")

@@ -1,16 +1,71 @@
 NOTE: NOT FOR PRODUCTION USE
 
-Please note these scripts are intended to allow experimentation with Azure Container Service. They are not intended for production use.
+Please note these scripts are intended to allow experimentation with
+Azure Container Service. They are not intended for production use.
 
 A set of convenience scripts for creating and testing ACS
 clusters. These scripts can also be helpful in working out how to use
 the REST API interfaces for managing applicaitons on an ACS cluster.
 
+# Development
+
+## Preparing
+
+To install all libraries and development dependencies:
+
+```
+sudo pip install -e .
+sudo pip install -e .[test]
+```
+
+## Adding a command
+
+To add a top level command representing a new feature follow the
+these steps (in this example the new command is called `Foo`:
+
+  * Add the command `foo` and its description to the "Commands" section of the docstring for acs/cli.py
+  * Copy `acs/commands/command.tmpl` to `acs/commands/foo.py`
+    * Add the commands and options to the docstring
+    * Implement each command in a method using the same name as the command
+  * Add foo.py import to `acs/commands/__init__.py`
+  * Copy `tests\command\test_command.tmpl` to `test\command\test_foo.py`
+    * Implement the tests
+  * Run the tests with `python setup.py test` and iterate as necessary
+
+## Testing
+
+Run tests using [py.test:](http://pytest.org/latest) and [coverage](https://pypi.python.org/pypi/pytest-cov):
+
+```
+python setup.py test
+```
+
+## Releasing
+
+Cut a release and publish to the [Python Package
+Index](https://pypi.python.org/pypi) install install
+[twine](http://pypi.python.org/pypi/twine. and then run:
+
+```
+python setup.py sdist bdist_wheel
+twine upload dist/*
+```
+
+This will build both a surce tarball and a wheel build, which will run
+on all platforms.
+
+
+---------------------------------------------- 
+
+FIXME: Content below this line was current prior to the move to a
+luggable architecture. Ensure it is all updated and moved to above
+this line as appropriate.
+
 # Pre-requisites
 
   * Azure CLI installed and configured to access the test subscription
     * install Node and NPM
-    * `sudo npm install azure-cli -g'
+    * `sudo npm install azure-cli -g`
   * Install jq
     * `apt-get install jq`
   * Install Python

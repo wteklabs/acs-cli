@@ -9,3 +9,4 @@ installOMS.sh
 
 # Python
 *.pyc
+acs.egg-info

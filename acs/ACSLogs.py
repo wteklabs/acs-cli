@@ -2,7 +2,13 @@ import logging
 import os
 
 class ACSLog:
-    def __init__(self, name = "acs"):
+    def __init__(self, name = u"acs"):
+        try:
+            name = unicode(name)
+        except UnicodeDecodeError:
+            ascii_text = str(name).encode('string_escape')
+            return unicode(ascii_text)
+
         output_dir = 'logs'
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)

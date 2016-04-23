@@ -1,4 +1,4 @@
-from ACSLogs import *
+from .ACSLogs import *
 
 import azurerm
 import ConfigParser

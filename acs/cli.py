@@ -8,6 +8,7 @@ Options:
   -h --help                           Show this screen.
 
 Commands:
+  service    Create and manage Azure Container Service
   afs        Add the Azure Files Docker volume driver to each agent
   oms        Add or configure Operational Management Suite monitoring
 
@@ -29,6 +30,7 @@ import sys
 def main():
   """Main CLI entrypoint"""
   from . import commands
+
   args = docopt(__doc__, version=VERSION, options_first=True)
 
   print("Global args:")
@@ -47,7 +49,11 @@ def main():
   module = getattr(commands, command_name)
   commands = getmembers(module, isclass)
   command_class = None
+  command = None
   for k, command_class in commands:
+      print("Considering command class: " + command_class.__name__)
       if command_name.lower() in command_class.__name__.lower():
         command = command_class(argv)
+  if command is None:
+    raise Exception("Unrecognized command: " + command_name)
   command.run()

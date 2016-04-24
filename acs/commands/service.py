@@ -1,22 +1,21 @@
-""" 
+"""
 
-This is a template for a new file. Copy it into /acs/commands/foo.py
-and edit as appropriate. Typically this will mean editing this
-docstring and adding methods for each command described here.
+Create an manage instances of Azure Container Service. The service
+configuration is defined in the `cluster.ini` file (or the file
+specified in `--config-file`.
 
 Usage:
-  foo <command> [help] [options]
+  service <command> [help] [options]
 
 Commands:
-  doit                  make foo do it
-  delegate TARGET	foo dleegates the task to TARGET
+  create                create the azure container service
 
 Options:
-  --deadline            the date by which this needs to be completed
 
 Help:
   For help using the oms command please open an issue at 
   https://github.com/rgardler/acs-scripts
+
 """
 
 from docopt import docopt
@@ -25,14 +24,14 @@ from json import dumps
 
 from .base import Base
 
-class Foo(Base):
+class Service(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
     # print("Global args")
     # print(args)
     self.args = args
-
+    
     command = self.args["<command>"]
     result = None
     methods = getmembers(self, predicate = ismethod)
@@ -48,8 +47,5 @@ class Foo(Base):
   def help(self):
     print(__doc__)
 
-  def doit(self):
-    print("I just did it")
-
-  def delegate(self):
-    print("I'll get bar to do it)"
+  def create(self):
+    raise Exception("FIXME: Implement the ACS create commad")

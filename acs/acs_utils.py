@@ -107,7 +107,7 @@ class ACSUtils:
         self.createResourceGroup()
 
         command = "azure group deployment create"
-        command = command + " " + self.config.get('ACS', 'dnsPrefix')
+        command = command + " " + self.config.get('Group', 'name')
         command = command + " " + self.config.get('ACS', 'dnsPrefix')
         command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
         command = command + " -p '" + json.dumps(self.getACSParams()) + "'"

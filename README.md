@@ -28,7 +28,7 @@ these steps (in this example the new command is called `Foo`:
     * Add the commands and options to the docstring
     * Implement each command in a method using the same name as the command
   * Add foo.py import to `acs/commands/__init__.py`
-  * Copy `tests\command\test_command.tmpl` to `test\command\test_foo.py`
+  * Copy `tests/command/test_command.tmpl` to `test/command/test_foo.py`
     * Implement the tests
   * Run the tests with `python setup.py test` and iterate as necessary
 

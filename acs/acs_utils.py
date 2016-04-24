@@ -23,11 +23,11 @@ class ACSUtils:
         config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
         self.config = config
         
-        self.ssh = SSHClient()
-        self.ssh.load_system_host_keys()
-        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.ssh.connect(self.getManagementEndpoint(), username = self.config.get('ACS', "username"), port=2200)
-        self._configureSSH()
+        #self.ssh = SSHClient()
+        #self.ssh.load_system_host_keys()
+        #self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        #self.ssh.connect(self.getManagementEndpoint(), username = self.config.get('ACS', "username"), port=2200)
+        #self._configureSSH()
 
     def value(self, set_to):
         value = {}

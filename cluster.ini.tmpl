@@ -6,18 +6,19 @@ subscription_id: <your_sub_id>
 
 [Group]
 region: westus
+name: my-resource-group-name
 
 [ACS]
 dnsPrefix: <FIXME: make dnsPrefix in cluster.ini world unique>
 
 username: azureuser
-password: Password1234
 
 ; The kind of orchestrator you want, e.g. 'Mesos', 'Swarm'
 orchestratorType: Mesos
 
 agentCount: 2
 masterCount: 3
+agentVMSize: Standard_A2
 
 sshPublicKey: <FIXME: Enter your public SSH key into sshPublicKey in cluster.ini>
 

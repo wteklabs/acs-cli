@@ -65,6 +65,7 @@ class ACSUtils:
         params["agentVMSize"] = self.value(self.config.get('ACS', 'agentVMSize'))
         params["masterCount"] = self.value(self.config.getint('ACS', 'masterCount'))
         params["sshRSAPublicKey"] = self.value(self.config.get('ACS', 'sshPublicKey'))
+        params["linuxAdminUsername"] = self.value(self.config.get('ACS', 'username'))
         return params
 
     def getEnvironmentSettings(self):

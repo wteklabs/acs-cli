@@ -9,6 +9,12 @@ the REST API interfaces for managing applicaitons on an ACS cluster.
 
 # Development
 
+## Pre-Rquisites
+
+  * Python 3
+  * [PIP](https://pip.pypa.io/en/stable/installing/)
+  * 
+
 ## Preparing
 
 To install all libraries and development dependencies:

@@ -29,21 +29,6 @@ class ACSUtils:
         #self.ssh.connect(self.getManagementEndpoint(), username = self.config.get('ACS', "username"), port=2200)
         #self._configureSSH()
 
-    def value(self, set_to):
-        value = {}
-        value["value"] = set_to
-        return value
-
-    def getACSParams(self):
-        params = {}
-        params["dnsNamePrefix"] = self.value(self.config.get('ACS', 'dnsPrefix'))
-        params["orchestratorType"] = self.value(self.config.get('ACS', 'orchestratorType'))
-        params["agentCount"] = self.value(self.config.getint('ACS', 'agentCount'))
-        params["agentVMSize"] = self.value(self.config.get('ACS', 'agentVMSize'))
-        params["masterCount"] = self.value(self.config.getint('ACS', 'masterCount'))
-        params["sshRSAPublicKey"] = self.value(self.config.get('ACS', 'sshPublicKey'))
-        return params
-
     def getEnvironmentSettings(self):
         """
         Return a dictionary of usefel information about the ACS configuration.
@@ -67,28 +52,6 @@ class ACSUtils:
     def getMode(self):
         """Get the orchestrator mode for this instance of ACS"""
         return self.config.get("ACS", "orchestratorType")
-
-    def createResourceGroup(self):
-        command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
-        os.system(command)
-
-    def deleteResourceGroup(self):
-        command = "azure group delete " + self.config.get('Group', 'name')
-        self.log.info("Command: " + command)
-        os.system(command)
-
-    def createDeployment(self):
-        self.log.debug("Creating Deployment")
-        self.log.debug(json.dumps(self.getACSParams()))
-        self.createResourceGroup()
-
-        command = "azure group deployment create"
-        command = command + " " + self.config.get('ACS', 'dnsPrefix')
-        command = command + " " + self.config.get('ACS', 'dnsPrefix')
-        command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
-        command = command + " -p '" + json.dumps(self.getACSParams()) + "'"
-    
-        os.system(command)
 
     def createStorage(self):
         """

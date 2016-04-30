@@ -17,12 +17,12 @@ Help:
   https://github.com/rgardler/acs-scripts
 
 """
+from .base import Base
 
 from docopt import docopt
 from inspect import getmembers, ismethod
-from json import dumps
-
-from .base import Base
+import json
+import os
 
 class Service(Base):
 
@@ -48,4 +48,28 @@ class Service(Base):
     print(__doc__)
 
   def create(self):
+    self._createDeployment()
     raise Exception("FIXME: Implement the ACS create commad")
+
+  def _createResourceGroup(self):
+    command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
+    os.system(command)
+
+  def _deleteResourceGroup(self):
+    command = "azure group delete " + self.config.get('Group', 'name')
+    self.log.info("Command: " + command)
+    os.system(command)
+
+  def _createDeployment(self):
+    self.log.debug("Creating Deployment")
+    self.log.debug(json.dumps(self.config.getACSParams()))
+    self._createResourceGroup()
+    
+    command = "azure group deployment create"
+    command = command + " " + self.config.get('ACS', 'dnsPrefix')
+    command = command + " " + self.config.get('ACS', 'dnsPrefix')
+    command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
+    command = command + " -p '" + json.dumps(self.config.getACSParams()) + "'"
+    
+    os.system(command)
+

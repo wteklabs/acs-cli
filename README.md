@@ -7,6 +7,37 @@ A set of convenience scripts for creating and testing ACS
 clusters. These scripts can also be helpful in working out how to use
 the REST API interfaces for managing applicaitons on an ACS cluster.
 
+# Usage
+
+## Preparation
+
+Create a config.ini by copying config.ini.tmpl and editing accoringly.
+
+Create a [service principle for the
+application](http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure)
+and add the details to your config.ini.
+
+## Basic Use
+
+```
+acs <command> <args>
+```
+
+By defaultthe config file `cluster.ini` will be use3d, if you want to
+use a different config file use the `--config-file=FILE` option.
+
+To get help for the CLI use:
+
+``` 
+acs --help
+```
+
+## Service commands
+
+The `service` commands provide convenience methods for managing an
+instance of the Azure Container Service. Run `acs service help` for
+more details.
+
 # Development
 
 ## Pre-Rquisites
@@ -80,14 +111,6 @@ this line as appropriate.
     * `pip install -r requirements.txt`
   * Whitelisted for ACS preview
 
-# Preparation
-
-Create a config.ini by copying config.ini.tmpl and editing accoringly.
-
-Create a [service principle for the
-application](http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure)
-and add the details to your config.ini.
-
 # Command Line
 
 ```
@@ -102,19 +125,6 @@ Options:
 ```
 
 There are a number of accepted commands, as follows
-
-## deploy: Create or update a cluster
-
-The `deploy` command will create or update a deployment. 
-
-```bash
-python acs.py deploy [-c CONFIG_FILE]
-```
-
-### Create
-
-In order to create a new cluster ensure that the `dns_prefix` in
-CONFIG_FILE does not already exist.
 
 ### Update
 

@@ -36,6 +36,9 @@ class Oms(Base):
       for name, method in methods:
           if name == command:
               result = method()
+          if result is None:
+            result = command + " returned no results"
+
       if result:
           print(result)
       else:

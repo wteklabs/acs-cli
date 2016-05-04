@@ -27,6 +27,7 @@ from inspect import getmembers, ismethod
 from json import dumps
 
 class Afs(Base): 
+
     def run(self):
         args = docopt(__doc__, argv=self.options)
         # print("Global args")
@@ -39,6 +40,8 @@ class Afs(Base):
         for name, method in methods:
             if name == command:
                 result = method()
+                if result is None:
+                    result = command + " returned no results"
         if result:
             print(result)
         else:
@@ -52,54 +55,114 @@ class Afs(Base):
         """
         Add the AFS feature to the ACS cluster provided.
         """
+        self.createStorage()
+
         driver_version = "0.2"
-        mount = acs.config.get("Storage", "mount")
+        mount = self.config.get("Storage", "mount")
         package = "cifs-utils"
         
-        agents = acs.getAgentHostNames()
+        agents = Base.getAgentHostNames(self)
         for agent in agents:
-            acs.log.debug("Installing AFS on: " + agent)
+            self.log.debug("Installing AFS on: " + agent)
             
             cmd = "rm azurefile-dockervolumedriver*"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
             
             cmd = "wget https://github.com/Azure/azurefile-dockervolumedriver/releases/download/" + driver_version + "/azurefile-dockervolumedriver"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "cp azurefile-dockervolumedriver /usr/bin/azurefile-dockervolumedriver"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "chmod +x /usr/bin/azurefile-dockervolumedriver"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "wget https://raw.githubusercontent.com/Azure/azurefile-dockervolumedriver/" + driver_version + "/contrib/init/upstart/azurefile-dockervolumedriver.conf"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "sudo cp azurefile-dockervolumedriver.conf /etc/init/azurefile-dockervolumedriver.conf"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
-            cmd = "echo 'AF_ACCOUNT_NAME=" + acs.config.get("Storage", "name") + "' > azurefile-dockervolumedriver.default"
-            acs.executeOnAgent(cmd, agent)
+            cmd = "echo 'AF_ACCOUNT_NAME=" + self.config.get("Storage", "name") + "' > azurefile-dockervolumedriver.default"
+            self.executeOnAgent(cmd, agent)
         
-            cmd = "echo 'AF_ACCOUNT_KEY=" + acs.getStorageAccountKey() + "' >> azurefile-dockervolumedriver.default"
-            acs.executeOnAgent(cmd, agent)
+            cmd = "echo 'AF_ACCOUNT_KEY=" + self.getStorageAccountKey() + "' >> azurefile-dockervolumedriver.default"
+            self.executeOnAgent(cmd, agent)
             
             cmd = "sudo cp azurefile-dockervolumedriver.default /etc/default/azurefile-dockervolumedriver"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "sudo initctl reload-configuration"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "sudo initctl start azurefile-dockervolumedriver"
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
 
             cmd = "mkdir -p " + mount
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
         
-            urn = acs.getShareEndpoint().replace("https:", "") + acs.config.get("Storage", "shareName")
-            username = acs.config.get("Storage", "name")
-            password = acs.getStorageAccountKey()
+            urn = self.getShareEndpoint().replace("https:", "") + self.config.get("Storage", "shareName")
+            username = self.config.get("Storage", "name")
+            password = self.getStorageAccountKey()
             cmd = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
-            acs.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, agent)
+
+    def createStorage(self):
+        """
+        Create a storage account for this cluster as defined in the config file.
+        FIXME: this and related storage methods should move to their own module or class
+        """
+        self.log.debug("Creating Storage Account")
+    
+        command = "azure storage account create"
+        command = command + " --type " + self.config.get('Storage', 'type')
+        command = command + " --resource-group " + self.config.get('Group', 'name')
+        command = command + " --location " + self.config.get('Group', 'region')
+        command = command + " " + self.config.get('Storage', 'name')
+    
+        os.system(command)
+
+        key = self.getStorageAccountKey()
+
+        try:
+            command = "azure storage share create"
+            command = command + " --account-name " + self.config.get('Storage', 'name')
+            command = command + " --account-key " + key
+            command = command + " " + self.config.get('Storage', 'shareName')
+
+            out = subprocess.check_output(command, shell=True)
+        except:
+            # FIXME: test if the share already exists, if it does then don't try to recreate it
+            # For now we just assume that an error is always that the share alrady exists 
+            self.log.warning("Failed to create share, assuming it is because it already exists")
+
+    def getShareEndpoint(self):
+        """
+        Get the a share endpoint for the storage account defined in the ini file
+        """
+        command = "azure storage account show"
+        command = command + " --resource-group " + self.config.get('Group', 'name')
+        command = command + " " + self.config.get('Storage', 'name')
+        command = command + " --json"
+        
+        data = json.loads(subprocess.check_output(command, shell=True))
+        endpoint = data['primaryEndpoints']['file']
+
+        return endpoint
+
+    def getStorageAccountKey(self):
+        """
+        Get the storage account key for the storage account defined in the ini file
+        FIXME: this and related storage methods should move to their own module or class
+        """
+        command = "azure storage account keys list"
+        command = command + " --resource-group " + self.config.get('Group', 'name')
+        command = command + " " + self.config.get('Storage', 'name')
+        command = command + " --json"
+        self.log.debug("Command to get storage keys: " + command)
+
+        keys = json.loads(subprocess.check_output(command, shell=True))
+        return keys['key1']
+
 
 

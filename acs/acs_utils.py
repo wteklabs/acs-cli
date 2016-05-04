@@ -53,64 +53,7 @@ class ACSUtils:
         """Get the orchestrator mode for this instance of ACS"""
         return self.config.get("ACS", "orchestratorType")
 
-    def createStorage(self):
-        """
-        Create a storage account for this cluster as defined in the config file.
-        FIXME: this and related storage methods should move to their own module or class
-        """
-        self.log.debug("Creating Storage Account")
-        self.createResourceGroup()
-    
-        command = "azure storage account create"
-        command = command + " --type " + self.config.get('Storage', 'type')
-        command = command + " --resource-group " + self.config.get('Group', 'name')
-        command = command + " --location " + self.config.get('Group', 'region')
-        command = command + " " + self.config.get('Storage', 'name')
-    
-        os.system(command)
 
-        key = self.getStorageAccountKey()
-
-        try:
-            command = "azure storage share create"
-            command = command + " --account-name " + self.config.get('Storage', 'name')
-            command = command + " --account-key " + key
-            command = command + " " + self.config.get('Storage', 'shareName')
-
-            out = subprocess.check_output(command, shell=True)
-        except:
-            # FIXME: test if the share already exists, if it does then don't try to recreate it
-            # For now we just assume that an error is always that the share alrady exists 
-            self.log.warning("Failed to create share, assuming it is because it already exists")
-
-    def getStorageAccountKey(self):
-        """
-        Get the storage account key for the storage account defined in the ini file
-        FIXME: this and related storage methods should move to their own module or class
-        """
-        command = "azure storage account keys list"
-        command = command + " --resource-group " + self.config.get('Group', 'name')
-        command = command + " " + self.config.get('Storage', 'name')
-        command = command + " --json"
-        self.log.debug("Command to get storage keys: " + command)
-
-        keys = json.loads(subprocess.check_output(command, shell=True))
-        return keys['key1']
-
-    def getShareEndpoint(self):
-        """
-        Get the a share endpoint for the storage account defined in the ini file
-        FIXME: this and related storage methods should move to their own module or class
-        """
-        command = "azure storage account show"
-        command = command + " --resource-group " + self.config.get('Group', 'name')
-        command = command + " " + self.config.get('Storage', 'name')
-        command = command + " --json"
-        
-        data = json.loads(subprocess.check_output(command, shell=True))
-        endpoint = data['primaryEndpoints']['file']
-
-        return endpoint
 
     def scale(self, capacity):
         """
@@ -118,9 +61,6 @@ class ACSUtils:
         """
         agentPool = AgentPool(self.config)
         agentPool.scale(capacity)
-
-    def getManagementEndpoint(self):
-        return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
     def marathonCommand(self, command, method = 'GET', data = None):
         curl = 'curl -s -X ' + method 
@@ -157,19 +97,6 @@ class ACSUtils:
     def getAgentsFQDN(self):
         return self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region') + '.cloudapp.azure.com'
 
-    def getAgentHostNames(self):
-        # return a list of Agent Host Names in this cluster
-        
-        agentPool = AgentPool(self.config)
-        agents = agentPool.getAgents()
-
-        names = []
-        for agent in agents:
-            name = agent['properties']['osProfile']['computerName']
-            if "-agent-" in name:
-                names.append(name)
-        return names
-
     def getMasterSSHConnection(self):
         url = self.getManagementEndpoint()
         return "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + url + ' -p 2200'
@@ -182,30 +109,6 @@ class ACSUtils:
         with SCPClient(self.ssh.get_transport()) as scp:
             scp.put(localfile, remotefile)
 
-
-    def executeOnMaster(self, cmd):
-        """
-OA        Execute command on the current master leader
-        """
-        self.log.debug("Running on master: " + cmd)
-        stdin, sterr, stdout = self.ssh.exec_command(cmd)
-        stdin.close()
-
-        for line in stdout.read().splitlines():
-            self.log.debug(line)
-
-    def executeOnAgent(self, cmd, agent_name):
-        """
-        Execute command on an agent identified by agent_name
-        """
-        sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
-        self.log.debug("SSH Connection to agent: " + sshAgentConnection)
-
-        self.log.debug("Command to run on agent: " + cmd)
-
-        cmd = cmd.replace("\"", "\\\"")
-        sshCmd = sshAgentConnection + ' \'' + cmd + '\''
-        self.executeOnMaster(sshCmd)
 
     def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """

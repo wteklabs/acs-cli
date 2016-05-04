@@ -1,5 +1,9 @@
 """The base command class. All implemented commands should extend this class."""
+from ..AgentPool import AgentPool
+
 import json
+import paramiko
+from paramiko import SSHClient
 
 class Base(object):
 
@@ -10,12 +14,56 @@ class Base(object):
     self.args = args
     self.kwargs = kwargs
 
+    self.ssh = SSHClient()
+    self.ssh.load_system_host_keys()
+    self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    self.ssh.connect(self.getManagementEndpoint(), username = self.config.get('ACS', "username"), port=2200)
+
   def run(self):
     raise NotImplementedError("You must implement the run() method in your commands")
 
   def help(self):
     raise NotImplementedError("You must implement the help method. In most cases you will simply do 'print(__doc__)'")
 
+  def getManagementEndpoint(self):
+    return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
+
+  def getAgentHostNames(self):
+    # return a list of Agent Host Names in this cluster
+    
+    agentPool = AgentPool(self.config)
+    agents = agentPool.getAgents()
+    
+    names = []
+    for agent in agents:
+      name = agent['properties']['osProfile']['computerName']
+      if "-agent-" in name:
+        names.append(name)
+    return names
+
+  def executeOnAgent(self, cmd, agent_name):
+    """
+    Execute command on an agent identified by agent_name
+    """
+    sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
+    self.log.debug("SSH Connection to agent: " + sshAgentConnection)
+    
+    self.log.debug("Command to run on agent: " + cmd)
+    
+    cmd = cmd.replace("\"", "\\\"")
+    sshCmd = sshAgentConnection + ' \'' + cmd + '\''
+    self.executeOnMaster(sshCmd)
+
+  def executeOnMaster(self, cmd):
+    """
+    Execute command on the current master leader
+    """
+    self.log.debug("Executing on master: " + cmd)
+    stdin, sterr, stdout = self.ssh.exec_command(cmd)
+    stdin.close()
+
+    for line in stdout.read().splitlines():
+      self.log.debug(line)
 
 """The cofiguration for an ACS cluster to work with"""
 from acs.ACSLogs import ACSLog
@@ -24,7 +72,9 @@ import ConfigParser
 import os 
 
 class Config(object):
+
   def __init__(self, filename):
+    print("Crete base object")
     self.log = ACSLog("Config")
 
     self.config_filename = filename

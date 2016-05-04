@@ -8,7 +8,8 @@ Usage:
   service <command> [help] [options]
 
 Commands:
-  create                create the azure container service
+  create                create an Azure Container Service
+  delete                delete an Azure Container Service
 
 Options:
 
@@ -38,6 +39,8 @@ class Service(Base):
     for name, method in methods:
       if name == command:
         result = method()
+        if result is None:
+          result = command + " returned no results"
     if result:
       print(result)
     else:
@@ -48,22 +51,12 @@ class Service(Base):
     print(__doc__)
 
   def create(self):
-    self._createDeployment()
-    raise Exception("FIXME: Implement the ACS create commad")
+    self.log.debug("Creating ACS Deployment")
+    self.log.debug(json.dumps(self.config.getACSParams()))
 
-  def _createResourceGroup(self):
+    #FIXME: Change to use ACS commands
     command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
     os.system(command)
-
-  def _deleteResourceGroup(self):
-    command = "azure group delete " + self.config.get('Group', 'name')
-    self.log.info("Command: " + command)
-    os.system(command)
-
-  def _createDeployment(self):
-    self.log.debug("Creating Deployment")
-    self.log.debug(json.dumps(self.config.getACSParams()))
-    self._createResourceGroup()
     
     command = "azure group deployment create"
     command = command + " " + self.config.get('ACS', 'dnsPrefix')
@@ -73,3 +66,16 @@ class Service(Base):
     
     os.system(command)
 
+  def delete(self):
+    self.log.debug("Deleting ACS Deployment")
+    self.log.debug(json.dumps(self.config.getACSParams()))
+    
+    command = "azure container delete"
+    command = command + " " + self.config.get('ACS', 'dnsPrefix')
+    command = command + " containerservice-" + self.config.get('ACS', 'dnsPrefix')
+    os.system(command)
+    
+    # FIXME: we shouldn't need to do the group delete, but currently container delete is not a deep delete
+    print("'azure container delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
+    command = "azure group delete " + self.config.get('Group', 'name')
+    os.system(command)

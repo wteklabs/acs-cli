@@ -34,9 +34,6 @@ class Base(object):
   def help(self):
     raise NotImplementedError("You must implement the help method. In most cases you will simply do 'print(__doc__)'")
 
-  def getManagementEndpoint(self):
-    return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
-
   def getAgentIPs(self):
     # return a list of Agent IPs in this cluster
     

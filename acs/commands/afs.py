@@ -42,6 +42,7 @@ class Afs(Base):
                 result = method()
                 if result is None:
                     result = command + " returned no results"
+                    self.log.warning("afs install only operates on a single VMSS right now, meaning we are only working on the public or private VMSS")
         if result:
             print(result)
         else:
@@ -61,51 +62,51 @@ class Afs(Base):
         mount = self.config.get("Storage", "mount")
         package = "cifs-utils"
         
-        agents = Base.getAgentHostNames(self)
-        for agent in agents:
-            self.log.debug("Installing AFS on: " + agent)
+        ips = Base.getAgentIPs(self)
+        for ip in ips:
+            self.log.debug("Installing AFS on: " + ip)
             
             cmd = "rm azurefile-dockervolumedriver*"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
             
             cmd = "wget https://github.com/Azure/azurefile-dockervolumedriver/releases/download/" + driver_version + "/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "cp azurefile-dockervolumedriver /usr/bin/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "chmod +x /usr/bin/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "wget https://raw.githubusercontent.com/Azure/azurefile-dockervolumedriver/" + driver_version + "/contrib/init/upstart/azurefile-dockervolumedriver.conf"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "sudo cp azurefile-dockervolumedriver.conf /etc/init/azurefile-dockervolumedriver.conf"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "echo 'AF_ACCOUNT_NAME=" + self.config.get("Storage", "name") + "' > azurefile-dockervolumedriver.default"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
         
             cmd = "echo 'AF_ACCOUNT_KEY=" + self.getStorageAccountKey() + "' >> azurefile-dockervolumedriver.default"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
             
             cmd = "sudo cp azurefile-dockervolumedriver.default /etc/default/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "sudo initctl reload-configuration"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "sudo initctl start azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
             cmd = "mkdir -p " + mount
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
         
             urn = self.getShareEndpoint().replace("https:", "") + self.config.get("Storage", "shareName")
             username = self.config.get("Storage", "name")
             password = self.getStorageAccountKey()
             cmd = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
-            self.executeOnAgent(cmd, agent)
+            self.executeOnAgent(cmd, ip)
 
     def createStorage(self):
         """

@@ -13,9 +13,31 @@ class AgentPool:
 
     """
     def __init__(self, config):
-        self.log = ACSLog()
+        self.log = ACSLog("AgentPool")
         defaults = {"orchestratorType": "Mesos"}
         self.config = config
+
+    def getNICs(self):
+        """
+        Get a list of NICs attached to an agent pool
+        """
+        tenant_id = self.config.get('Subscription', 'tenant_id')
+        app_id = self.config.get('Subscription', 'app_id')
+        app_secret = self.config.get('Subscription', 'app_secret')
+        subscription_id = self.config.get('Subscription', 'subscription_id')
+        rg_name = self.config.get('Group', 'name')
+        access_token = azurerm.get_access_token(tenant_id, app_id, app_secret)
+
+        # TODO: This assumes only a single VMSS in the resource group, this will not always be the
+        # case and will never be the case if when there are multiple Agent Pools
+        vmss_list = azurerm.list_vm_scale_sets(access_token, subscription_id, rg_name)['value']
+        self.log.debug("List of VMSS: " + json.dumps(vmss_list, indent=True))
+        vmss_name = vmss_list[0]['name']
+        self.log.debug("Looking up VMs in VMSS called " + vmss_name + " (if this is wrong maybe it is because AgentPool.py currently only supports a single VMSS)")
+
+        nics = azurerm.get_vmss_nics(access_token, subscription_id, rg_name, vmss_name)
+        self.log.debug("List of VMSS NICs: " + json.dumps(nics, indent=True))
+        return nics["value"]
 
     def getAgents(self):
         """
@@ -31,7 +53,7 @@ class AgentPool:
         # TODO: This assumes only a single VMSS in the resource group, this will not always be the
         # case and will never be the case if when there are multiple Agent Pools
         vmsslist = azurerm.list_vm_scale_sets(access_token, subscription_id, rgname)['value']
-        # self.log.debug("List of VMSS: " + json.dumps(vmsslist, indent=True))
+        self.log.debug("List of VMSS: " + json.dumps(vmsslist, indent=True))
         vmssname = vmsslist[0]['name']
         self.log.debug("Looking up VMs in VMSS called " + vmssname + " (if this is wrong maybe it is because AgentPool.py currently only supports a single VMSS)")
 

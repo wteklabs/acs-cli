@@ -2,8 +2,11 @@
 from ..AgentPool import AgentPool
 
 import json
+import os.path
 import paramiko
 from paramiko import SSHClient
+from paramiko.agent import AgentRequestHandler
+import socket
 
 class Base(object):
 
@@ -13,11 +16,17 @@ class Base(object):
     self.options = options
     self.args = args
     self.kwargs = kwargs
+    self.executeOnMaster("ls -l")
 
-    self.ssh = SSHClient()
-    self.ssh.load_system_host_keys()
-    self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    self.ssh.connect(self.getManagementEndpoint(), username = self.config.get('ACS', "username"), port=2200)
+  def _hostnameResolves(self, hostname):
+    try:
+      socket.gethostbyname(hostname)
+      return True
+    except socket.error:
+      return False
+
+  def getManagementEndpoint(self):
+    return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
   def run(self):
     raise NotImplementedError("You must implement the run() method in your commands")
@@ -28,24 +37,26 @@ class Base(object):
   def getManagementEndpoint(self):
     return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
-  def getAgentHostNames(self):
-    # return a list of Agent Host Names in this cluster
+  def getAgentIPs(self):
+    # return a list of Agent IPs in this cluster
     
     agentPool = AgentPool(self.config)
-    agents = agentPool.getAgents()
+    nics = agentPool.getNICs()
     
-    names = []
-    for agent in agents:
-      name = agent['properties']['osProfile']['computerName']
-      if "-agent-" in name:
-        names.append(name)
-    return names
+    ips = []
+    for nic in nics:
+      self.log.debug("Extracting IP from: " + json.dumps(nic, indent=True))
+      ip = nic["properties"]["ipConfigurations"][0]["properties"]["privateIPAddress"]
+      self.log.debug("IP is: " + str(ip))
+      ips.append(ip)
 
-  def executeOnAgent(self, cmd, agent_name):
+    return ips
+
+  def executeOnAgent(self, cmd, ip):
     """
     Execute command on an agent identified by agent_name
     """
-    sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + agent_name
+    sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + ip
     self.log.debug("SSH Connection to agent: " + sshAgentConnection)
     
     self.log.debug("Command to run on agent: " + cmd)
@@ -59,11 +70,25 @@ class Base(object):
     Execute command on the current master leader
     """
     self.log.debug("Executing on master: " + cmd)
-    stdin, sterr, stdout = self.ssh.exec_command(cmd)
-    stdin.close()
 
-    for line in stdout.read().splitlines():
-      self.log.debug(line)
+    if self._hostnameResolves(self.getManagementEndpoint()):
+      ssh = SSHClient()
+      ssh.load_system_host_keys()
+      ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+      ssh.connect(
+        self.getManagementEndpoint(),
+        username = self.config.get('ACS', "username"),
+        port = 2200,
+        key_filename = os.path.expanduser(self.config.get('SSH', "privatekey")))
+      session = ssh.get_transport().open_session()
+      AgentRequestHandler(session)
+      stdin, sterr, stdout = ssh.exec_command(cmd)
+      stdin.close()
+      for line in stdout.read().splitlines():
+        self.log.debug(line)
+    else:
+      self.log.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
+
 
 """The cofiguration for an ACS cluster to work with"""
 from acs.ACSLogs import ACSLog
@@ -91,7 +116,7 @@ class Config(object):
       raise Exception("Configuration file '" + self.config_filename + "' not found")
 
     print("config file: " + self.config_filename)
-    
+
   def get(self, section, name):
     return self.config_parser.get(section, name)
 
@@ -110,6 +135,6 @@ class Config(object):
     params["agentCount"] = self.value(self.getint('ACS', 'agentCount'))
     params["agentVMSize"] = self.value(self.get('ACS', 'agentVMSize'))
     params["masterCount"] = self.value(self.getint('ACS', 'masterCount'))
-    params["sshRSAPublicKey"] = self.value(self.get('ACS', 'sshPublicKey'))
+    params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publicKey'))
     return params
 

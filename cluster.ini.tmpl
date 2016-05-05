@@ -19,7 +19,9 @@ orchestratorType: Mesos
 agentCount: 2
 masterCount: 3
 
-sshPublicKey: <FIXME: Enter your public SSH key into sshPublicKey in config.ini>
+[SSH]
+publicKey: <FIXME: Enter your public SSH key into sshPublicKey in config.ini>
+privatekey=~/.ssh/id_rsa
 
 [Features]
 ; Comma separated list of required features

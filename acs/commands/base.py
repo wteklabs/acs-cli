@@ -16,7 +16,6 @@ class Base(object):
     self.options = options
     self.args = args
     self.kwargs = kwargs
-    self.executeOnMaster("ls -l")
 
   def _hostnameResolves(self, hostname):
     try:

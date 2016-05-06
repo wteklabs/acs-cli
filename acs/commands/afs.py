@@ -78,25 +78,27 @@ class Afs(Base):
             cmd = "chmod +x /usr/bin/azurefile-dockervolumedriver"
             self.executeOnAgent(cmd, ip)
 
-            cmd = "wget https://raw.githubusercontent.com/Azure/azurefile-dockervolumedriver/" + driver_version + "/contrib/init/upstart/azurefile-dockervolumedriver.conf"
+            cmd = "wget https://raw.githubusercontent.com/Azure/azurefile-dockervolumedriver/" + driver_version + "/contrib/init/systemd/azurefile-dockervolumedriver.service"
+            self.executeOnAgent(cmd, ip)
+            cmd = "sudo cp azurefile-dockervolumedriver.service /etc/systemd/system/azurefile-dockervolumedriver.service"
             self.executeOnAgent(cmd, ip)
 
-            cmd = "sudo cp azurefile-dockervolumedriver.conf /etc/init/azurefile-dockervolumedriver.conf"
-            self.executeOnAgent(cmd, ip)
-
-            cmd = "echo 'AF_ACCOUNT_NAME=" + self.config.get("Storage", "name") + "' > azurefile-dockervolumedriver.default"
+            cmd = "echo 'AZURE_STORAGE_ACCOUNT=" + self.config.get("Storage", "name") + "' > azurefile-dockervolumedriver"
             self.executeOnAgent(cmd, ip)
         
-            cmd = "echo 'AF_ACCOUNT_KEY=" + self.getStorageAccountKey() + "' >> azurefile-dockervolumedriver.default"
+            cmd = "echo 'AZURE_STORAGE_ACCOUNT_KEY=" + self.getStorageAccountKey() + "' >> azurefile-dockervolumedriver"
             self.executeOnAgent(cmd, ip)
             
-            cmd = "sudo cp azurefile-dockervolumedriver.default /etc/default/azurefile-dockervolumedriver"
+            cmd = "sudo cp azurefile-dockervolumedriver /etc/default/azurefile-dockervolumedriver"
             self.executeOnAgent(cmd, ip)
 
-            cmd = "sudo initctl reload-configuration"
+            cmd = "sudo systemctl daemon-reload"
             self.executeOnAgent(cmd, ip)
 
-            cmd = "sudo initctl start azurefile-dockervolumedriver"
+            cmd = "sudo systemctl enable azurefile-dockervolumedriver"
+            self.executeOnAgent(cmd, ip)
+
+            cmd = "sudo systemctl start azurefile-dockervolumedriver"
             self.executeOnAgent(cmd, ip)
 
             cmd = "mkdir -p " + mount

@@ -62,13 +62,24 @@ these steps (in this example the new command is called `Foo`:
 
   * Add the command `foo` and its description to the "Commands" section of the docstring for acs/cli.py
   * Copy `acs/commands/command.tmpl` to `acs/commands/foo.py`
-    * Add the commands and options to the docstring
+    * Add the subcommands and options to the docstring of the foo.py file
     * Implement each command in a method using the same name as the command
   * Add foo.py import to `acs/commands/__init__.py`
   * Copy `tests/command/test_command.tmpl` to `test/command/test_foo.py`
     * Implement the tests
   * Run the tests with `python setup.py test` and iterate as necessary
+  * Install the package with `python setup.py install`
+  
+## Adding a subcommand
 
+Subcommands are applied to commands, to add a subcommand do the following:
+
+  * Add the subcommand to the docstring of the relevant command class (e.g. foo.bar)
+  * Add a method with the same name as the subcommand
+  * Add a test
+  * Run the tests with `python setup.py test` and iterate as necessary
+  * Install the package with `python setup.py install`
+  
 ## Testing
 
 Run tests using [py.test:](http://pytest.org/latest) and [coverage](https://pypi.python.org/pypi/pytest-cov):

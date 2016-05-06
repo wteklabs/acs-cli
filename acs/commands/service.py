@@ -10,8 +10,10 @@ Usage:
 Commands:
   create                create an Azure Container Service
   delete                delete an Azure Container Service
+  show                  display the current service configuration
 
 Options:
+
 
 Help:
   For help using the oms command please open an issue at 
@@ -79,3 +81,12 @@ class Service(Base):
     print("'azure container delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
     command = "azure group delete " + self.config.get('Group', 'name')
     os.system(command)
+
+  def show(self):
+    """
+    Output the configuration of this cluster in json format.
+    """
+    config = self.getClusterSetup()
+    return json.dumps(config, sort_keys=True,
+                      indent=4, separators=(',', ': '))
+

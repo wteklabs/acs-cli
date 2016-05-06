@@ -27,6 +27,9 @@ class Base(object):
   def getManagementEndpoint(self):
     return self.config.get('ACS', 'dnsPrefix') + 'mgmt.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
+  def getAgentEndpoint(self):
+    return self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
+
   def run(self):
     raise NotImplementedError("You must implement the run() method in your commands")
 
@@ -85,6 +88,21 @@ class Base(object):
     else:
       self.log.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
 
+  def getClusterSetup(self):
+    """
+    Get all the data about how this cluster is configured.
+    """
+    data = {}
+    data["parameters"] = self.config.getACSParams()
+    
+    fqdn = {}
+    fqdn["master"] = self.getManagementEndpoint()
+    fqdn["agent"] = self.getAgentEndpoint()
+    data["domains"] = fqdn
+  
+    return data
+
+
 
 """The cofiguration for an ACS cluster to work with"""
 from acs.ACSLogs import ACSLog
@@ -133,4 +151,3 @@ class Config(object):
     params["masterCount"] = self.value(self.getint('ACS', 'masterCount'))
     params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publicKey'))
     return params
-

@@ -43,8 +43,11 @@ more details.
 ## Pre-Rquisites
 
   * Python 3
+	* `apt-get install python`
   * [PIP](https://pip.pypa.io/en/stable/installing/)
-  * 
+  * Azure CLI installed and configured to access the test subscription
+    * install Node and NPM
+    * `sudo npm install azure-cli -g`
 
 ## Preparing
 

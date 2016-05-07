@@ -1,8 +1,5 @@
 """Tests for `acs afs` subcommand."""
 
-from acs import commands
-from acs.commands.base import Config
-
 import pytest
 
 class TestAfs():
@@ -15,9 +12,5 @@ class TestAfs():
     @slow
     def test_install(self, afs):
         result = afs.install()
-        assert "foo" in result
+        assert "Exception" not in result
 
-    @pytest.fixture
-    def afs(self):
-        config = Config("tests/test_dcos_cluster.ini")
-        return commands.Afs(config, None)

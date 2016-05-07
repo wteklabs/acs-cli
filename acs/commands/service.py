@@ -52,6 +52,14 @@ class Service(Base):
   def help(self):
     print(__doc__)
 
+  def exists(self):
+    """ Tests whether the management endpoint is accessible, if it is we assume the service exists """
+    exists = Base._hostnameResolves(self, Base.getManagementEndpoint(self))
+    if exists:
+      return True
+    else:
+      return False
+
   def create(self):
     self.log.debug("Creating ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))

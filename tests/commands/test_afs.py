@@ -8,12 +8,14 @@ class TestAfs(TestCase):
     def setUp(self):
         self.BASE_COMMAND = ['acs', 'afs']
 
-    def test_install(self):
-        output = self.execute(['install'])
-        self.assertTrue(len(output) >=  1)
+# This test takes a long time to run and thus is excluded for now
+#    def test_install(self):
+#        output = self._execute(['install'])
+#        self.assertTrue(len(output) >=  1)
 
-    def execute(self, command):
+    def _execute(self, command):
         full_cmd = self.BASE_COMMAND
         full_cmd.extend(command)
         result = check_output(full_cmd)
         return result.decode("utf-8")
+

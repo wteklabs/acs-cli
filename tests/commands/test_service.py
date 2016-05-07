@@ -10,7 +10,8 @@ class TestService():
     )
 
     def test_exists(self, service):
-        assert service.exists()
+        exists = service.exists()
+        assert exists
 
     def test_show(self, service):
         result = service.show()

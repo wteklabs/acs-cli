@@ -113,9 +113,10 @@ class Afs(Base):
     def createStorage(self):
         """
         Create a storage account for this cluster as defined in the config file.
-        FIXME: this and related storage methods should move to their own module or class
         """
         self.log.debug("Creating Storage Account")
+
+        Base.createResourceGroup(self)
     
         command = "azure storage account create"
         command = command + " --type " + self.config.get('Storage', 'type')

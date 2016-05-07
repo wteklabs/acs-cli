@@ -56,9 +56,7 @@ class Service(Base):
     self.log.debug("Creating ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
 
-    #FIXME: Change to use ACS commands
-    command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
-    os.system(command)
+    Base.createResourceGroup(self)
     
     command = "azure group deployment create"
     command = command + " " + self.config.get('ACS', 'dnsPrefix')

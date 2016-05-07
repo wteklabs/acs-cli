@@ -30,6 +30,12 @@ class Base(object):
   def getAgentEndpoint(self):
     return self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
+  def createResourceGroup(self):
+    self.log.debug("Creating Resource Group")
+
+    command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
+    os.system(command)
+
   def run(self):
     raise NotImplementedError("You must implement the run() method in your commands")
 

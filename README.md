@@ -91,6 +91,13 @@ Run tests using [py.test:](http://pytest.org/latest) and [coverage](https://pypi
 python setup.py test
 ```
 
+Note, by default this does not run the slow tests (like creating the
+cluster and installing features. You must therefore first have run the full suite of tests at least once. You can do this with:
+
+```
+py.test --runslow
+```
+
 ## Releasing
 
 Cut a release and publish to the [Python Package

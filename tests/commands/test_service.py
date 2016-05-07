@@ -1,6 +1,5 @@
 """Tests for `acs service` command."""
 
-from subprocess import check_output
 from acs import commands
 from acs.commands.base import Config
 
@@ -8,10 +7,15 @@ import pytest
 
 class TestService():
 
-# Thia test is very slow, so we are not running it right now
-#    def test_create_exits_succesfully(self):
-#        output = self.execute(['acs', 'service', 'create'])
-#        pass
+    slow = pytest.mark.skipif(
+        not pytest.config.getoption("--runslow"),
+        reason="need --runslow option to run"
+    )
+
+    @slow
+    def test_create(self, service):
+        result = service.create()
+        assert "foo" in result
 
     def test_show(self, service):
         result = service.show()

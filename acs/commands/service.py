@@ -61,6 +61,9 @@ class Service(Base):
       return False
 
   def create(self):
+    if self.exists():
+      return "It appears that the cluster already exists:\n" + self.show()
+
     self.log.debug("Creating ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
 
@@ -73,6 +76,9 @@ class Service(Base):
     command = command + " -p '" + json.dumps(self.config.getACSParams()) + "'"
     
     os.system(command)
+
+    if self.exists():
+      return self.show()
 
   def delete(self):
     self.log.debug("Deleting ACS Deployment")

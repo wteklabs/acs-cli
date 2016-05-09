@@ -68,7 +68,7 @@ class Base(object):
     
     cmd = cmd.replace("\"", "\\\"")
     sshCmd = sshAgentConnection + ' \'' + cmd + '\''
-    self.executeOnMaster(sshCmd)
+    return self.executeOnMaster(sshCmd)
 
   def executeOnMaster(self, cmd):
     """
@@ -89,10 +89,15 @@ class Base(object):
       AgentRequestHandler(session)
       stdin, sterr, stdout = ssh.exec_command(cmd)
       stdin.close()
+      
+      result = ""
       for line in stdout.read().splitlines():
         self.log.debug(line)
+        result = result + line
     else:
       self.log.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
+      result = "Exception: No test cluster is available"
+    return result
 
   def getClusterSetup(self):
     """

@@ -65,50 +65,54 @@ class Afs(Base):
         ips = Base.getAgentIPs(self)
         for ip in ips:
             self.log.debug("Installing AFS on: " + ip)
-            
+     
+            result = ""
+
             cmd = "rm azurefile-dockervolumedriver*"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
             
             cmd = "wget https://github.com/Azure/azurefile-dockervolumedriver/releases/download/" + driver_version + "/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "cp azurefile-dockervolumedriver /usr/bin/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "chmod +x /usr/bin/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "wget https://raw.githubusercontent.com/Azure/azurefile-dockervolumedriver/" + driver_version + "/contrib/init/systemd/azurefile-dockervolumedriver.service"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
             cmd = "sudo cp azurefile-dockervolumedriver.service /etc/systemd/system/azurefile-dockervolumedriver.service"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "echo 'AZURE_STORAGE_ACCOUNT=" + self.config.get("Storage", "name") + "' > azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
         
             cmd = "echo 'AZURE_STORAGE_ACCOUNT_KEY=" + self.getStorageAccountKey() + "' >> azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
             
             cmd = "sudo cp azurefile-dockervolumedriver /etc/default/azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "sudo systemctl daemon-reload"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "sudo systemctl enable azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "sudo systemctl start azurefile-dockervolumedriver"
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
 
             cmd = "mkdir -p " + mount
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
         
             urn = self.getShareEndpoint().replace("https:", "") + self.config.get("Storage", "shareName")
             username = self.config.get("Storage", "name")
             password = self.getStorageAccountKey()
             cmd = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
-            self.executeOnAgent(cmd, ip)
+            result = result + self.executeOnAgent(cmd, ip)
+
+            return result
 
     def createStorage(self):
         """

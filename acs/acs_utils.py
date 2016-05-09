@@ -141,27 +141,4 @@ class ACSUtils:
             else:
                 self.log.error("Unknown feature: " + feature)
 
-    def addOMS(self):
-        """
-        Add OMS to all Agents using the details defined in the config
-        file (OMS_WORKSPACE_ID and OMS_WORKSPACE_PRIMARY_KEY).
-        """
-        hosts = self.getAgentHostNames()
-        for host in hosts:
-            cmd = "wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh\n"
-            self.executeOnAgent(cmd, host)
-
-            cmd = "chmod +x ./omsagent-1.1.0-28.universal.x64.sh\n"
-            self.executeOnAgent(cmd, host)
-
-            workspace_id = self.config.get('OMS', "workspace_id")
-            workspace_key = self.config.get('OMS', "workspace_primary_key")
-            cmd = "sudo ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w " + workspace_id + " -s " + workspace_key + "\n"
-            self.executeOnAgent(cmd, host)
-
-            cmd = "sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n"
-            self.executeOnAgent(cmd, host)
-
-            cmd = "sudo service docker restart\n"
-            self.executeOnAgent(cmd, host)
 

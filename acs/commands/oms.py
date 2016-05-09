@@ -5,11 +5,9 @@ Usage:
   oms <command> [help] [options]
 
 Commands:
-  hello                A friendly welcoming message
+  install                Install the OMS monitoring agent on all ACS agents
 
 Options:
-  -n --name=NAME       Name of person to say hello to.
-  --familiar           Whether to use a familiar greeting.
 
 Help:
   For help using the oms command please open an issue at 
@@ -45,20 +43,35 @@ class Oms(Base):
           print("Unknown command: '" + command + "'")
           self.help()
 
-  def hello(self):
+  def install(self):
       """
-      A simple demo that says hello.
+      Install the OMS agent on all ACS agents
       """
-      if self.args['--familiar']:
-          greeting = "Hi "
-      else:
-          greeting = "Hello, "
-      name = self.args['--name']
-      if name:
-          return greeting + name
-      else:
-          return 'Hello, world!'
 
+      ips = Base.getAgentIPs(self)
+      for ip in ips:
+        self.log.debug("Installing OMS on: " + ip)
+        
+        result = ""
+
+        cmd = "wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh\n"
+        result = result + self.executeOnAgent(cmd, ip)
+
+        cmd = "chmod +x ./omsagent-1.1.0-28.universal.x64.sh\n"
+        result = result + self.executeOnAgent(cmd, ip)
+
+        workspace_id = self.config.get('OMS', "workspace_id")
+        workspace_key = self.config.get('OMS', "workspace_primary_key")
+        cmd = "sudo ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w " + workspace_id + " -s " + workspace_key + "\n"
+        result = result + self.executeOnAgent(cmd, ip)
+
+        cmd = "sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n"
+        result = result + self.executeOnAgent(cmd, ip)
+
+        cmd = "sudo service docker restart\n"
+        result = result + self.executeOnAgent(cmd, ip)
+
+        return result
 
   def help(self):
     print(__doc__)

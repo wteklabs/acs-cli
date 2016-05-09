@@ -13,6 +13,11 @@ def afs():
     return commands.Afs(config, None)
 
 @pytest.fixture(scope="module")
+def oms():
+    config = Config("tests/test_dcos_cluster.ini")
+    return commands.Oms(config, None)
+
+@pytest.fixture(scope="module")
 def service():
     config = Config("tests/test_dcos_cluster.ini")
     return commands.Service(config, None)

@@ -1,5 +1,6 @@
 import pytest
 
+from acs.AgentPool import AgentPool
 from acs import commands
 from acs.commands.base import Config
 
@@ -21,3 +22,8 @@ def oms():
 def service():
     config = Config("tests/test_dcos_cluster.ini")
     return commands.Service(config, None)
+
+@pytest.fixture(scope="module")
+def agentPool():
+    config = Config("tests/test_dcos_cluster.ini")
+    return AgentPool(config)

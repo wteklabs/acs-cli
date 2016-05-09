@@ -42,7 +42,6 @@ class Afs(Base):
                 result = method()
                 if result is None:
                     result = command + " returned no results"
-                    self.log.warning("afs install only operates on a single VMSS right now, meaning we are only working on the public or private VMSS")
         if result:
             print(result)
         else:

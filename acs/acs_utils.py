@@ -109,7 +109,6 @@ class ACSUtils:
         with SCPClient(self.ssh.get_transport()) as scp:
             scp.put(localfile, remotefile)
 
-
     def agentDockerCommand(self, docker_cmd):
         """ Run a Docker command on each of the agents """
         hosts = self.getAgentHostNames()

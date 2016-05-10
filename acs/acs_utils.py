@@ -62,14 +62,6 @@ class ACSUtils:
         agentPool = AgentPool(self.config)
         agentPool.scale(capacity)
 
-    def marathonCommand(self, command, method = 'GET', data = None):
-        curl = 'curl -s -X ' + method 
-        if data != None:
-            curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
-        cmd = curl + ' localhost:8080/v2/' + command 
-        self.log.debug('Command to execute: ' + cmd)
-        return subprocess.check_output(cmd, shell=True)
-
     def dockerCommand(self, command):
         url = self.getManagementEndpoint()
         cmd = 'docker ' + command

@@ -51,6 +51,7 @@ setup(
         'docopt',
         'azurerm',
         'paramiko',
+        'sshtunnel',
         'scp'
     ],
     extras_require = {

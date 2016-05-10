@@ -11,6 +11,7 @@ Commands:
   create                create an Azure Container Service
   delete                delete an Azure Container Service
   show                  display the current service configuration
+  openTunnel            open an SSH tunnel to the management interface
 
 Options:
 
@@ -26,6 +27,8 @@ from docopt import docopt
 from inspect import getmembers, ismethod
 import json
 import os
+import subprocess
+import sys  
 
 class Service(Base):
 
@@ -101,4 +104,36 @@ class Service(Base):
     config = self.getClusterSetup()
     return json.dumps(config, sort_keys=True,
                       indent=4, separators=(',', ': '))
+
+  def openTunnel(self):
+    """
+    Open an SSH tunnel to the management endpoint.
+    """
+    try:
+      pid = os.fork()
+      if pid > 0:
+        # Exit parent process
+        sys.exit(0)
+    except OSError, e:
+        print >> sys.stderr, "fork failed: %d (%s)" % (e.errno, e.strerror)
+        sys.exit(1)
+
+    # Configure the child processes environment
+    os.chdir("/")
+    os.setsid()
+    os.umask(0)
+
+    pid = os.getpid()
+    print("To stop the SSH tunnel run 'kill " + str(os.getpid()) + "'")
+
+    Base.openTunnel(self)
+    return pid
+
+  def marathonCommand(self, command, method = 'GET', data = None):
+    curl = 'curl -s -X ' + method 
+    if data != None:
+      curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
+    cmd = curl + ' localhost/marathon/v2/' + command 
+    self.log.debug('Command to execute: ' + cmd)
+    return Base.sshTunnel(self, cmd)
 

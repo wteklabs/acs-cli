@@ -1,5 +1,14 @@
 """
-Commands for working with OMS and ACS
+Add the
+[OMS](https://blogs.technet.microsoft.com/momteam/2015/11/03/announcing-linux-docker-container-management-with-oms/)
+monitoring solution to the cluster.
+
+Visit http://mms.microsoft.com and sign up for a free OMS
+account. Then click "Settings" and then "Connected Sources". You will
+need to copy your Workspace ID and your Workspace Primary Key into
+your config file. Finally, run the `install` command to install OMS on
+each of your agents (please note that this command restarts the Docker
+Engine and thus any containers on it will be stopped).
 
 Usage:
   oms <command> [help] [options]
@@ -12,6 +21,7 @@ Options:
 Help:
   For help using the oms command please open an issue at 
   https://github.com/rgardler/acs-scripts
+
 """
 
 from docopt import docopt

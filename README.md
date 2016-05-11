@@ -112,6 +112,15 @@ twine upload dist/*
 This will build both a surce tarball and a wheel build, which will run
 on all platforms.
 
+### Updating Documentation
+
+To build and pucblish the documentsation:
+
+```
+cd docs
+make gh-pages
+cd ..
+```
 
 ---------------------------------------------- 
 

@@ -1,8 +1,10 @@
 """Tests for `service` subcommand."""
 
 import pytest
+import sys
+import time
 
-class TestAfs():
+class TestDCOS():
 
     slow = pytest.mark.skipif(
         not pytest.config.getoption("--runslow"),
@@ -17,20 +19,16 @@ class TestAfs():
             data=marathonfile.read().replace('\n', '').replace("\"", "\\\"")
         response = service.marathonCommand('groups', 'POST', data)
 
-        url = "http://" + service.getAgentsFQDN()
+        url = "http://" + service.getAgentEndpoint()
 
         for i in range (0,10):
-            self.log.debug("Attempt to access service " + str(i) + " of 10")
             try:
                 r = requests.get(url)
                 if r.status_code == 200:
-                    self.log.debug("Got a 200 response from the application")
                     break
             except:
                 e = sys.exc_info()[0]
-                self.log.debug("Attempt failed: " + str(e))
-                self.log.debug("Sleeping for 5 seconds")
-                time.sleep (5)
+                time.sleep(5)
 
         assert i >= 9
 

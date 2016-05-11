@@ -7,6 +7,7 @@ from .commands.afs import *
 import ConfigParser
 import json
 import os
+import time
 from os.path import expanduser
 import paramiko
 from paramiko import SSHClient
@@ -20,7 +21,8 @@ class ACSUtils:
         defaults = {"orchestratorType": "Mesos"}
         config = ConfigParser.ConfigParser(defaults)
         config.read(configfile)
-        config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
+        if not config.has_option('Group', 'name'):
+            config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
         self.config = config
         
         #self.ssh = SSHClient()
@@ -34,16 +36,16 @@ class ACSUtils:
         Return a dictionary of usefel information about the ACS configuration.
         """
         out = {}
-        
+
         out["orchestratorType"] = self.getMode()
         if self.getMode() == "SwarmPreview":
-            sshTunnel = "ssh -L 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
+            sshTunnel = "ssh -L 2375:localhost:2375 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200 -i " + expanduser(self.config.get('SSH', "privatekey"))
         elif self.getMode() == "Mesos":
-            sshTunnel = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200"
+            sshTunnel = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + '@' + self.getManagementEndpoint() + " -p 2200 -i " + expanduser(self.config.get('SSH', "privatekey"))
         else:
             sshTunnel = "(Need to add support to CLI to generate tunnel info for this orchestrator type)"
         out["sshTunnel"] = sshTunnel
-        
+
         public = self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
         out["publicFQDN"] = public
 
@@ -52,8 +54,6 @@ class ACSUtils:
     def getMode(self):
         """Get the orchestrator mode for this instance of ACS"""
         return self.config.get("ACS", "orchestratorType")
-
-
 
     def scale(self, capacity):
         """
@@ -88,16 +88,17 @@ class ACSUtils:
 
     def getAgentsFQDN(self):
         return self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region') + '.cloudapp.azure.com'
-
     def getMasterSSHConnection(self):
         url = self.getManagementEndpoint()
         return "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + url + ' -p 2200'
 
     def _configureSSH(self):
         """Configure SSH on the master so that it can connect to the agents"""
-        home = expanduser("~")
-        localfile = home + "/.ssh/id_rsa"
+        localfile = expanduser(self.config.get('SSH', 'privatekey'))
         remotefile = "~/.ssh/id_rsa"
+
+        self.log.debug("Copying " + localfile + " to remote " + remotefile)
+
         with SCPClient(self.ssh.get_transport()) as scp:
             scp.put(localfile, remotefile)
 

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to Azure Container Service Tools Documentation’s documentation! &mdash; Azure Container Service Tools Documentation 0.1.1 documentation</title>
+    <title>Welcome to Azure Container Service Tools documentation! &mdash; Azure Container Service Tools Documentation 0.1.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -38,12 +38,36 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="welcome-to-azure-container-service-tools-documentation-s-documentation">
-<h1>Welcome to Azure Container Service Tools Documentation&#8217;s documentation!<a class="headerlink" href="#welcome-to-azure-container-service-tools-documentation-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
+  <div class="section" id="welcome-to-azure-container-service-tools-documentation">
+<h1>Welcome to Azure Container Service Tools documentation!<a class="headerlink" href="#welcome-to-azure-container-service-tools-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="preparation">
+<h2>Preparation<a class="headerlink" href="#preparation" title="Permalink to this headline">¶</a></h2>
+<p>Create a config.ini by copying config.ini.tmpl and editing accoringly.</p>
+<p>Create a [service principle for the
+application](<a class="reference external" href="http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure">http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure</a>)
+and add the details to your config.ini.</p>
+</div>
+<div class="section" id="basic-use">
+<h2>Basic Use<a class="headerlink" href="#basic-use" title="Permalink to this headline">¶</a></h2>
+<p>``
+acs &lt;command&gt; &lt;args&gt;
+``</p>
+<p>By defaultthe config file <cite>cluster.ini</cite> will be use3d, if you want to
+use a different config file use the <cite>&#8211;config-file=FILE</cite> option.</p>
+<p>To get help for the CLI use:</p>
+<p>``
+acs &#8211;help
+``</p>
+</div>
+<div class="section" id="service-commands">
+<h2>Service commands<a class="headerlink" href="#service-commands" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>service</cite> commands provide convenience methods for managing an
+instance of the Azure Container Service. Run <cite>acs service help</cite> for
+more details.</p>
 <div class="toctree-wrapper compound">
 <ul class="simple">
 </ul>
+</div>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -63,7 +87,12 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to Azure Container Service Tools Documentation&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#">Welcome to Azure Container Service Tools documentation!</a><ul>
+<li><a class="reference internal" href="#preparation">Preparation</a></li>
+<li><a class="reference internal" href="#basic-use">Basic Use</a></li>
+<li><a class="reference internal" href="#service-commands">Service commands</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 <div class="relations">

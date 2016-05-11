@@ -126,7 +126,7 @@ class Service(Base):
     pid = os.getpid()
     print("To stop the SSH tunnel run 'kill " + str(os.getpid()) + "'")
 
-    Base.openTunnel(self)
+    Base.sshTunnel(self)
     return pid
 
   def marathonCommand(self, command, method = 'GET', data = None):

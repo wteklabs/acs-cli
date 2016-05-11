@@ -1,3 +1,0 @@
-azurerm
-paramiko
-scp

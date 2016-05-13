@@ -1,5 +1,7 @@
 """Tests for `acs service` command."""
 
+from acs.AgentPool import AgentPool
+
 import pytest
 
 class TestService():
@@ -18,3 +20,9 @@ class TestService():
         assert "rgacstestdcos" in result
         assert "azure.com" in result
 
+    def test_scale(self, service):
+        initial_agents = service.config.getint('ACS', 'agentCount')
+        service.args = {'--agents': initial_agents + 1}
+
+        result = service.scale()
+        assert "Scaled to " + str(initial_agents + 1) == result

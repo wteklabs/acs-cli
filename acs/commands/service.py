@@ -10,11 +10,17 @@ Usage:
 Commands:
   create                create an Azure Container Service
   delete                delete an Azure Container Service
+  scale                 Scale the agent cluster up
   show                  display the current service configuration
   openTunnel            open an SSH tunnel to the management interface
 
 Options:
+  --agents=X            number of agents (currently scale only scale up is supported)
 
+Examples:
+
+Make the number of agents in the primary pool 5
+  acs service scale --agents=5
 
 Help:
   For help using the oms command please open an issue at 
@@ -29,13 +35,16 @@ import json
 import os
 import subprocess
 import sys  
+from tempfile import mkstemp
+from shutil import move
+from os import remove, close
 
 class Service(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
-    # print("Global args")
-    # print(args)
+    print("Service args")
+    print(args)
     self.args = args
     
     command = self.args["<command>"]
@@ -72,16 +81,18 @@ class Service(Base):
 
     Base.createResourceGroup(self)
     
-    command = "azure group deployment create"
-    command = command + " " + self.config.get('ACS', 'dnsPrefix')
-    command = command + " " + self.config.get('ACS', 'dnsPrefix')
-    command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
-    command = command + " -p '" + json.dumps(self.config.getACSParams()) + "'"
-    
-    os.system(command)
+    self._deploy(self.config.get('ACS', 'dnsPrefix'))
 
     if self.exists():
       return self.show()
+
+  def _deploy(self, name):
+    command = "azure group deployment create"
+    command = command + " " + self.config.get('ACS', 'dnsPrefix')
+    command = command + " " + name
+    command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
+    command = command + " -p '" + json.dumps(self.config.getACSParams()) + "'"
+    os.system(command)
 
   def delete(self):
     self.log.debug("Deleting ACS Deployment")
@@ -96,6 +107,32 @@ class Service(Base):
     print("'azure container delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
     command = "azure group delete " + self.config.get('Group', 'name')
     os.system(command)
+
+  def scale(self):
+    if not self.exists():
+      return "It appears that the cluster does not exists (try running `acs service create`)"
+
+    desired_agents = self.args["--agents"]
+
+    fh, abs_path = mkstemp()
+    with open(abs_path,'w') as new_file:
+      with open(self.config.filename) as old_file:
+        for line in old_file:
+          if line.startswith("agentCount:"):
+            new_file.write("agentCount: " + str(desired_agents) + "\n")
+          else:
+            new_file.write(line)
+    close(fh)
+    try:
+      remove(self.config.filename + ".bak")
+    except OSError:
+      pass
+    move(self.config.filename, self.config.filename + ".bak")
+    move(abs_path, self.config.filename)
+
+    self._deploy("scale")
+    
+    return "Scaled to " + str(desired_agents)
 
   def show(self):
     """

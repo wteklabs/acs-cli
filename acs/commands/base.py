@@ -150,20 +150,20 @@ class Config(object):
     print("Create base object")
     self.log = ACSLog("Config")
 
-    self.config_filename = filename
-    if not self.config_filename:
-      self.config_filename = "cluster.ini"
-    if os.path.isfile(self.config_filename):
-      self.log.info("Using configuration file : " + self.config_filename)
+    self.filename = filename
+    if not self.filename:
+      self.filename = "cluster.ini"
+    if os.path.isfile(self.filename):
+      self.log.info("Using configuration file : " + self.filename)
       defaults = {"orchestratorType": "DCOS"}
       config = ConfigParser.ConfigParser(defaults)
-      config.read(self.config_filename)
+      config.read(self.filename)
       config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
       self.config_parser = config
     else:
-      raise Exception("Configuration file '" + self.config_filename + "' not found")
+      raise Exception("Configuration file '" + self.filename + "' not found")
 
-    print("config file: " + self.config_filename)
+    print("config file: " + self.filename)
 
   def get(self, section, name):
     return self.config_parser.get(section, name)

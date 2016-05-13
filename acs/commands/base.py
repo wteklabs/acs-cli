@@ -147,7 +147,7 @@ import os
 class Config(object):
 
   def __init__(self, filename):
-    print("Crete base object")
+    print("Create base object")
     self.log = ACSLog("Config")
 
     self.config_filename = filename

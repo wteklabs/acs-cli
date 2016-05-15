@@ -2,6 +2,8 @@
 
 from subprocess import check_output
 
+import pytest
+
 class TestFoo():
     slow = pytest.mark.skipif(
         not pytest.config.getoption("--runslow"),

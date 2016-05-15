@@ -6,9 +6,10 @@ Preparation
 
 Create a config.ini by copying config.ini.tmpl and editing accoringly.
 
-Create a [service principle for the
-application](http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure)
-and add the details to your config.ini.
+Create a `service principle`_ for the application and add the details
+to your config.ini.
+
+.. _Service Principle: http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure
 
 Basic Use
 ---------
@@ -17,7 +18,7 @@ Basic Use
 acs <command> <args>
 ``
 
-By defaultthe config file `cluster.ini` will be use3d, if you want to
+By default the config file `cluster.ini` will be used, if you want to
 use a different config file use the `--config-file=FILE` option.
 
 To get help for the CLI use:
@@ -26,12 +27,29 @@ To get help for the CLI use:
 acs --help
 ``
 
-Service commands
-----------------
+Working with ACS Service
+------------------------
 
 The `service` commands provide convenience methods for managing an
 instance of the Azure Container Service. Run `acs service help` for
 more details.
+
+```
+acs service create
+```
+
+Once you have created your service you will likely want to open a
+connection to it:
+
+```
+acs service openTunnel
+```
+
+Now you can run commands against you Azure Container Service using any
+tooling compatible with your chose orchestrator, such as the Docker
+CLI for the Docker Swarm version of ACS and the DC/OS cli for the
+DC/OS version.
+
 
 .. toctree::
    :maxdepth: 2

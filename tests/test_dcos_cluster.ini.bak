@@ -1,0 +1,45 @@
+[Subscription]
+tenant_id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+app_id: e18a01e2-1272-4c3f-be62-9ea7f3e374a4
+app_secret: 3g45hRbx
+subscription_id: 325e7c34-99fb-4190-aa87-1df746c67705
+
+[Group]
+region: westus
+
+[ACS]
+orchestratorType: DCOS
+
+dnsPrefix: rgacstestdcos
+
+username: azureuser
+password: Password1234
+
+agentCount: 16
+agentVMSize: Standard_A1
+masterCount: 3
+
+[SSH]
+publicKey: ~/.ssh/acs_test_id_rsa.pub
+privatekey: ~/.ssh/acs_test_id_rsa
+
+[Features]
+featureList: afs
+
+[Storage]
+name: rgacsteststorage
+type: LRS
+shareName: files
+mount: ~/persistent_data
+
+[Diagnostics]
+storage_account_name: nr3xclyljwaoemesos0 
+
+[OMS]
+workspace_id: fd117084-8838-4b0c-b6f6-ea4204a0bf22
+workspace_primary_key: RNT6gGPgf2g4bTHrYQktgtE0kXapDcpu+8mZTxEJ939SQhaqkU6lX8tG4U6jGklBGRFG/AJsdzYV6sPf6XtVzg==
+
+
+[Template]
+templateUrl: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-acs-mesos/azuredeploy.json
+

@@ -13,7 +13,7 @@ See the [documentation](http://rgardler.github.io/acs-cli).
 
 # Development
 
-## Pre-Rquisites
+## Prerequisites
 
   * Python 3
 	* `apt-get install python`
@@ -30,6 +30,34 @@ To install all libraries and development dependencies:
 sudo pip install -e .
 sudo pip install -e .[test]
 ```
+
+## General Use
+
+Copy `cluster.ini` and edit accordingly.
+
+```
+acs --help
+```
+
+## Create a Service
+
+```
+acs service create
+```
+
+Once you have created your service you will likely want to open a
+connection to it:
+
+```
+acs service openTunnel
+```
+
+Now you can run commands against you Azure Container Service using any
+tooling compatible with your chose orchestrator, such as the Docker
+CLI for the Docker Swarm version of ACS and the DC/OS cli for the
+DC/OS version.
+
+# Developing
 
 ## Adding a command
 

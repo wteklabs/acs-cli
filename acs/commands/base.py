@@ -120,7 +120,7 @@ class Base(object):
         while True:
           sleep(1)
 
-  def getClusterSetup(self):
+  def getCluserSetup(self):
     """
     Get all the data about how this cluster is configured.
     """
@@ -131,7 +131,9 @@ class Base(object):
     fqdn["master"] = self.getManagementEndpoint()
     fqdn["agent"] = self.getAgentEndpoint()
     data["domains"] = fqdn
-  
+    
+    data["sshTunnel"] = "ssh -L 80:localhost:80 -N " + self.getManagementEndpoint() + " -p 2200"
+
     return data
 
 
@@ -166,7 +168,28 @@ class Config(object):
     print("config file: " + self.filename)
 
   def get(self, section, name):
-    return self.config_parser.get(section, name)
+    value = self.config_parser.get(section, name)
+
+    if section == "SSH": 
+      public_filepath = os.path.expanduser(self.config_parser.get('SSH', 'publicKey'))
+      private_filepath = os.path.expanduser(self.config_parser.get('SSH', 'privatekey'))
+
+      if name == "privateKey":
+        self.log.debug("Checking if private SSH key exists: " + private_filepath)
+        if not os.path.isfile(private_filepath):
+          self.log.debug("Key does not exist")
+          self._generateSSHKey(private_filepath, public_filepath)
+        with open(private_filepath, 'r') as sshfile: 
+          self.log.debug("Key does not exist")
+          value = sshfile.read().replace('\n', '') 
+      elif name == "publickey":
+        self.log.debug("Checking if public SSH key exists: " + public_filepath)
+        if not os.path.isfile(public_filepath):
+          self._generateSSHKey(private_filepath, public_filepath)
+        with open(public_filepath, 'r') as sshfile: 
+          value = sshfile.read().replace('\n', '') 
+        
+    return value
 
   def getint(self, section, name):
     return self.config_parser.getint(section, name)
@@ -177,11 +200,31 @@ class Config(object):
     return value
     
   def getACSParams(self):
+    """
+    Get a dictionary of all ACS parameters. Note that 
+    this is not all the parameters provided in the config 
+    file, only the ones needed by the ACS Resource Provider'
+    """
     params = {}
     params["dnsNamePrefix"] = self.value(self.get('ACS', 'dnsPrefix'))
     params["orchestratorType"] = self.value(self.get('ACS', 'orchestratorType'))
     params["agentCount"] = self.value(self.getint('ACS', 'agentCount'))
     params["agentVMSize"] = self.value(self.get('ACS', 'agentVMSize'))
     params["masterCount"] = self.value(self.getint('ACS', 'masterCount'))
-    params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publicKey'))
+    params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publickey'))
+  
     return params
+
+  def _generateSSHKey(self, private_filepath, public_filepath):
+    """
+    Generate public and private keys. The filepath parameters 
+    are the paths top the respective publoic and private key files.
+    """
+    self.log.debug("Writing SSH keys to: " + private_filepath + " and " + public_filepath)
+    key = paramiko.RSAKey.generate(1024)
+    key.write_private_key_file(os.path.expanduser(private_filepath))
+    
+    with open(os.path.expanduser(public_filepath),"w") as public:
+      public.write("%s %s" % (key.get_name(), key.get_base64()))
+
+    public.close()

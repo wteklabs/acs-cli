@@ -39,11 +39,15 @@ setup(
     license = 'Apache License v2',
     classifiers = [
         'Intended Audience :: Developers',
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
         'Topic :: Utilities',
-        'License :: Apache License v2',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
-        'Operating System :: OS Inndependent',
-        'Programming Language :: Python 3',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3'
     ],
     keywords = 'cli',
     packages = find_packages(exclude=['docs', 'tests*']),

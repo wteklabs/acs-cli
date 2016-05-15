@@ -27,3 +27,7 @@ def service():
 def agentPool():
     config = Config("tests/test_dcos_cluster.ini")
     return AgentPool(config)
+
+@pytest.fixture(scope="module")
+def config():
+    return Config("tests/test_dcos_cluster.ini")

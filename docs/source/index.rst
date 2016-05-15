@@ -14,36 +14,30 @@ to your config.ini.
 Basic Use
 ---------
 
-``
-acs <command> <args>
-``
+The basic structure of an acs command is::
+
+  acs <command> <args>
 
 By default the config file `cluster.ini` will be used, if you want to
 use a different config file use the `--config-file=FILE` option.
 
-To get help for the CLI use:
+To get help for the CLI use::
 
-`` 
-acs --help
-``
+  acs --help
 
 Working with ACS Service
 ------------------------
 
 The `service` commands provide convenience methods for managing an
 instance of the Azure Container Service. Run `acs service help` for
-more details.
+more details.::
 
-```
-acs service create
-```
+  acs service create
 
 Once you have created your service you will likely want to open a
-connection to it:
+connection to it::
 
-```
-acs service openTunnel
-```
+  acs service openTunnel
 
 Now you can run commands against you Azure Container Service using any
 tooling compatible with your chose orchestrator, such as the Docker

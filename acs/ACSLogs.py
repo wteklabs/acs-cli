@@ -9,7 +9,10 @@ class ACSLog:
             ascii_text = str(name).encode('string_escape')
             return unicode(ascii_text)
 
-        output_dir = 'logs'
+        output_dir = os.path.expanduser('~/.acs/logs')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
         
@@ -34,6 +37,8 @@ class ACSLog:
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
+
+            self.debug("Logs being written to " + output_dir)
 
     def info(self, msg):
         self.logger.info(msg)

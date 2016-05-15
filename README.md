@@ -29,6 +29,8 @@ To install all libraries and development dependencies:
 ```
 sudo pip install -e .
 sudo pip install -e .[test]
+azure login
+sudo python setup.py install
 ```
 
 ## General Use
@@ -81,7 +83,7 @@ py.test --runslow
 ## Releasing
 
 Cut a release and publish to the [Python Package
-Index](https://pypi.python.org/pypi) install install
+Index](https://pypi.python.org/pypi) install 
 [twine](http://pypi.python.org/pypi/twine. and then run:
 
 ```
@@ -91,6 +93,19 @@ twine upload dist/*
 
 This will build both a surce tarball and a wheel build, which will run
 on all platforms.
+
+Now create a tag in git:
+
+```
+git tag x.y.z
+git push --tags
+```
+
+Finally update the version numbers in `acs/__init__.py`:
+
+```
+__version__ - 'x.y.z'
+```
 
 ### Updating Documentation
 

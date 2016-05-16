@@ -36,6 +36,7 @@ import os
 import subprocess
 import sys  
 from tempfile import mkstemp
+import time
 from shutil import move
 from os import remove, close
 
@@ -66,14 +67,16 @@ class Service(Base):
 
   def exists(self):
     """ Tests whether the management endpoint is accessible, if it is we assume the service exists """
-    exists = Base._hostnameResolves(self, Base.getManagementEndpoint(self))
-    if exists:
-      return True
-    else:
-      return False
+    start = time.time()
+    exists = False
+    while not exists and (time.time() < start + 60):
+      exists = Base._hostnameResolves(self, Base.getManagementEndpoint(self))
+    if not exists:
+      self.log.debug("Waited for " + str(time.time() - start) + " seconds, DNS registration did not come up")
+    return exists
 
   def create(self):
-    if self.xists():
+    if self.exists():
       return "It appears that the cluster already exists:\n" + self.show()
 
     self.log.debug("Creating ACS Deployment")
@@ -94,7 +97,7 @@ class Service(Base):
     command = command + " -p '" + json.dumps(self.config.getACSParams()) + "'"
     os.system(command)
 
-  def delete(self):
+  def delete(self, quiet = False):
     self.log.debug("Deleting ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
     
@@ -105,7 +108,10 @@ class Service(Base):
     
     # FIXME: we shouldn't need to do the group delete, but currently container delete is not a deep delete
     print("'azure acs delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
-    command = "azure group delete " + self.config.get('Group', 'name')
+    command = "azure group delete " 
+    if quiet:
+      command = command + " --quiet"
+    command = command + self.config.get('Group', 'name')
     os.system(command)
 
   def scale(self):

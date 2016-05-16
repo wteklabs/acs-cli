@@ -7,13 +7,31 @@ A set of convenience scripts for creating and testing ACS
 clusters. These scripts can also be helpful in working out how to use
 the REST API interfaces for managing applicaitons on an ACS cluster.
 
+# Installation
+
+
+
 # Usage
 
 See the [documentation](http://rgardler.github.io/acs-cli).
 
 # Development
 
-## Prerequisites
+The easiet way to get started with development is to use a Docker
+container, but it is not necessary to do so. If you want to use the
+non-Docker environment please configure your environment as described
+in the next section, otherwise simply start a Docker Python container
+and mount this code into it with the following command:
+
+```
+docker build -t acs .
+docker run -it -v $(pwd):/src acs
+```
+
+## Non-Docker Prerequisites
+
+To setup a separate development environment (without Docker) you need
+the following setup:
 
   * Python 3
 	* `apt-get install python`
@@ -22,18 +40,21 @@ See the [documentation](http://rgardler.github.io/acs-cli).
     * install Node and NPM
     * `sudo npm install azure-cli -g`
 
-## Preparing
-
 To install all libraries and development dependencies:
 
 ```
 sudo pip install -e .
 sudo pip install -e .[test]
-azure login
-sudo python setup.py install
 ```
 
 ## General Use
+
+Before you can run any commands that use the Azure CLI you will need
+to login using the follwing command:
+
+```
+azure login
+```
 
 You can use `acs --help` for basic help, or see the
 [documentation](http://rgardler.github.com/acs-cli).

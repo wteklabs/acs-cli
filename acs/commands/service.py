@@ -73,7 +73,7 @@ class Service(Base):
       return False
 
   def create(self):
-    if self.exists():
+    if self.xists():
       return "It appears that the cluster already exists:\n" + self.show()
 
     self.log.debug("Creating ACS Deployment")
@@ -98,13 +98,13 @@ class Service(Base):
     self.log.debug("Deleting ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
     
-    command = "azure container delete"
+    command = "azure acs delete"
     command = command + " " + self.config.get('ACS', 'dnsPrefix')
     command = command + " containerservice-" + self.config.get('ACS', 'dnsPrefix')
     os.system(command)
     
     # FIXME: we shouldn't need to do the group delete, but currently container delete is not a deep delete
-    print("'azure container delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
+    print("'azure acs delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
     command = "azure group delete " + self.config.get('Group', 'name')
     os.system(command)
 

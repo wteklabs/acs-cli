@@ -4,7 +4,7 @@ from .AgentPool import *
 from .ACSLogs import *
 from .commands.afs import *
 
-import ConfigParser
+import configparser
 import json
 import os
 import time
@@ -19,7 +19,7 @@ class ACSUtils:
         self.log = ACSLog("ACSUtils")
         self.log.debug("Reading config from " + configfile)
         defaults = {"orchestratorType": "Mesos"}
-        config = ConfigParser.ConfigParser(defaults)
+        config = configparser.configparser(defaults)
         config.read(configfile)
         if not config.has_option('Group', 'name'):
             config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))

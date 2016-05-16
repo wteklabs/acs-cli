@@ -120,7 +120,7 @@ class Base(object):
         while True:
           sleep(1)
 
-  def getCluserSetup(self):
+  def getClusterSetup(self):
     """
     Get all the data about how this cluster is configured.
     """
@@ -143,7 +143,7 @@ class Base(object):
 """The cofiguration for an ACS cluster to work with"""
 from acs.ACSLogs import ACSLog
 
-import ConfigParser
+import configparser
 import os 
 
 class Config(object):
@@ -158,7 +158,7 @@ class Config(object):
     if os.path.isfile(self.filename):
       self.log.info("Using configuration file : " + self.filename)
       defaults = {"orchestratorType": "DCOS"}
-      config = ConfigParser.ConfigParser(defaults)
+      config = configparser.ConfigParser(defaults)
       config.read(self.filename)
       config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
       self.config_parser = config
@@ -221,6 +221,12 @@ class Config(object):
     are the paths top the respective publoic and private key files.
     """
     self.log.debug("Writing SSH keys to: " + private_filepath + " and " + public_filepath)
+
+    (ssh_dir, filename) = os.path.split(os.path.expanduser(private_filepath))
+    if not os.path.exists(ssh_dir):
+      self.log.debug("SSH Directory doesn't exist, creating " + ssh_dir)
+      os.makedirs(ssh_dir)
+
     key = paramiko.RSAKey.generate(1024)
     key.write_private_key_file(os.path.expanduser(private_filepath))
     

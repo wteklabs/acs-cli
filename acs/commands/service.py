@@ -151,7 +151,7 @@ class Service(Base):
       if pid > 0:
         # Exit parent process
         sys.exit(0)
-    except OSError, e:
+    except OSError as e:
         print >> sys.stderr, "fork failed: %d (%s)" % (e.errno, e.strerror)
         sys.exit(1)
 

@@ -47,7 +47,7 @@ sudo pip install -e .
 sudo pip install -e .[test]
 ```
 
-## General Use
+## Login to Azure
 
 Before you can run any commands that use the Azure CLI you will need
 to login using the follwing command:
@@ -55,6 +55,40 @@ to login using the follwing command:
 ```
 azure login
 ```
+
+Since this must be done every time you start the container you might
+want to create a new image whenever you update the software. This will
+prevent you needing to login each time. However, you will need a
+private registry to store this container as it will have your SSH keys
+and Azure login details stored within it. Docker Hub provides one
+private registry per user, so that might be enough for you.
+
+To create a Docker image with your login credentials run the following
+commands:
+
+```
+docker commit CONTAINER REPOSITORY/acs
+docker push
+```
+
+Where `CONTAINER`is the name of the container in which you ran the
+`azure login` command and `REPOSITORY` is the name of your private
+repository.
+
+You can now test that this works by starting a new container using
+this image.
+
+```
+docker run -it -v $(pwd):/src REPOSITORY/acs
+```
+
+Then, inside the container, check you are logged in with:
+
+```
+azure account show
+```
+
+## General Use
 
 You can use `acs --help` for basic help, or see the
 [documentation](http://rgardler.github.com/acs-cli).

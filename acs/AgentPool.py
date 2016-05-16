@@ -30,7 +30,7 @@ class AgentPool:
         rg_name = self.config.get('Group', 'name')
         access_token = self.getAccessToken()
 
-        vmss_list = azurerm.list_vm_scale_sets(access_token, subscription_id, rg_name)['value']
+        vmss_list = azurerm.list_vmss(access_token, subscription_id, rg_name)['value']
         self.log.debug("List of VMSS: " + json.dumps(vmss_list, indent=True))
         return vmss_list
 

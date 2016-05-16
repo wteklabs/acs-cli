@@ -132,7 +132,7 @@ class Base(object):
     fqdn["agent"] = self.getAgentEndpoint()
     data["domains"] = fqdn
     
-    data["sshTunnel"] = "ssh -L 80:localhost:80 -N " + self.getManagementEndpoint() + " -p 2200"
+    data["sshTunnel"] = "ssh -L 80:localhost:80 -N " + self.get('ACS', 'username') + self.getManagementEndpoint() + " -p 2200"
 
     return data
 
@@ -211,6 +211,7 @@ class Config(object):
     params["agentCount"] = self.value(self.getint('ACS', 'agentCount'))
     params["agentVMSize"] = self.value(self.get('ACS', 'agentVMSize'))
     params["masterCount"] = self.value(self.getint('ACS', 'masterCount'))
+    params["username"] = self.value(self.getint('ACS', 'username'))
     params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publickey'))
   
     return params

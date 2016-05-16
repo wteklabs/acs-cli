@@ -53,6 +53,7 @@ Before you can run any commands that use the Azure CLI you will need
 to login using the follwing command:
 
 ```
+azure config mode arm
 azure login
 ```
 

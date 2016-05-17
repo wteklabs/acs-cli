@@ -67,12 +67,7 @@ class Service(Base):
 
   def exists(self):
     """ Tests whether the management endpoint is accessible, if it is we assume the service exists """
-    start = time.time()
-    exists = False
-    while not exists and (time.time() < start + 60):
-      exists = Base._hostnameResolves(self, Base.getManagementEndpoint(self))
-    if not exists:
-      self.log.debug("Waited for " + str(time.time() - start) + " seconds, DNS registration did not come up")
+    exists = Base._hostnameResolves(self, Base.getManagementEndpoint(self))
     return exists
 
   def create(self):

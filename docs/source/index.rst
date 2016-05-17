@@ -116,7 +116,14 @@ Working with ACS Service
 
 The `service` commands provide convenience methods for managing an
 instance of the Azure Container Service. Run `acs service help` for
-more details.::
+more details about the available commands. Some common once are
+provided below.
+
+To examine the current configuation of the cluster run::
+
+  acs service show
+
+To create a cluster::
 
   acs service create
 

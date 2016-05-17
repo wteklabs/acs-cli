@@ -12,8 +12,9 @@ class TestDCOS():
     )
 
     def test_deployment(self, service):
-        response = service.marathonCommand('apps')
-        assert '{"apps":[]}' in response
+        response = str(service.marathonCommand('apps'))
+        service.log.info("response from marathon command: " + response)
+        assert '{\"apps\":[]}' in response
 
         with open ('marathon-app.json', "r") as marathonfile:
             data=marathonfile.read().replace('\n', '').replace("\"", "\\\"")
@@ -33,5 +34,5 @@ class TestDCOS():
         assert i >= 9
 
         service.marathonCommand('groups/azure?force=true', 'DELETE')
-        response = service.marathonCommand('apps')
+        response = str(service.marathonCommand('apps'))
         assert '{"apps":[]}' in response

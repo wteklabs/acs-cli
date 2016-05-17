@@ -211,7 +211,7 @@ class Config(object):
     params["agentCount"] = self.value(self.getint('ACS', 'agentCount'))
     params["agentVMSize"] = self.value(self.get('ACS', 'agentVMSize'))
     params["masterCount"] = self.value(self.getint('ACS', 'masterCount'))
-    params["username"] = self.value(self.get('ACS', 'username'))
+    params["linuxAdminUsername"] = self.value(self.get('ACS', 'username'))
     params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publickey'))
   
     return params

@@ -13,7 +13,8 @@ the REST API interfaces for managing applicaitons on an ACS cluster.
 
 # Usage
 
-See the [documentation](http://rgardler.github.io/acs-cli).
+See the [documentation](http://rgardler.github.io/acs-cli), sources
+for which are located in the `docs/source` folder.
 
 # Development
 

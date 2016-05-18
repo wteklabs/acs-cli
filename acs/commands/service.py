@@ -105,7 +105,7 @@ class Service(Base):
     print("'azure acs delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
     command = "azure group delete " 
     if quiet:
-      command = command + " --quiet"
+      command = command + " --quiet "
     command = command + self.config.get('Group', 'name')
     os.system(command)
 

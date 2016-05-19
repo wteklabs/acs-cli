@@ -9,6 +9,11 @@ def pytest_addoption(parser):
         help="run slow tests")
 
 @pytest.fixture(scope="module")
+def base():
+    config = Config("tests/test_dcos_cluster.ini")
+    return commands.Base(config, None)
+
+@pytest.fixture(scope="module")
 def afs():
     config = Config("tests/test_dcos_cluster.ini")
     return commands.Afs(config, None)

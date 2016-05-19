@@ -132,7 +132,33 @@ class Base(object):
     fqdn["agent"] = self.getAgentEndpoint()
     data["domains"] = fqdn
     
-    data["sshTunnel"] = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + self.getManagementEndpoint() + " -p 2200"
+    data["sshTunnel"] = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + "@" + self.getManagementEndpoint() + " -p 2200"
+
+    azure = {}
+    azure['resourceGroup'] = self.config.get('Group', 'name')
+    data["azure"] = azure
+
+    masters = {}
+    cmd = "group show " + azure['resourceGroup'] + " --json"
+    raw = subprocess.Popen(["azure", "group", "show", azure['resourceGroup'], "--json"], stdout=subprocess.PIPE).communicate()[0]
+    group = json.loads(raw.decode("utf-8") )
+    resources = group["resources"]
+    name = None
+    for resource in resources:
+      # self.log.debug("Considering: " + resource["name"] + " - " + resource["type"])
+      if resource["type"] == "publicIPAddresses":
+        if "master" in resource["name"]:
+          name = resource["name"]
+          break
+    if not name:
+      raise Exception('Cannot find the master IP address in Azure resources'
+    )
+    raw = subprocess.Popen(["azure", "network", "public-ip", "show", azure['resourceGroup'], name, "--json"], stdout=subprocess.PIPE).communicate()[0]
+    publicIp = json.loads(raw.decode("utf-8"))
+    masters['ip'] = publicIp["ipAddress"]
+    
+    masters['fqdn'] = self.getManagementEndpoint()
+    data["masters"] = masters
 
     return data
 

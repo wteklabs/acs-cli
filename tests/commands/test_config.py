@@ -1,7 +1,8 @@
-"""TEsts for the cluster.ini and config class."""
+"""Tests for the cluster.ini and config class."""
 
 import os
 import pytest
+import re
 
 class TestConfig():
 
@@ -39,3 +40,5 @@ class TestConfig():
         with open(public_file, 'r') as sshfile: 
             key = sshfile.read().replace('\n', '') 
         assert key == public_key
+
+

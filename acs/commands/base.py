@@ -156,7 +156,6 @@ class Base(object):
     raw = subprocess.Popen(["azure", "network", "public-ip", "show", azure['resourceGroup'], name, "--json"], stdout=subprocess.PIPE).communicate()[0]
     publicIp = json.loads(raw.decode("utf-8"))
     masters['ip'] = publicIp["ipAddress"]
-    
     masters['fqdn'] = self.getManagementEndpoint()
     data["masters"] = masters
 
@@ -180,7 +179,7 @@ class Config(object):
 
     self.filename = filename
     if not self.filename:
-      self.filename = "config/cluster.ini"
+      self.filename = "../config/cluster.ini"
     if os.path.isfile(self.filename):
       self.log.info("Using configuration file : " + self.filename)
       defaults = {"orchestratorType": "DCOS"}

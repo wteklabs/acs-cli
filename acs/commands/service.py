@@ -111,7 +111,7 @@ class Service(Base):
 
   def scale(self):
     if not self.exists():
-      return "It appears that the cluster does not exists (try running `acs service create`)"
+      return "It appears that the cluster does not exists (try running `acs service createo`)"
 
     desired_agents = self.args["--agents"]
 
@@ -174,4 +174,3 @@ class Service(Base):
     cmd = curl + ' localhost/marathon/v2/' + command 
     self.log.debug('Command to execute: ' + cmd)
     return Base.sshTunnel(self, cmd)
-

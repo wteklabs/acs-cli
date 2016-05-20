@@ -25,6 +25,11 @@ docker run -it azurecs/acs-cli
 This will pull the container from Docker Hub and start it in an
 interactive shell mode. Here you can start typing commands.
 
+You might want to add some local configuration files into the
+container, how and why you might do this is discussed below, but we
+provide a convenience script in `scripts/run-docker.sh' which will do
+this for you.
+
 ## Login to Azure
 
 Before you can run any commands that use the Azure CLI you will need

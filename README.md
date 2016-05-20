@@ -9,44 +9,21 @@ the REST API interfaces for managing applicaitons on an ACS cluster.
 
 # Installation
 
+The easiest way to get started is to use our Docker container,
+however, the application is a Python3 application can can be run
+anywhere you can find Python 3.
 
+## Using Docker
 
-# Usage
-
-See the [documentation](http://rgardler.github.io/acs-cli), sources
-for which are located in the `docs/source` folder.
-
-# Development
-
-The easiet way to get started with development is to use a Docker
-container, but it is not necessary to do so. If you want to use the
-non-Docker environment please configure your environment as described
-in the next section, otherwise simply start a Docker Python container
-and mount this code into it with the following command:
+Assumin you have Docker installed the application will run "out of the
+box" with the following command.
 
 ```
-docker build -t acs .
-docker run -it -v $(pwd):/src acs
+docker run -it azurecs/acs-cli
 ```
 
-## Non-Docker Prerequisites
-
-To setup a separate development environment (without Docker) you need
-the following setup:
-
-  * Python 3
-	* `apt-get install python`
-  * [PIP](https://pip.pypa.io/en/stable/installing/)
-  * Azure CLI installed and configured to access the test subscription
-    * install Node and NPM
-    * `sudo npm install azure-cli -g`
-
-To install all libraries and development dependencies:
-
-```
-sudo pip install -e .
-sudo pip install -e .[test]
-```
+This will pull the container from Docker Hub and start it in an
+interactive shell mode. Here you can start typing commands.
 
 ## Login to Azure
 
@@ -77,27 +54,85 @@ Where `CONTAINER`is the name of the container in which you ran the
 `azure login` command and `REPOSITORY` is the name of your private
 repository.
 
-You can now test that this works by starting a new container using
-this image.
+You may want to create a version of the CLI tools that include SSH
+keys and configuration files for your clusters. See below for more
+details on how to do this.
+
+# Usage
+
+The tool includes some basic help guidance:
 
 ```
-docker run -it -v $(pwd):/src REPOSITORY/acs
+acs --help
 ```
 
-Then, inside the container, check you are logged in with:
+To get help for a specific command use `acs COMMAND --help`, for example:
 
 ```
-azure account show
+acs service --help
 ```
 
-## General Use
+FOr more information see the
+[documentation](http://rgardler.github.io/acs-cli), sources for which
+are located in the `docs/source` folder of our
+[GitHub project](http://www.github.com/rgardler/acs-cli)
 
-You can use `acs --help` for basic help, or see the
-[documentation](http://rgardler.github.com/acs-cli).
+## Mounting configuration files and SSH keys
 
-# Developing
+The ACS Cli uses configuration files to make it easier to build and
+manaage clusters. The can be found in the `/config` directory of the
+container. By mounting a volume when starting the container you can
+inject configuration files at from the host. Alternatively you can
+build your own container with your config files included.
 
-## Adding a command
+To start the container with your own config directory mounted use:
+
+```
+docker run -it -v ./config:/config azurecs-cli
+```
+
+THe CLI will also use (and generate) SSH keys. These are stored in the
+container in the `/root/.ssh` directory. You may want to mount your
+own SSH directory into the container by adding `-v ~/.ssh:/root/.ssh`
+to this command line:
+
+```
+docker run -it -v ./config:/config -v ~/.ssh:/root/.ssh azurecs-cli
+```
+
+# Development
+
+The easiet way to get started with development is to use a Docker
+container, but it is not necessary to do so. If you want to use the
+non-Docker environment please configure your environment as described
+in the next section, otherwise simply start a Docker Python container
+and mount this code into it with the following command:
+
+```
+docker build -t acs .
+docker run -it -v $(pwd):/src acs
+```
+
+## Development without Docker
+
+To setup a separate development environment (without Docker) you need
+the following setup:
+
+  * Python 3
+	* `apt-get install python`
+  * [PIP](https://pip.pypa.io/en/stable/installing/)
+  * Azure CLI installed and configured to access the test subscription
+    * install Node and NPM
+    * `sudo npm install azure-cli -g`
+
+To install all libraries and development dependencies:
+
+```
+sudo pip install -e .
+sudo pip install -e .[test]
+```
+
+## Adding a new top level command
 
 To add a top level command representing a new feature follow the
 these steps (in this example the new command is called `Foo`:
@@ -112,7 +147,7 @@ these steps (in this example the new command is called `Foo`:
   * Run the tests with `python setup.py test` and iterate as necessary
   * Install the package with `python setup.py install`
   
-## Adding a subcommand
+## Adding a new subcommand
 
 Subcommands are applied to commands, to add a subcommand do the following:
 

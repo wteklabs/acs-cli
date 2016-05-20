@@ -180,7 +180,7 @@ class Config(object):
 
     self.filename = filename
     if not self.filename:
-      self.filename = "cluster.ini"
+      self.filename = "config/cluster.ini"
     if os.path.isfile(self.filename):
       self.log.info("Using configuration file : " + self.filename)
       defaults = {"orchestratorType": "DCOS"}

@@ -13,4 +13,6 @@ WORKDIR src
 RUN pip install -e .
 RUN pip install -e .[test]
 
+COPY config config
+
 ENTRYPOINT bash

@@ -15,8 +15,8 @@ Commands:
   openTunnel            open an SSH tunnel to the management interface
 
 Options:
-  --agents=X            number of agents (currently scale only scale up is supported)
-
+  --agents=<number>            number of agents (currently scale only scale up is supported)
+  --quiet                      don't ask the user for input
 Examples:
 
 Make the number of agents in the primary pool 5
@@ -104,7 +104,7 @@ class Service(Base):
     # FIXME: we shouldn't need to do the group delete, but currently container delete is not a deep delete
     print("'azure acs delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
     command = "azure group delete " 
-    if quiet:
+    if quiet or self.args["--quiet"]:
       command = command + " --quiet "
     command = command + self.config.get('Group', 'name')
     os.system(command)

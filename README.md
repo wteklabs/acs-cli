@@ -179,6 +179,8 @@ py.test --runslow
 
 ## Releasing
 
+Ensure all tests pass (see above).
+
 Cut a release and publish to the [Python Package
 Index](https://pypi.python.org/pypi) install 
 [twine](http://pypi.python.org/pypi/twine. and then run:

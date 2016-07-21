@@ -123,9 +123,13 @@ application from within the container. Note that when you have made
 changes to your source files you should run the following in your
 container:
 
+``` bash
+python setup.py install
 ```
-python setup.pu install
-```
+
+If you would prefer to work outside of a contaienr then consult the
+Dockerfile in the project root for details of how to set up your
+development environment.
 
 If you would prefer to work outside of a contaienr then consult the
 Dockerfile in the project root for details of how to set up your
@@ -134,34 +138,50 @@ development environment.
 ## Development without Docker
 
 To setup a separate development environment (without Docker) you need
-the following setup:
+the following setup.
 
-  * Python 3
-	* `apt-get install python`
-  * [PIP](https://pip.pypa.io/en/stable/installing/)
+### Python 3.5 and Pip
 
-Run the following commands to setup your development environment:
+``` bash
+apt-get install python3.5
+wget https://bootstrap.pypa.io/get-pip.py
+python3.5 get-pip.py
+```
 
+### Azure CLI
+
+``` bash
 sudo apt-get update
 sudo curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
 sudo apt-get install -qqy nodejs
 sudo apt-get install -qqy build-essential
 sudo npm install azure-cli -g 
+```
 
-You will probably also want to install Docker:
+### Docker
 
+If you want to be able to build the Docker container then you will
+also want to install Docker:
+
+``` bash
 sudo curl -sSL https://get.docker.com/ | sudo sh
+```
 
 And Docker Compose:
 
+``` bash
 sudo curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > docker-compose; sudo mv docker-compose /usr/local/bin/docker-compose; sudo chmod +x /usr/local/bin/docker-compose
+```
 
 ## Testing
 
 Run tests using [py.test:](http://pytest.org/latest) and
 [coverage](https://pypi.python.org/pypi/pytest-cov):
 
-``` python setup.py test ```
+``` bash
+python setup.py test 
+sudo pip install -e .[test]
+```
 
 Note, by default this does not run the slow tests (like creating the
 cluster and installing features. You must therefore first have run the

@@ -11,9 +11,10 @@ class TestAgentPool():
     def test_getAgents(self, agentPool, config):
         agents = agentPool.getAgents();
         num_agents = len(agents)
-        assert num_agents == config.get("ACS", "agentCount")
+        expected_agents = int(config.get("ACS", "agentCount"))
+        if (int(config.get("ACS", "masterCount")) >= 3):
+            expected_agents = expected_agents + 3
+        else:
+            expected_agents = expected_agents + 1
+        assert num_agents == expected_agents
 
-    def test_getNICs(self, agentPool, config):
-        nics = agentPool.getNICs();
-        num_nics = len(nics)
-        assert num_nics == config.get("ACS", "agentCount")

@@ -54,7 +54,6 @@ setup(
     install_requires = [
         'cryptography',
         'docopt',
-        'azurerm',
         'paramiko',
         'sshtunnel',
         'scp'

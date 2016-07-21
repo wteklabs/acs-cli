@@ -10,9 +10,7 @@ working with ACS clusters.
 
 The easiest way to get started is to use our Docker container,
 however, the application is a Python3 application can can be run
-anywhere you can find Python 3.
-
-## Using Docker
+anywhere you can find Python 3. 
 
 Assuming you have Docker installed the application will run "out of the
 box" with the following command.
@@ -216,6 +214,17 @@ Subcommands are applied to commands, to add a subcommand do the following:
   
 ## Releasing
 
+## Docker Image
+
+Ensure all tests pass (see above).
+
+``` bash
+docker build -t rgardler/acs .
+docker push
+```
+
+## Python Package
+
 Ensure all tests pass (see above).
 
 Cut a release and publish to the [Python Package
@@ -223,7 +232,7 @@ Index](https://pypi.python.org/pypi) install
 [twine](http://pypi.python.org/pypi/twine. and then run:
 
 ```
-python setup.py sdist bdist_wheel
+python3.5 setup.py sdist bdist_wheel
 twine upload dist/*
 ```
 

@@ -9,6 +9,7 @@ RUN npm install azure-cli -g
 RUN curl -sSL https://get.docker.com/ | sh
 RUN curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > docker-compose; mv docker-compose /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose
 
+COPY config config
 
 COPY . src
 
@@ -17,8 +18,5 @@ WORKDIR src
 RUN pip install -e .
 RUN pip install -e .[test]
 RUN python setup.py install
-
-MKDIR config
-COPY config/cluster.ini.tmpl cluster.ini.tmpl
 
 ENTRYPOINT bash

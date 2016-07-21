@@ -6,34 +6,18 @@ Installation
 
 The ACS CLI is a Python application, as such you should be able to run
 it on any platform that has Python 3 installed. Alternatively you can
-use it via a Docker container. See the appropriate section for your
-preference below. Once you have installed the CLI code there are a few
-configuration steps you need to take, see the next section for
-details.
+use it via a Docker container. You also have the choice of running
+from or from a relase. If in doubt we recommend running from a
+release.
 
-Python
-======
+See the appropriate section for your preference below. Once you have
+installed the CLI code wkip ahead to the 'Preparation' section..
 
-NOTE: at the time of writing we recommend you use one of the other two
-methods that use the source code version of the ACS CLI as we have yet
-to make a stable release of the Python packages. However, if you want
-to try this method we look forward to you feedback via the 
-`GitHub repository`_.
+Docker (from release)
+=====================
 
-Install the `Azure CLI`_.
-
-Install Python 3.
-
-::
-
-  pip install cli
-
-.. _Azure CLI: https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/
-
-Now proceed to the 'Preparation' secion.
-
-Docker
-======
+Docker (from source)
+====================
 
 Clone the source from the `GitHub repository`_.
 
@@ -55,6 +39,25 @@ preparation steps below and have them persist over time.
 
 Now proceed to the 'Preparation' secion.
 
+Python (from release)
+=====================
+
+NOTE: at the time of writing we recommend you use one of the other two
+methods that use the source code version of the ACS CLI as we have yet
+to make a stable release of the Python packages. 
+
+Install the `Azure CLI`_.
+
+Install Python 3.
+
+Install the cli with::
+
+  pip install cli
+
+.. _Azure CLI: https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/
+
+Now proceed to the 'Preparation' section.
+
 Python (from source)
 ====================
 
@@ -67,16 +70,10 @@ instructions on running from source.
 Preparation
 -----------
 
-Create a `service principle`_ that allows the applciation to manage
-your subscription.
-
-.. _Service Principle: http://rgardler.github.io/2016/02/10/create_keys_for_an_application_to_manage_azure
-
 Cluster Configuration
 =====================
 
 Create a config.ini by copying config.ini.tmpl and editing it accoringly.
-
 
 Azure Login
 ===========
@@ -86,16 +83,6 @@ mode by executing the following commands::
 
   azure login
   azure config mode arm
-
-Create a new Docker container
-=============================
-
-If you are using the Docker container you might want to commit these
-changes to ensure that you don't need to do these steps every time you
-start the container. To do this `exit` the container and run the
-following commands::
-
-  docker commit acs acs
 
 Basic Use
 ---------

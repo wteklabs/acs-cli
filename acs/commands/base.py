@@ -132,7 +132,7 @@ class Base(object):
     fqdn["agent"] = self.getAgentEndpoint()
     data["domains"] = fqdn
     
-    data["sshTunnel"] = "ssh -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + "@" + self.getManagementEndpoint() + " -p 2200"
+    data["sshTunnel"] = "ssh -o StrictHostKeyChecking=no -L 80:localhost:80 -N " + self.config.get('ACS', 'username') + "@" + self.getManagementEndpoint() + " -p 2200"
 
     azure = {}
     azure['resourceGroup'] = self.config.get('Group', 'name')

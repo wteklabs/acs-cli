@@ -18,6 +18,7 @@ RUN pip install -e .
 RUN pip install -e .[test]
 RUN python setup.py install
 
-COPY config config
+MKDIR config
+COPY config/cluster.ini.tmpl cluster.ini.tmpl
 
 ENTRYPOINT bash

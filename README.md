@@ -3,9 +3,8 @@ NOTE: NOT FOR PRODUCTION USE
 Please note these scripts are intended to allow experimentation with
 Azure Container Service. They are not intended for production use.
 
-A set of convenience scripts for creating and testing ACS
-clusters. These scripts can also be helpful in working out how to use
-the REST API interfaces for managing applicaitons on an ACS cluster.
+This project provides a convenience CLI for creating, testing and
+working with ACS clusters.
 
 # Installation
 
@@ -15,7 +14,7 @@ anywhere you can find Python 3.
 
 ## Using Docker
 
-Assumin you have Docker installed the application will run "out of the
+Assuming you have Docker installed the application will run "out of the
 box" with the following command.
 
 ```
@@ -77,7 +76,7 @@ To get help for a specific command use `acs COMMAND --help`, for example:
 acs service --help
 ```
 
-FOr more information see the
+For more information see the
 [documentation](http://rgardler.github.io/acs-cli), sources for which
 are located in the `docs/source` folder of our
 [GitHub project](http://www.github.com/rgardler/acs-cli)
@@ -96,7 +95,7 @@ To start the container with your own config directory mounted use:
 docker run -it -v ./config:/config azurecs-cli
 ```
 
-THe CLI will also use (and generate) SSH keys. These are stored in the
+The CLI will also use (and generate) SSH keys. These are stored in the
 container in the `/root/.ssh` directory. You may want to mount your
 own SSH directory into the container by adding `-v ~/.ssh:/root/.ssh`
 to this command line:
@@ -115,8 +114,22 @@ and mount this code into it with the following command:
 
 ```
 docker build -t acs .
-docker run -it -v $(pwd):/src acs
+docker run -it -v ~/.ssh:/root -v $(pwd)/config:/config -v $(pwd):/src acs
+azure login
 ```
+
+Now you can edit the files using your favorite editor and test the
+application from within the container. Note that when you have made
+changes to your source files you should run the following in your
+container:
+
+```
+python setup.pu install
+```
+
+If you would prefer to work outside of a contaienr then consult the
+Dockerfile in the project root for details of how to set up your
+development environment.
 
 ## Development without Docker
 
@@ -126,16 +139,35 @@ the following setup:
   * Python 3
 	* `apt-get install python`
   * [PIP](https://pip.pypa.io/en/stable/installing/)
-  * Azure CLI installed and configured to access the test subscription
-    * install Node and NPM
-    * `sudo npm install azure-cli -g`
 
-To install all libraries and development dependencies:
+Run the following commands to setup your development environment:
 
-```
-sudo pip install -e .
-sudo pip install -e .[test]
-```
+sudo apt-get update
+sudo curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
+sudo apt-get install -qqy nodejs
+sudo apt-get install -qqy build-essential
+sudo npm install azure-cli -g 
+
+You will probably also want to install Docker:
+
+sudo curl -sSL https://get.docker.com/ | sudo sh
+
+And Docker Compose:
+
+sudo curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > docker-compose; sudo mv docker-compose /usr/local/bin/docker-compose; sudo chmod +x /usr/local/bin/docker-compose
+
+## Testing
+
+Run tests using [py.test:](http://pytest.org/latest) and
+[coverage](https://pypi.python.org/pypi/pytest-cov):
+
+``` python setup.py test ```
+
+Note, by default this does not run the slow tests (like creating the
+cluster and installing features. You must therefore first have run the
+full suite of tests at least once. You can do this with:
+
+``` py.test --runslow ```
 
 ## Adding a new top level command
 
@@ -162,21 +194,6 @@ Subcommands are applied to commands, to add a subcommand do the following:
   * Run the tests with `python setup.py test` and iterate as necessary
   * Install the package with `python setup.py install`
   
-## Testing
-
-Run tests using [py.test:](http://pytest.org/latest) and [coverage](https://pypi.python.org/pypi/pytest-cov):
-
-```
-python setup.py test
-```
-
-Note, by default this does not run the slow tests (like creating the
-cluster and installing features. You must therefore first have run the full suite of tests at least once. You can do this with:
-
-```
-py.test --runslow
-```
-
 ## Releasing
 
 Cut a release and publish to the [Python Package

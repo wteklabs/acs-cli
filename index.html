@@ -53,6 +53,11 @@ installed the CLI code wkip ahead to the &#8216;Preparation&#8217; section..</p>
 </div>
 <div class="section" id="docker-from-release">
 <h1>Docker (from release)<a class="headerlink" href="#docker-from-release" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>To run the latest version of the cli::</dt>
+<dd>docker run -it rgardler/acs</dd>
+</dl>
+<p>Now proceed to the &#8216;Preparation&#8217; secion.</p>
 </div>
 <div class="section" id="docker-from-source">
 <h1>Docker (from source)<a class="headerlink" href="#docker-from-source" title="Permalink to this headline">¶</a></h1>
@@ -98,7 +103,11 @@ instructions on running from source.</p>
 </div>
 <div class="section" id="cluster-configuration">
 <h1>Cluster Configuration<a class="headerlink" href="#cluster-configuration" title="Permalink to this headline">¶</a></h1>
-<p>Create a config.ini by copying config.ini.tmpl and editing it accoringly.</p>
+<p>Create a /config/cluster.ini by copying config/cluster.ini.tmpl and editing it accordingly, for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span><span class="o">.</span><span class="n">tmpl</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">nano</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="azure-login">
 <h1>Azure Login<a class="headerlink" href="#azure-login" title="Permalink to this headline">¶</a></h1>
@@ -108,8 +117,8 @@ mode by executing the following commands:</p>
 <span class="n">azure</span> <span class="n">config</span> <span class="n">mode</span> <span class="n">arm</span>
 </pre></div>
 </div>
-<div class="section" id="basic-use">
-<h2>Basic Use<a class="headerlink" href="#basic-use" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic-useage">
+<h2>Basic Useage<a class="headerlink" href="#basic-useage" title="Permalink to this headline">¶</a></h2>
 <p>The basic structure of an acs command is:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acs</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">args</span><span class="o">&gt;</span>
 </pre></div>
@@ -178,7 +187,7 @@ DC/OS version.</p>
 </li>
 <li><a class="reference internal" href="#cluster-configuration">Cluster Configuration</a></li>
 <li><a class="reference internal" href="#azure-login">Azure Login</a><ul>
-<li><a class="reference internal" href="#basic-use">Basic Use</a></li>
+<li><a class="reference internal" href="#basic-useage">Basic Useage</a></li>
 <li><a class="reference internal" href="#working-with-acs-service">Working with ACS Service</a></li>
 </ul>
 </li>

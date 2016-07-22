@@ -159,18 +159,29 @@ class Config(object):
     self.filename = filename
     if not self.filename:
       self.filename = "../config/cluster.ini"
-    if os.path.isfile(self.filename):
-      self.log.info("Using configuration file : " + self.filename)
-      defaults = {"orchestratorType": "DCOS"}
-      config = configparser.ConfigParser(defaults)
-      config.read(self.filename)
-      config.set('Group', 'name', config.get('ACS', 'dnsPrefix'))
-      self.config_parser = config
-    else:
-      raise Exception("Configuration file '" + self.filename + "' not found")
 
-    print("config file: " + self.filename)
+    if not os.path.isfile(self.filename):
+      dns = input("What is the DNS prefix for this cluster?\n")
+      group = input("What is the name of the resource group you want to use/create\n")
+      
+      tmpl = open(self.filename + ".tmpl")
+      output = open(self.filename, 'w')
+      for s in tmpl:
+        print("Before: " + s)
+        s = s.replace("MY-DNS-PREFIX", dns)
+        s = s.replace("MY-RESOURCE-GROUP-NAME", group)
+        print("After: " + s)
+        output.write(s)
 
+      tmpl.close()
+      output.close()
+
+    defaults = {"orchestratorType": "DCOS"}
+    config = configparser.ConfigParser(defaults)
+    config.read(self.filename)
+    config.set('Group', 'name', config.get('Group', 'name'))
+    self.config_parser = config
+      
   def get(self, section, name):
     value = self.config_parser.get(section, name)
 
@@ -236,6 +247,6 @@ class Config(object):
     key.write_private_key_file(os.path.expanduser(private_filepath))
     
     with open(os.path.expanduser(public_filepath),"w") as public:
-      public.write("%s %s" % (key.get_name(), key.get_base64()))
+      public.write("%s %s"  % (key.get_name(), key.get_base64()))
 
     public.close()

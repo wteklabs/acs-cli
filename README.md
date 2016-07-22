@@ -254,9 +254,15 @@ __version__ - 'x.y.z'
 
 ### Updating Documentation
 
-To build and pucblish the documentsation:
+To build and publish the documentsation you need Sphinx installed:
 
+``` bash
+sudo pip install -U Sphinx
 ```
+
+Then you can build and deploy the docs with:
+
+``` bash
 cd docs
 make gh-pages
 cd ..

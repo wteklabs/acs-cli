@@ -16,6 +16,11 @@ installed the CLI code wkip ahead to the 'Preparation' section..
 Docker (from release)
 =====================
 
+To run the latest version of the cli::
+   docker run -it rgardler/acs
+
+Now proceed to the 'Preparation' secion.
+   
 Docker (from source)
 ====================
 
@@ -73,7 +78,10 @@ Preparation
 Cluster Configuration
 =====================
 
-Create a config.ini by copying config.ini.tmpl and editing it accoringly.
+Create a /config/cluster.ini by copying config/cluster.ini.tmpl and editing it accordingly, for example::
+
+  cp /config/cluster.ini.tmpl /config/cluster.ini
+  nano /config/cluster.ini
 
 Azure Login
 ===========
@@ -84,8 +92,8 @@ mode by executing the following commands::
   azure login
   azure config mode arm
 
-Basic Use
----------
+Basic Useage
+------------
 
 The basic structure of an acs command is::
 

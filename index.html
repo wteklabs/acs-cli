@@ -101,20 +101,28 @@ instructions on running from source.</p>
 <h2>Preparation<a class="headerlink" href="#preparation" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
-<div class="section" id="cluster-configuration">
-<h1>Cluster Configuration<a class="headerlink" href="#cluster-configuration" title="Permalink to this headline">¶</a></h1>
-<p>Create a /config/cluster.ini by copying config/cluster.ini.tmpl and editing it accordingly, for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span><span class="o">.</span><span class="n">tmpl</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">nano</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="azure-login">
-<h1>Azure Login<a class="headerlink" href="#azure-login" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="required-azure-login">
+<h1>REQUIRED: Azure Login<a class="headerlink" href="#required-azure-login" title="Permalink to this headline">¶</a></h1>
 <p>Login to Azure with the azure cli and ensure it is operating in ARM
 mode by executing the following commands:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">azure</span> <span class="n">login</span>
 <span class="n">azure</span> <span class="n">config</span> <span class="n">mode</span> <span class="n">arm</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-cluster-configuration">
+<h1>OPTIONAL: Cluster Configuration<a class="headerlink" href="#optional-cluster-configuration" title="Permalink to this headline">¶</a></h1>
+<p>By default the cluster is defined in a config file
+<cite>/config/cluster.ini</cite>. If you want to use a different config file use
+the <cite>&#8211;config-file=FILE</cite> option.</p>
+<p>If the specified file does not exist you will enter an interactive
+mode in which you can define your cluster. Note, however, that there
+are likely to be more options available in the INI file than in the
+interactive command line interface.</p>
+<p>To create a conmfiguration file you can start by copying
+<cite>config/cluster.ini.tmpl</cite> and editing it accordingly, for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span><span class="o">.</span><span class="n">tmpl</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">nano</span> <span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">cluster</span><span class="o">.</span><span class="n">ini</span>
 </pre></div>
 </div>
 <div class="section" id="basic-useage">
@@ -123,8 +131,9 @@ mode by executing the following commands:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acs</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">args</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>By default the config file <cite>cluster.ini</cite> will be used, if you want to
-use a different config file use the <cite>&#8211;config-file=FILE</cite> option.</p>
+<p>By default the config file <cite>/config/cluster.ini</cite> will be used, if you
+want to use a different config file use the <cite>&#8211;config-file=FILE</cite>
+option.</p>
 <p>To get help for the CLI use:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acs</span> <span class="o">--</span><span class="n">help</span>
 </pre></div>
@@ -185,8 +194,8 @@ DC/OS version.</p>
 <li><a class="reference internal" href="#preparation">Preparation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#cluster-configuration">Cluster Configuration</a></li>
-<li><a class="reference internal" href="#azure-login">Azure Login</a><ul>
+<li><a class="reference internal" href="#required-azure-login">REQUIRED: Azure Login</a></li>
+<li><a class="reference internal" href="#optional-cluster-configuration">OPTIONAL: Cluster Configuration</a><ul>
 <li><a class="reference internal" href="#basic-useage">Basic Useage</a></li>
 <li><a class="reference internal" href="#working-with-acs-service">Working with ACS Service</a></li>
 </ul>

@@ -167,10 +167,8 @@ class Config(object):
       tmpl = open(self.filename + ".tmpl")
       output = open(self.filename, 'w')
       for s in tmpl:
-        print("Before: " + s)
         s = s.replace("MY-DNS-PREFIX", dns)
         s = s.replace("MY-RESOURCE-GROUP-NAME", group)
-        print("After: " + s)
         output.write(s)
 
       tmpl.close()

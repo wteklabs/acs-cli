@@ -1,3 +1,8 @@
+.. toctree::
+    :maxdepth: 2
+
+    index
+
 Welcome to Azure Container Service Tools documentation!
 =======================================================
 
@@ -69,8 +74,8 @@ See the README.md file in the root of the project directory for
 instructions on running from source.
 
 
-Preparation
-===========
+Preparation for Use
+===================
 
 REQUIRED: Azure Login
 ---------------------

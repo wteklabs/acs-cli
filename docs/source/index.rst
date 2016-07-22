@@ -1,9 +1,6 @@
 Welcome to Azure Container Service Tools documentation!
 =======================================================
 
-Installation
-------------
-
 The ACS CLI is a Python application, as such you should be able to run
 it on any platform that has Python 3 installed. Alternatively you can
 use it via a Docker container. You also have the choice of running
@@ -13,16 +10,16 @@ release.
 See the appropriate section for your preference below. Once you have
 installed the CLI code wkip ahead to the 'Preparation' section..
 
-Docker (from release)
-=====================
+Running with Docker (from release)
+----------------------------------
 
 To run the latest version of the cli::
    docker run -it rgardler/acs
 
 Now proceed to the 'Preparation' secion.
    
-Docker (from source)
-====================
+Running with Docker (from source)
+---------------------------------
 
 Clone the source from the `GitHub repository`_.
 
@@ -30,7 +27,7 @@ If you know Docker already this is the easiest way to run the
 ACS CLI. The supplied Dockerfile installs all the necessary
 compontents for using the CLI. First build the acs container::
 
-  docker build -t acs .
+  ./scripts/build-docker.sh
 
 Then run it with the following command::
 
@@ -44,8 +41,8 @@ preparation steps below and have them persist over time.
 
 Now proceed to the 'Preparation' secion.
 
-Python (from release)
-=====================
+Running in Python (from release)
+--------------------------------
 
 NOTE: at the time of writing we recommend you use one of the other two
 methods that use the source code version of the ACS CLI as we have yet
@@ -63,8 +60,8 @@ Install the cli with::
 
 Now proceed to the 'Preparation' section.
 
-Python (from source)
-====================
+Running in Python (from source)
+-------------------------------
 
 Clone the source from the `GitHub repository`_.
 
@@ -73,10 +70,10 @@ instructions on running from source.
 
 
 Preparation
------------
+===========
 
 REQUIRED: Azure Login
-======================
+---------------------
 
 Login to Azure with the azure cli and ensure it is operating in ARM
 mode by executing the following commands::
@@ -85,7 +82,7 @@ mode by executing the following commands::
   azure config mode arm
 
 OPTIONAL: Cluster Configuration
-===============================
+-------------------------------
 
 By default the cluster is defined in a config file
 `/config/cluster.ini`. If you want to use a different config file use
@@ -103,7 +100,7 @@ To create a conmfiguration file you can start by copying
   nano /config/cluster.ini
 
 Basic Useage
-------------
+============
 
 The basic structure of an acs command is::
 
@@ -117,8 +114,8 @@ To get help for the CLI use::
 
   acs --help
 
-Working with ACS Service
-------------------------
+Working with an ACS Service
+---------------------------
 
 The `service` commands provide convenience methods for managing an
 instance of the Azure Container Service. Run `acs service help` for

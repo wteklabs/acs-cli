@@ -5,7 +5,7 @@ Usage:
   acs [--config-file=<file>] [--version] [--help] <command> [<args>...]
 
 Options: 
-  -h --help                           Show this screen.
+  -h --help                           Show this help.
 
 Commands:
   service    Create and manage Azure Container Service
@@ -13,7 +13,7 @@ Commands:
   afs        Add the Azure Files Docker volume driver to each agent
   oms        Add or configure Operational Management Suite monitoring
 
-See `acs help <command>` for information on a specific command.
+See `acs <command> --help` for information on a specific command.
 
 Help:
   For help using this tool please open an issue on the GitHub repository:

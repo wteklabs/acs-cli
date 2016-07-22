@@ -75,22 +75,32 @@ instructions on running from source.
 Preparation
 -----------
 
-Cluster Configuration
-=====================
-
-Create a /config/cluster.ini by copying config/cluster.ini.tmpl and editing it accordingly, for example::
-
-  cp /config/cluster.ini.tmpl /config/cluster.ini
-  nano /config/cluster.ini
-
-Azure Login
-===========
+REQUIRED: Azure Login
+======================
 
 Login to Azure with the azure cli and ensure it is operating in ARM
 mode by executing the following commands::
 
   azure login
   azure config mode arm
+
+OPTIONAL: Cluster Configuration
+===============================
+
+By default the cluster is defined in a config file
+`/config/cluster.ini`. If you want to use a different config file use
+the `--config-file=FILE` option.
+
+If the specified file does not exist you will enter an interactive
+mode in which you can define your cluster. Note, however, that there
+are likely to be more options available in the INI file than in the
+interactive command line interface.
+
+To create a conmfiguration file you can start by copying
+`config/cluster.ini.tmpl` and editing it accordingly, for example::
+
+  cp /config/cluster.ini.tmpl /config/cluster.ini
+  nano /config/cluster.ini
 
 Basic Useage
 ------------
@@ -99,8 +109,9 @@ The basic structure of an acs command is::
 
   acs <command> <args>
 
-By default the config file `cluster.ini` will be used, if you want to
-use a different config file use the `--config-file=FILE` option.
+By default the config file `/config/cluster.ini` will be used, if you
+want to use a different config file use the `--config-file=FILE`
+option.
 
 To get help for the CLI use::
 

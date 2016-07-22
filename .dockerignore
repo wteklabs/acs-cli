@@ -1,0 +1,6 @@
+.*
+acs.egg-info
+build
+dist
+config/*
+!config/cluster.ini.tmpl

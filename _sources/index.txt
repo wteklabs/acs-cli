@@ -143,17 +143,4 @@ tooling compatible with your chose orchestrator, such as the Docker
 CLI for the Docker Swarm version of ACS and the DC/OS cli for the
 DC/OS version.
 
-
-.. toctree::
-   :maxdepth: 2
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 .. _GitHub repository: https://github.com/rgardler/acs-cli

@@ -103,46 +103,38 @@ To create a conmfiguration file you can start by copying
 
   cp /config/cluster.ini.tmpl /config/cluster.ini
   nano /config/cluster.ini
+Commands
+========
 
-Basic Useage
-============
+acs
+---
 
-The basic structure of an acs command is::
+.. automodule:: acs.cli
 
-  acs <command> <args>
+acs service
+-----------
+		
+.. automodule:: acs.commands.service
 
-By default the config file `/config/cluster.ini` will be used, if you
-want to use a different config file use the `--config-file=FILE`
-option.
+acs docker
+----------
+		
+.. automodule:: acs.commands.docker
 
-To get help for the CLI use::
+acs afs
+-------
+		
+.. automodule:: acs.commands.afs
 
-  acs --help
+acs oms
+-------
 
-Working with an ACS Service
----------------------------
+.. automodule:: acs.commands.oms
 
-The `service` commands provide convenience methods for managing an
-instance of the Azure Container Service. Run `acs service help` for
-more details about the available commands. Some common once are
-provided below.
+acs demo
+--------
+		
+.. automodule:: acs.commands.demo
 
-To examine the current configuation of the cluster run::
-
-  acs service show
-
-To create a cluster::
-
-  acs service create
-
-Once you have created your service you will likely want to open a
-connection to it::
-
-  acs service openTunnel
-
-Now you can run commands against you Azure Container Service using any
-tooling compatible with your chose orchestrator, such as the Docker
-CLI for the Docker Swarm version of ACS and the DC/OS cli for the
-DC/OS version.
-
+       
 .. _GitHub repository: https://github.com/rgardler/acs-cli

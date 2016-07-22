@@ -201,6 +201,7 @@ these steps (in this example the new command is called `Foo`:
     * Implement the tests
   * Run the tests with `python setup.py test` and iterate as necessary
   * Install the package with `python setup.py install`
+  * Add the command to the documentation in docs/*
   
 ## Adding a new subcommand
 

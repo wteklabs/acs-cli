@@ -1,108 +1,96 @@
-NOTE: NOT FOR PRODUCTION USE
-
-Please note these scripts are intended to allow experimentation with
-Azure Container Service. They are not intended for production use.
-
 This project provides a convenience CLI for creating, testing and
-working with ACS clusters.
-
-# Installation
-
-The easiest way to get started is to use our Docker container,
-however, the application is a Python3 application can can be run
-anywhere you can find Python 3. 
+working with ACS clusters. It's a work in progress and we weclome
+contributions via the
+[project page](https://hub.docker.com/r/rgardler/acs/).
+ 
+# Using as a Docker Container
 
 Assuming you have Docker installed the application will run "out of the
 box" with the following command.
 
 ```
-docker run -it azurecs/acs-cli
+docker run -it rgardler/acs
 ```
 
-This will pull the container from Docker Hub and start it in an
-interactive shell mode. Here you can start typing commands.
+Although not required, it is preferable to mount your ssh and acs
+configuration files into the running container. This way you can use
+the same files across multiple versions of the cli container. To do
+this use the following mounts:
 
-You might want to add some local configuration files into the
-container, how and why you might do this is discussed below, but we
-provide a convenience script in `scripts/run-docker.sh' which will do
-this for you.
+```
+docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs rgardler/acs
+```
 
-## Login to Azure
+NOTE: the first time you run this you may need to create the `~/.ssh`
+and `~/.acs` directories.
 
-Before you can run any commands that use the Azure CLI you will need
-to login using the follwing command:
+NOTE: we provide a
+[convenience script](https://github.com/rgardler/acs-cli/blob/master/scripts/run-docker.sh)
+for doing this (and more, see below).
+
+Once you have run one of the commands above you should log into your
+Azure subscription:
 
 ```
 azure config mode arm
 azure login
 ```
 
-Since this must be done every time you start the container you might
-want to create a new image whenever you update the software. This will
-prevent you needing to login each time. However, you will need a
-private registry to store this container as it will have your SSH keys
-and Azure login details stored within it. Docker Hub provides one
-private registry per user, so that might be enough for you.
+At this point you are ready to start using the CLI.
 
-To create a Docker image with your login credentials run the following
-commands:
-
-```
-docker commit CONTAINER REPOSITORY/acs
-docker push
-```
-
-Where `CONTAINER`is the name of the container in which you ran the
-`azure login` command and `REPOSITORY` is the name of your private
-repository.
-
-You may want to create a version of the CLI tools that include SSH
-keys and configuration files for your clusters. See below for more
-details on how to do this.
+NOTE: the run-docker.sh script linked above will always attempt to
+restart a previously run container. This has the advantage of
+maintaining your Azure login credentials.
 
 # Usage
 
-The tool includes some basic help guidance:
+The CLI includes some basic help guidance:
 
-```
+``` bash
 acs --help
 ```
 
 To get help for a specific command use `acs COMMAND --help`, for example:
 
-```
+``` bash
 acs service --help
 ```
 
 For more information see the
 [documentation](http://rgardler.github.io/acs-cli), sources for which
 are located in the `docs/source` folder of our
-[GitHub project](http://www.github.com/rgardler/acs-cli)
+[GitHub project](http://www.github.com/rgardler/acs-cli).
 
-## Mounting configuration files and SSH keys
+## Create a Cluster
 
-The ACS Cli uses configuration files to make it easier to build and
-manaage clusters. The can be found in the `/config` directory of the
-container. By mounting a volume when starting the container you can
-inject configuration files at from the host. Alternatively you can
-build your own container with your config files included.
+Since the first thing most users will want to do is create a cluster
+we are documenting this command here. Please see `acs --help` for a
+list of all available commands.
 
-To start the container with your own config directory mounted use:
-
-```
-docker run -it -v ./config:/config azurecs-cli
+``` bash
+acs service create
 ```
 
-The CLI will also use (and generate) SSH keys. These are stored in the
-container in the `/root/.ssh` directory. You may want to mount your
-own SSH directory into the container by adding `-v ~/.ssh:/root/.ssh`
-to this command line:
+Unless otherwise specified the cluster configuration is defined in
+`~/.acs/default.ini` within the container. If you mapped a local
+directory to this location then it will be persisted on your
+client. If this file does not exists you will be asked to answer some
+questions about your desired configuration and the file will be
+created for you.
 
-```
-docker run -it -v ./config:/config -v ~/.ssh:/root/.ssh azurecs-cli
-```
+You can override the location of the configuration file with the
+option `--config-file=PATH_TO_FILE`, if the file exists it will be
+used, if not you will be asked the same questions and the file will be
+created.
 
 # Development
+
+Contributios to this CLI are welcome, via the
+[project page](https://hub.docker.com/r/rgardler/acs/).
+
+The easiest way to get started is to develop using the Docker
+container, however, the application is a Python3 application can can
+be run anywhere you can find Python 3.
 
 The easiet way to get started with development is to use a Docker
 container, but it is not necessary to do so. If you want to use the
@@ -110,11 +98,8 @@ non-Docker environment please configure your environment as described
 in the next section, otherwise simply start a Docker Python container
 and mount this code into it with the following command:
 
-```
-docker build -t acs .
-docker run -it -v ~/.ssh:/root -v $(pwd)/config:/config -v $(pwd):/src acs
-azure login
-```
+Note that we provide a convenience script in `scripts/run-docker.sh'
+which will run the container and mount the source code directory.
 
 Now you can edit the files using your favorite editor and test the
 application from within the container. Note that when you have made
@@ -197,6 +182,7 @@ these steps (in this example the new command is called `Foo`:
     * Add the subcommands and options to the docstring of the foo.py file
     * Implement each command in a method using the same name as the command
   * Add foo.py import to `acs/commands/__init__.py`
+  * Add instantiation of foo.py to conftest.py
   * Copy `tests/command/test_command.tmpl` to `test/command/test_foo.py`
     * Implement the tests
   * Run the tests with `python setup.py test` and iterate as necessary
@@ -221,7 +207,7 @@ Ensure all tests pass (see above).
 
 ``` bash
 docker build -t rgardler/acs .
-docker push
+docker push rgardler/acs
 ```
 
 ## Python Package

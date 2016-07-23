@@ -158,13 +158,15 @@ class Config(object):
 
     self.filename = filename
     if not self.filename:
-      self.filename = "../config/cluster.ini"
+      self.filename = os.path.expanduser("~/.acs/default.ini")
+
+    self.log.debug("Using config file at " + self.filename)
 
     if not os.path.isfile(self.filename):
       dns = input("What is the DNS prefix for this cluster?\n")
       group = input("What is the name of the resource group you want to use/create\n")
       
-      tmpl = open(self.filename + ".tmpl")
+      tmpl = open("config/cluster.ini.tmpl")
       output = open(self.filename, 'w')
       for s in tmpl:
         s = s.replace("MY-DNS-PREFIX", dns)

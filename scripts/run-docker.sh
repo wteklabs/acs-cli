@@ -4,7 +4,7 @@ RUNNING=$(docker inspect -f {{.State.Running}} acs 2> /dev/null)
 
 if [ "$?" -ne "0" ]
 then
-  docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs -v $(pwd):/src --name acs rgardler/acs  
+  docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs --name acs rgardler/acs  
   exit 0
 fi
 

@@ -1,7 +1,6 @@
 This project provides a convenience CLI for creating, testing and
 working with ACS clusters. It's a work in progress and we weclome
-contributions via the
-[project page](https://hub.docker.com/r/rgardler/acs/).
+contributions via the [project page](https://hub.docker.com/r/rgardler/acs/).
  
 # Using as a Docker Container
 
@@ -21,12 +20,15 @@ this use the following mounts:
 docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs rgardler/acs
 ```
 
-NOTE: the first time you run this you may need to create the `~/.ssh`
+NOTE 1: the first time you run this you may need to create the `~/.ssh`
 and `~/.acs` directories.
 
-NOTE: we provide a
-[convenience script](https://github.com/rgardler/acs-cli/blob/master/scripts/run-docker.sh)
-for doing this (and more, see below).
+NOTE 2: we provide a
+[convenience script](https://github.com/rgardler/acs-cli/blob/master/scripts/run-docker.sh) for doing this (and more, see below).
+
+NOTE 3: If you want to work with the latest development version (may
+have more features, but may also have more bugs) replace
+`rgardler/acs` with `rgardler/acs:dev` in the above commands.
 
 Once you have run one of the commands above you should log into your
 Azure subscription:
@@ -83,23 +85,62 @@ option `--config-file=PATH_TO_FILE`, if the file exists it will be
 used, if not you will be asked the same questions and the file will be
 created.
 
+## Connecting to your cluster
+
+It is necessary to open an SSH tunnel to you cluster. By default the
+acs cli will use the keys in `~/.ssh/id_rsa` (this can be configured
+in the `ini` file in `~/.acs/`. If the identified keys don't exist
+when you run the `acs service create` command they will be created for
+you.
+
+To easily create a tunnel to your cluster run:
+
+``` bash
+acs service openTunnel
+```
+
+Take a note of the pid file this command outputs as you may want to kill this tunnel at a later time with:
+
+``` bash
+kill $PID
+```
+
+## Working with DCOS
+
+If your cluster is using DC/OS as the orchestrator then you can
+install the DC/OS CLI with the following commands:
+
+``` bash
+acs service openTunnel
+acs dcos install
+source /src/bin/env-setup
+```
+
+Once installed you can run DCOS command directly with `dcos COMMAND`
+(you must first have a tunnel open with `acs service openTunnel`).
+
 # Development
 
-Contributios to this CLI are welcome, via the
+Contributions (bug reports, feature requests, docs, patches etc.) are
+welcome via the
 [project page](https://hub.docker.com/r/rgardler/acs/).
 
 The easiest way to get started is to develop using the Docker
 container, however, the application is a Python3 application can can
-be run anywhere you can find Python 3.
+be run anywhere you can find Python 3. First you need to clone the dev
+branch of the code:
 
-The easiet way to get started with development is to use a Docker
-container, but it is not necessary to do so. If you want to use the
-non-Docker environment please configure your environment as described
-in the next section, otherwise simply start a Docker Python container
-and mount this code into it with the following command:
+``` bash
+git clone https://github.com/rgardler/acs-cli/tree/dev acs-cli
 
-Note that we provide a convenience script in `scripts/run-docker.sh'
-which will run the container and mount the source code directory.
+```
+
+Once you have the source code, you can start a development container
+with:
+
+``` bash
+./scripts/run-docker.sh
+```
 
 Now you can edit the files using your favorite editor and test the
 application from within the container. Note that when you have made
@@ -110,51 +151,11 @@ container:
 python setup.py install
 ```
 
-If you would prefer to work outside of a contaienr then consult the
-Dockerfile in the project root for details of how to set up your
-development environment.
-
-If you would prefer to work outside of a contaienr then consult the
-Dockerfile in the project root for details of how to set up your
-development environment.
-
 ## Development without Docker
 
-To setup a separate development environment (without Docker) you need
-the following setup.
-
-### Python 3.5 and Pip
-
-``` bash
-apt-get install python3.5
-wget https://bootstrap.pypa.io/get-pip.py
-python3.5 get-pip.py
-```
-
-### Azure CLI
-
-``` bash
-sudo apt-get update
-sudo curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
-sudo apt-get install -qqy nodejs
-sudo apt-get install -qqy build-essential
-sudo npm install azure-cli -g 
-```
-
-### Docker
-
-If you want to be able to build the Docker container then you will
-also want to install Docker:
-
-``` bash
-sudo curl -sSL https://get.docker.com/ | sudo sh
-```
-
-And Docker Compose:
-
-``` bash
-sudo curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > docker-compose; sudo mv docker-compose /usr/local/bin/docker-compose; sudo chmod +x /usr/local/bin/docker-compose
-```
+If you would prefer to work outside of a container then consult the
+Dockerfile in the project root for details of how to set up your
+development environment.
 
 ## Testing
 
@@ -162,15 +163,17 @@ Run tests using [py.test:](http://pytest.org/latest) and
 [coverage](https://pypi.python.org/pypi/pytest-cov):
 
 ``` bash
-python setup.py test 
 sudo pip install -e .[test]
+python setup.py test 
 ```
 
 Note, by default this does not run the slow tests (like creating the
 cluster and installing features. You must therefore first have run the
 full suite of tests at least once. You can do this with:
 
-``` py.test --runslow ```
+``` bash
+py.test --runslow 
+```
 
 ## Adding a new top level command
 
@@ -182,7 +185,7 @@ these steps (in this example the new command is called `Foo`:
     * Add the subcommands and options to the docstring of the foo.py file
     * Implement each command in a method using the same name as the command
   * Add foo.py import to `acs/commands/__init__.py`
-  * Add instantiation of foo.py to conftest.py
+  * Add instantiation of foo.py to tests/conftest.py
   * Copy `tests/command/test_command.tmpl` to `test/command/test_foo.py`
     * Implement the tests
   * Run the tests with `python setup.py test` and iterate as necessary
@@ -200,15 +203,6 @@ Subcommands are applied to commands, to add a subcommand do the following:
   * Install the package with `python setup.py install`
   
 ## Releasing
-
-## Docker Image
-
-Ensure all tests pass (see above).
-
-``` bash
-docker build -t rgardler/acs .
-docker push rgardler/acs
-```
 
 ## Python Package
 

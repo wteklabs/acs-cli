@@ -2,7 +2,7 @@
 logs/
 installOMS.sh
 
-#DC/OS cli
+# DC/OS
 bin/
 include/
 install-optout-dcos-cli.sh*

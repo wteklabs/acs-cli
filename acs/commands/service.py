@@ -80,8 +80,11 @@ class Service(Base):
     Base.createResourceGroup(self)
     
     self._deploy(self.config.get('ACS', 'dnsPrefix'))
-
+    
     if self.exists():
+      if self.config.get('ACS', 'orchestratorType') == 'DCOS':
+        print("You may now want to run `acs service openTunnel && acs dcos install` to install the DCOS command line")
+        
       return self.show()
 
   def _deploy(self, name):
@@ -156,16 +159,30 @@ class Service(Base):
         print >> sys.stderr, "fork failed: %d (%s)" % (e.errno, e.strerror)
         sys.exit(1)
 
-    # Configure the child processes environment
+    # Descouple from the parent environment
     os.chdir("/")
     os.setsid()
     os.umask(0)
 
-    pid = os.getpid()
     print("To stop the SSH tunnel run 'kill " + str(os.getpid()) + "'")
 
     Base.sshTunnel(self)
     return pid
+
+  def closeTunnel(self, pid):
+    """
+    Close the SSH tunnel to the management endpoint with the supplied pid
+    """
+    self.log.info("Attempting to kill the process " + str(int))
+    try:
+      while 1:
+        os.kill(pid, SIGTERM)
+        time.sleep(1.0)
+    except OSError as err:
+      err = str(err)
+      if err.find("No such process") > 0:
+        self.log.error("Failed to kill the process\n " + str(err))
+        sys.exit(1)
 
   def marathonCommand(self, command, method = 'GET', data = None):
     curl = 'curl -s -X ' + method 

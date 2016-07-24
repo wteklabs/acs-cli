@@ -2,6 +2,7 @@
     :maxdepth: 2
 
     index
+    develop
 
 Welcome to Azure Container Service Tools documentation!
 =======================================================

@@ -99,6 +99,18 @@ class Service(Base):
     self.log.debug("Deleting ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
     
+    if not quiet and not self.args["--quiet"]:
+      dns = self.config.get("ACS", "dnsPrefix")
+      group = self.config.get("Group", "name")
+      responded = False
+      while not responded:
+        resp = input("Do you really want to delete the ACS cluster '" + dns + "' in resource group '" + group + "' ('y' or 'yes' to confirm, 'n' or 'no' to abort)?\n")
+        if resp == "y" or resp == "yes":
+          responded = True
+        elif resp == "n" or resp == "no":
+          self.log.debug("Aborting delete at users request")
+          return "Delete aborted"
+        
     command = "azure acs delete"
     command = command + " " + self.config.get('ACS', 'dnsPrefix')
     command = command + " containerservice-" + self.config.get('ACS', 'dnsPrefix')

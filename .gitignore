@@ -3,6 +3,13 @@
 logs/
 installOMS.sh
 
+#DC/OS
+bin/
+include/
+install-optout-dcos-cli.sh*
+lib/
+pip-selfcheck.json
+
 # Emacs
 *~
 *#

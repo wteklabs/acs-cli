@@ -85,6 +85,40 @@ option `--config-file=PATH_TO_FILE`, if the file exists it will be
 used, if not you will be asked the same questions and the file will be
 created.
 
+## Connecting to your cluster
+
+It is necessary to open an SSH tunnel to you cluster. By default the
+acs cli will use the keys in `~/.ssh/id_rsa` (this can be configured
+in the `ini` file in `~/.acs/`. If the identified keys don't exist
+when you run the `acs service create` command they will be created for
+you.
+
+To easily create a tunnel to your cluster run:
+
+``` bash
+acs service openTunnel
+```
+
+Take a note of the pid file this command outputs as you may want to kill this tunnel at a later time with:
+
+``` bash
+kill $PID
+```
+
+## Working with DCOS
+
+If your cluster is using DC/OS as the orchestrator then you can
+install the DC/OS CLI with the following commands:
+
+``` bash
+acs service openTunnel
+acs dcos install
+source /src/bin/env-setup
+```
+
+Once installed you can run DCOS command directly with `dcos COMMAND`
+(you must first have a tunnel open with `acs service openTunnel`).
+
 # Development
 
 Contributions (bug reports, feature requests, docs, patches etc.) are
@@ -151,7 +185,7 @@ these steps (in this example the new command is called `Foo`:
     * Add the subcommands and options to the docstring of the foo.py file
     * Implement each command in a method using the same name as the command
   * Add foo.py import to `acs/commands/__init__.py`
-  * Add instantiation of foo.py to conftest.py
+  * Add instantiation of foo.py to tests/conftest.py
   * Copy `tests/command/test_command.tmpl` to `test/command/test_foo.py`
     * Implement the tests
   * Run the tests with `python setup.py test` and iterate as necessary

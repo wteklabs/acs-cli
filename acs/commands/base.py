@@ -156,22 +156,36 @@ class Config(object):
     print("Create base object")
     self.log = ACSLog("Config")
 
-    self.filename = filename
-    if not self.filename:
-      self.filename = os.path.expanduser("~/.acs/default.ini")
+    if not filename:
+      filename = "~/.acs/default.ini"
 
+    self.filename = os.path.expanduser(filename)
     self.log.debug("Using config file at " + self.filename)
 
     if not os.path.isfile(self.filename):
+      self.log.debug("Config file does not exist. Creating a new one.")
       dns = input("What is the DNS prefix for this cluster?\n")
-      group = input("What is the name of the resource group you want to use/create\n")
+      group = input("What is the name of the resource group you want to use/create?\n")
+      region = input("In which region do you want to deploy the resource group (default: westus)?\n") or 'westus'
+      username = input("What is your username (default: azureuser)?\n") or 'azureuser'
+      orchestrator = input("Which orchestrator do you want to use (Swarm or DCOS, default: DCOS)?\n") or 'DCOS'
+      masterCount = input("How many masters do you want in your cluster (1, 3 or 5, default: 3)?\n") or '3'
+      agentCount = input("How many agents do you want in your cluster (default: 3)?\n") or '3'
+      agentSize = input("Agent size required (default: Standard_D2_v2)?\n") or 'Standard_D2_v2'
       
       tmpl = open("config/cluster.ini.tmpl")
       output = open(self.filename, 'w')
       for s in tmpl:
         s = s.replace("MY-DNS-PREFIX", dns)
+        s = s.replace("MY-RESOURCE-REGION", region)
         s = s.replace("MY-RESOURCE-GROUP-NAME", group)
+        s = s.replace("MY-USERNAME", username)
+        s = s.replace("MY-ORCHESTRATOR", orchestrator)
+        s = s.replace("MY-MASTER-COUNT", masterCount)
+        s = s.replace("MY-AGENT-COUNT", agentCount)
+        s = s.replace("MY-AGENT-SIZE", agentSize)
         output.write(s)
+        self.log.debug("Writing config line: " + s)
 
       tmpl.close()
       output.close()

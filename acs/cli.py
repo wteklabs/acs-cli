@@ -34,9 +34,6 @@ def main():
 
   args = docopt(__doc__, version=VERSION, options_first=True)
 
-  print("Global args:")
-  print(args)
-
   config = Config(args['--config-file'])
   command_name = args["<command>"]
   argv = args['<args>']
@@ -45,7 +42,6 @@ def main():
   command_class = None
   command = None
   for k, command_class in commands:
-      print("Considering command class: " + command_class.__name__)
       if command_name.lower() in command_class.__name__.lower():
         command = command_class(config, argv)
   if command is None:

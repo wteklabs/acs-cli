@@ -42,7 +42,7 @@ class TestService():
 
     def test_show(self, service):
         result = service.show()
-        assert "rgacstestdcos" in result
+        assert "rgDcosTest" in result
         assert "azure.com" in result
 
     @slow

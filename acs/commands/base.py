@@ -90,16 +90,19 @@ class Base(object):
         key_filename = os.path.expanduser(self.config.get('SSH', "privatekey")))
       session = ssh.get_transport().open_session()
       AgentRequestHandler(session)
-      stdin, sterr, stdout = ssh.exec_command(cmd)
+      stdin, stdout, stderr = ssh.exec_command(cmd)
       stdin.close()
       
       result = ""
       for line in stdout.read().splitlines():
         self.log.debug(line)
-        result = result + line
+        result = result + line.decode("utf-8") + "\n"
+      for line in stderr.read().splitlines():
+        self.log.error(line)
     else:
       self.log.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
-      result = "Exception: No test cluster is available"
+      result = "Exception: No cluster is available at " + self.getManagementEndpoint()
+    ssh.close()
     return result
 
   def sshTunnel(self, command = None):
@@ -153,7 +156,6 @@ import os
 class Config(object):
 
   def __init__(self, filename):
-    print("Create base object")
     self.log = ACSLog("Config")
 
     if not filename:

@@ -6,6 +6,7 @@ specified in `--config-file`.
 
 Usage:
   service <command> [help] [options]
+  service execOnMaster <command>
 
 Commands:
   create                create an Azure Container Service
@@ -13,6 +14,7 @@ Commands:
   scale                 Scale the agent cluster up
   show                  display the current service configuration
   openTunnel            open an SSH tunnel to the management interface
+  execOnMaster          execute a command on the lead master
 
 Options:
   --agents=<number>            number of agents (currently scale only scale up is supported)
@@ -50,6 +52,10 @@ class Service(Base):
     
     command = self.args["<command>"]
     result = None
+
+    if self.args["execOnMaster"]:
+      print(self.execOnMaster(command))
+      return
 
     methods = getmembers(self, predicate = ismethod)
     for name, method in methods:
@@ -196,6 +202,12 @@ class Service(Base):
       if err.find("No such process") > 0:
         self.log.error("Failed to kill the process\n " + str(err))
         sys.exit(1)
+
+  def execOnMaster(self, command):
+    """
+    Execute the supplied sommand on the lead master.
+    """
+    return self.executeOnMaster(command)
         
   def marathonCommand(self, command, method = 'GET', data = None):
     curl = 'curl -s -X ' + method 

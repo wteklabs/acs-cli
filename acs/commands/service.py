@@ -1,6 +1,6 @@
 """
 
-Create an manage instances of Azure Container Service. The service
+Create and manage instances of Azure Container Service. The service
 configuration is defined in the `cluster.ini` file (or the file
 specified in `--config-file`.
 
@@ -44,12 +44,13 @@ class Service(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
-    print("Service args")
-    print(args)
+    self.log.debug("Service args")
+    self.log.debug(args)
     self.args = args
     
     command = self.args["<command>"]
     result = None
+
     methods = getmembers(self, predicate = ismethod)
     for name, method in methods:
       if name == command:
@@ -87,10 +88,10 @@ class Service(Base):
         
       return self.show()
 
-  def _deploy(self, name):
+  def _deploy(self, deploymentName):
     command = "azure group deployment create"
-    command = command + " " + self.config.get('ACS', 'dnsPrefix')
-    command = command + " " + name
+    command = command + " " + self.config.get('Group', 'name')
+    command = command + " " + deploymentName
     command = command + " --template-uri " + self.config.get('Template', 'templateUrl')
     command = command + " -p '" + json.dumps(self.config.getACSParams()) + "'"
     os.system(command)
@@ -195,7 +196,7 @@ class Service(Base):
       if err.find("No such process") > 0:
         self.log.error("Failed to kill the process\n " + str(err))
         sys.exit(1)
-
+        
   def marathonCommand(self, command, method = 'GET', data = None):
     curl = 'curl -s -X ' + method 
     if data != None:

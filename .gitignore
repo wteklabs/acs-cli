@@ -1,4 +1,6 @@
 *.ini
+*.bak
+!tests/*.ini
 logs/
 installOMS.sh
 

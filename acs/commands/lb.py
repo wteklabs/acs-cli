@@ -95,7 +95,6 @@ class Lb(Base):
     nsg_name = "dcos-agent-public-nsg-" + cluster_id
     priority = 350
     self.log.warning("FIXME: Currently nsg rule priority is set at 350, this will clash if we try to setup a second rule")
-    cmd = "azure network nsg rule create "
     p = sub.Popen(['azure', 'network', 'nsg', "rule", "create", "-g", rg, "-a", nsg_name, "-p", "*", "-u", str(port), "-n", nsg_rule_name, "-y", str(priority)],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:

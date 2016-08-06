@@ -119,7 +119,7 @@ class Service(Base):
           return "Delete aborted"
         
     command = "azure acs delete"
-    command = command + " " + self.config.get('ACS', 'dnsPrefix')
+    command = command + " " + group
     command = command + " containerservice-" + self.config.get('ACS', 'dnsPrefix')
     os.system(command)
     

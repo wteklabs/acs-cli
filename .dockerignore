@@ -4,3 +4,4 @@ build
 dist
 config/*
 !config/cluster.ini.tmpl
+!config/demo

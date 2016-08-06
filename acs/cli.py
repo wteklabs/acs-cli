@@ -8,6 +8,7 @@ Options:
   -h --help                           Show this help.
 
 Commands:
+  login      Login to Azure interactively
   service    Create and manage Azure Container Service
   app        Deploy and manage applications in the cluster
   lb         Manage the Agents load balancer
@@ -29,6 +30,7 @@ from acs.commands.base import Config
 from docopt import docopt
 from inspect import getmembers, isclass
 import os.path
+import subprocess
 import sys
 
 def main():
@@ -39,6 +41,10 @@ def main():
 
   config = Config(args['--config-file'])
   command_name = args["<command>"]
+  if command_name == "login":
+    print(login())
+    return
+    
   argv = args['<args>']
   module = getattr(commands, command_name)
   commands = getmembers(module, isclass)
@@ -50,3 +56,15 @@ def main():
   if command is None:
     raise Exception("Unrecognized command: " + command_name)
   command.run()
+
+def login():
+  p = subprocess.Popen(["azure", "account", "show"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output, errors = p.communicate()
+  if errors:
+    # Not currently logged in
+  
+    p = subprocess.Popen(["azure", "login"], stderr=subprocess.PIPE)
+    output, errors = p.communicate()
+    if errors:
+      return "Failed to login: " + errors.decode("utf-8")
+  return "Logged in to Azure"

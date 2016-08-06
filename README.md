@@ -5,10 +5,18 @@ contributions via the [project page](https://hub.docker.com/r/rgardler/acs/).
 # Using as a Docker Container
 
 Assuming you have Docker installed the application will run "out of the
-box" with the following command.
+box" with the following command:
 
 ```
 docker run -it rgardler/acs
+```
+
+You may also choose to use the latest developer version (which is the default 
+branch in github). This versoin will likely have features and fixes that are 
+still being tested. Simply use the ':dev' tag:
+
+```
+docker run -it rgardler/acs:dev
 ```
 
 Although not required, it is preferable to mount your ssh and acs

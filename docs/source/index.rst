@@ -104,6 +104,7 @@ To create a conmfiguration file you can start by copying
 
   cp /config/cluster.ini.tmpl /config/cluster.ini
   nano /config/cluster.ini
+
 Commands
 ========
 
@@ -117,6 +118,15 @@ acs service
 		
 .. automodule:: acs.commands.service
 
+acs lb
+------
+		
+.. automodule:: acs.commands.lb
+
+`LB Examples`_
+
+.. _LB Examples: /lb.html
+		
 acs docker
 ----------
 		

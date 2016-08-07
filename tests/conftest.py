@@ -19,9 +19,14 @@ def afs():
     return commands.Afs(config, None)
 
 @pytest.fixture(scope="module")
-def dcos():
+def demo():
     config = Config("tests/test_dcos_cluster.ini")
-    return commands.Dcos(config, None)
+    return commands.Demo(config, None)
+
+@pytest.fixture(scope="module")
+def lb():
+    config = Config("tests/test_dcos_cluster.ini")
+    return commands.Lb(config, None)
 
 @pytest.fixture(scope="module")
 def oms():

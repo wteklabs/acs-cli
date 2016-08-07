@@ -14,7 +14,7 @@ import subprocess, os
 
 class Base(object):
 
-  dcos_env = None
+  temp_filepath = os.path.expanduser("~/.acs/tmp")
   
   def __init__(self, config, options, *args, **kwargs):
     self.log = ACSLog("Base")
@@ -22,6 +22,7 @@ class Base(object):
     self.options = options
     self.args = args
     self.kwargs = kwargs
+    os.makedirs(self.temp_filepath, exist_ok=True)
 
   def _hostnameResolves(self, hostname):
     try:

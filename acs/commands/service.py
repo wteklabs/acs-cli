@@ -92,10 +92,30 @@ class Service(Base):
     
     if self.exists():
       if self.config.get('ACS', 'orchestratorType') == 'DCOS':
-        print("You may now want to run `acs service openTunnel && acs dcos install` to install the DCOS command line")
+        self.install_dcos_cli()
         
       return self.show()
 
+  def install_dcos_cli(self):
+    self.log.info("Installing DCOS CLI")
+
+    self.openTunnel()
+    
+    cmd = "pip install virtualenv"
+    os.system(cmd)
+
+    cmd = "wget https://raw.githubusercontent.com/mesosphere/dcos-cli/master/bin/install/install-optout-dcos-cli.sh -O install-optout-dcos-cli.sh"
+    os.system(cmd)
+
+    cmd = "chmod +x install-optout-dcos-cli.sh"
+    os.system(cmd)
+
+    cmd = "./install-optout-dcos-cli.sh . http://localhost --add-path yes"
+    os.system(cmd)
+
+    self.log.info("DCOS installed. If you want to use the DC/OS command line directly then execute `. /src/bin/env-setup`")
+
+    
   def _deploy(self, deploymentName):
     command = "azure group deployment create"
     command = command + " " + self.config.get('Group', 'name')

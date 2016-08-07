@@ -59,15 +59,13 @@ class Demo(Base):
     service.create()
     service.openTunnel()
 
-    dcos = Dcos(self.config, self.options)
-    dcos.install()
-    cmd = [".", "/src/bin.env-setup"]
-    result = self.shell_execute(cmd)
-    self.log.debug(result)
-    
-    cmd = ["dcos", "package", "install", "marathon-lb", "--yes"]
-    result = self.shell_execute(cmd)
-    self.log.debug(result)
+    cmd = ["dcos package install marathon-lb --yes"]
+    output, errors = self.shell_execute(cmd)
+    self.log.debug(output)
+    if "successfully installed!" not in output:
+      if "already installed" not in errors:
+        self.log.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
+        raise OSError("Failed to install Marathon-lb")
 
     args = self.args
     args["--app-config"] = "config/demo/web/simple-web.json"

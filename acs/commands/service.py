@@ -46,8 +46,8 @@ class Service(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
-    self.log.debug("Service args")
-    self.log.debug(args)
+    # self.log.debug("Service args")
+    # self.log.debug(args)
     self.args = args
     
     command = self.args["<command>"]
@@ -79,7 +79,9 @@ class Service(Base):
 
   def create(self):
     if self.exists():
-      return "It appears that the cluster already exists:\n" + self.show()
+      msg = "It appears that the cluster already exists:\n" + self.show()
+      self.log.debug(msg)
+      return msg
 
     self.log.debug("Creating ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
@@ -167,13 +169,38 @@ class Service(Base):
 
   def openTunnel(self):
     """
-    Open an SSH tunnel to the management endpoint.
+    Open an SSH tunnel to the management endpoint, if one doesn't
+    already exist. The PID for the tunnel is written to
+    `~/.acs/ssh.pid`.  If a tunnel already exiss then a new one will
+    not be created instead PID for the existing tunnel will be
+    returned.
     """
+
+    pidpath = os.path.expanduser("~/.acs/ssh.pid")
+    if os.path.isfile(pidpath):
+      pidfile = open(pidpath)
+      pid = pidfile.read()
+      pidfile.close()
+
+      # check the process exists
+      # 'kill(pid, 0)' does not kill the process, it just throws an `OSError` if the PID does not exist
+      try:
+        os.kill(int(pid), 0)
+        return "A tunnel already exists using PID " + str(pid)
+      except OSError:
+        # seems the old tunnel has gone away
+        self.log.info("A PIDFile exists, but the process does not seem to be present. Removing the PIDFile and opening a new tunnel.")
+        os.remove(pidpath)
+    
     try:
       pid = os.fork()
       if pid > 0:
         # Exit parent process
-        sys.exit(0)
+        pidfile = open(pidpath, 'w')
+        pidfile.write(str(pid))
+        pidfile.close()
+        return "To stop the SSH tunnel run 'kill " + str(pid) + "'"
+        # sys.exit(0)
     except OSError as e:
         print >> sys.stderr, "fork failed: %d (%s)" % (e.errno, e.strerror)
         sys.exit(1)
@@ -183,10 +210,7 @@ class Service(Base):
     os.setsid()
     os.umask(0)
 
-    print("To stop the SSH tunnel run 'kill " + str(os.getpid()) + "'")
-
     Base.sshTunnel(self)
-    return pid
 
   def closeTunnel(self, pid):
     """

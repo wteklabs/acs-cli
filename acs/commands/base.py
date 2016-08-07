@@ -4,15 +4,18 @@ from ..AgentPool import AgentPool
 from sshtunnel import SSHTunnelForwarder
 import json
 import os.path
+from subprocess import call
 import paramiko
 from paramiko import SSHClient
 from paramiko.agent import AgentRequestHandler
 from time import sleep
 import socket
-import subprocess
+import subprocess, os
 
 class Base(object):
 
+  dcos_env = None
+  
   def __init__(self, config, options, *args, **kwargs):
     self.log = ACSLog("Base")
     self.config = config
@@ -144,15 +147,24 @@ class Base(object):
     return data
 
   def shell_execute(self, cmd):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=True)
-    output, errors = p.communicate()
-    if errors:
-      self.log.error("Error executing shell command:\n" + errors.decode("utf-8"))
-    return output, errors
+    self.log.debug("Executing command in shell: " + str(cmd))
 
+    dcos_config = os.path.expanduser('~/.dcos/dcos.toml')
+    os.environ['PATH'] = ':'.join([os.getenv('PATH'), '/src/bin'])
+    os.environ['DCOS_CONFIG'] = dcos_config
+    os.makedirs(os.path.dirname(dcos_config), exist_ok=True)
+    
+    try:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+      output, errors = p.communicate()
+      if errors:
+        self.log.error("Error executing command: " + str(cmd) + ". \n" + errors.decode("utf-8"))
+    except OSError as e:
+      self.log.error("Error executing command " + str(cmd) + ". " + e)
+      raise e
 
-
+    return output.decode("utf-8"), errors.decode("utf-8")
+  
 """The cofiguration for an ACS cluster to work with"""
 from acs.ACSLogs import ACSLog
 

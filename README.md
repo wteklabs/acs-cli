@@ -1,6 +1,6 @@
 This project provides a convenience CLI for creating, testing and
-working with ACS clusters. It's a work in progress and we weclome
-contributions via the [project page](https://hub.docker.com/r/rgardler/acs/).
+working with ACS clusters. It's a work in progress and we welcome
+contributions via the [project page](https://github.com/rgardler/acs-cli).
  
 # Using as a Docker Container
 

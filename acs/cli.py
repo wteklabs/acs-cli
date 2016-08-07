@@ -12,7 +12,7 @@ Commands:
   service    Create and manage Azure Container Service
   app        Deploy and manage applications in the cluster
   lb         Manage the Agents load balancer
-  dcos       Manage a DC/OS cluster with the DC/OS command line
+  demo       Setup demo environments easily
   docker     Send docker commands to a Docker Swarm cluster
   afs        Add the Azure Files Docker volume driver to each agent
   oms        Add or configure Operational Management Suite monitoring

@@ -1,6 +1,5 @@
 from .afs import *
 from .app import *
-from .dcos import *
 from .demo import *
 from .docker import *
 from .lb import *

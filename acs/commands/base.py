@@ -143,7 +143,13 @@ class Base(object):
 
     return data
 
-
+  def shell_execute(self, cmd):
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, shell=True)
+    output, errors = p.communicate()
+    if errors:
+      self.log.error("Error executing shell command:\n" + errors.decode("utf-8"))
+    return output, errors
 
 
 

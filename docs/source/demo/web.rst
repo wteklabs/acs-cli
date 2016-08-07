@@ -3,14 +3,23 @@ How to Create a Web Server in Azure Container Service
 
 In this tuturial we will show how to use the CLI to create a simple,
 load balanced, static web server using the Azure Container
-Service CLI.
+Service CLI
 
+If you simply want to show a load balanced web application working
+then you can do everything you need, including deploying an instance
+of Azure Container Service, using a single command::
+
+  acs demo lbweb
+
+If you want to demonstrate the steps involved then this command can be
+expanded out to individual steps, as decribed below.
+  
 ACS powered by DC/OS
 --------------------
 
 First we need to create our cluster and open the tunnel::
 
-  azure login
+  acs login
   acs service create
   acs service openTunnel
 

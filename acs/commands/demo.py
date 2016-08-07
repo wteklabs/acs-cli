@@ -6,7 +6,7 @@ Usage:
   demo <command> [help] [options]
 
 Commands:
-  microscaling_services    Demonstrate microscaling of services
+  lbweb        Deploy a load balanced web application
 
 Options:
 
@@ -16,13 +16,15 @@ Help:
 
 """
 
+import acs.cli
 from .base import Base
 from .service import Service
+from .dcos import Dcos
+from .app import App
 
 from docopt import docopt
 from inspect import getmembers, ismethod
 from json import dumps
-
 
 class Demo(Base):
 
@@ -49,17 +51,26 @@ class Demo(Base):
   def help(self):
     print(__doc__)
 
-  def microscaling_services(self):
-      # deploy the 4 containers
-      self.deploy_marathon_app("/config/remainder.json")
-      self.deploy_marathon_app("/config/producer.json")
-      self.deploy_marathon_app("/config/consumer.json")
-      self.deploy_marathon_app("/config/microscaling.json")
-      # provide login details
-      # display the script
 
-  def deploy_marathon_app(self, filename):
-      service = Service(self.config, {})
-      with open(filename, 'r') as data_file:
-          app = data_file.read().replace("\"", "\\\"")
-      service.marathonCommand('apps', 'POST', app)
+  def lbweb(self):
+    print(acs.cli.login())
+
+    service = Service(self.config, self.options)
+    service.create()
+    service.openTunnel()
+
+    dcos = Dcos(self.config, self.options)
+    dcos.install()
+    cmd = [".", "/src/bin.env-setup"]
+    result = self.shell_execute(cmd)
+    self.log.debug(result)
+    
+    cmd = ["dcos", "package", "install", "marathon-lb", "--yes"]
+    result = self.shell_execute(cmd)
+    self.log.debug(result)
+
+    args = self.args
+    args["--app-config"] = "config/demo/web/simple-web.json"
+    app = App(self.config, self.options)
+    app.args = args
+    return app.deploy()

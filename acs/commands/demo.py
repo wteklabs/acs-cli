@@ -9,6 +9,7 @@ Commands:
   lbweb        Deploy a load balanced web application
 
 Options:
+  --remove     Remove the demo rather than deploy it
 
 Help:
   For help using the oms command please open an issue at 
@@ -53,6 +54,19 @@ class Demo(Base):
 
 
   def lbweb(self):
+    """
+    Deploy or remove a simple load balanced web application.
+    """
+    args = self.args
+    self.log.debug("`demo lbweb` args before adding app-config:\n" + str(args))
+    args["--app-config"] = "config/demo/web/simple-web.json"
+
+    app = App(self.config, self.options)
+    app.args = args
+
+    if self.args["--remove"]:
+      return app.remove()
+    
     print(acs.cli.login())
 
     service = Service(self.config, self.options)
@@ -67,8 +81,7 @@ class Demo(Base):
         self.log.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
         raise OSError("Failed to install Marathon-lb")
 
-    args = self.args
-    args["--app-config"] = "config/demo/web/simple-web.json"
-    app = App(self.config, self.options)
-    app.args = args
     return app.deploy()
+
+
+    

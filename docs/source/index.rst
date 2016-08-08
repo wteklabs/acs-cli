@@ -78,15 +78,6 @@ instructions on running from source.
 Preparation for Use
 ===================
 
-REQUIRED: Azure Login
----------------------
-
-Login to Azure with the azure cli and ensure it is operating in ARM
-mode by executing the following commands::
-
-  azure login
-  azure config mode arm
-
 OPTIONAL: Cluster Configuration
 -------------------------------
 

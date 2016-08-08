@@ -1,7 +1,5 @@
 """Tests for `acs foo` subcommand."""
 
-from subprocess import check_output
-
 import pytest
 
 class TestFoo():
@@ -17,9 +15,6 @@ class TestFoo():
 
     @slow
     def test_delegate_result_includes_name(self):
-        output = self._execute(['acs', 'delegate', '--name=Bar'])
-        self.assertTrue('Bar' in output)
+        output = "FIXME: implement tests"
+        assert('Bar' in output)
 
-    def _execute(self, command):
-        result = check_output(command)
-        return result.decode("utf-8")

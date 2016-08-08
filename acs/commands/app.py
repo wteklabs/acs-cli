@@ -81,18 +81,24 @@ class App(Base):
     return perm_filename
     
   def deploy(self):
+    """Deploy the application dfined in the file referenced in
+    `--app-config`. If the application is already deployed a
+    `RunitmeWarning` will be raised.
+    """
     config_path = self.args["--app-config"]
     try:
       perm_filename = self.parseAppConfig(config_path)
     except IOError as e:
-      self.log.error(str(e))
-      return "Unable to deploy application. There is a problem with the app configuration file. See the log for full details."
+      self.log.error("Unable to deploy applicatoin.\n" + str(e))
+      raise e
 
     p = sub.Popen(['dcos', 'marathon', 'app', "add", perm_filename],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:
-      self.log.error("Error deploying application:\n" + errors.decode("utf-8"))
-      return "Unable to deploy application, see log for full details."
+      msg = "Error deploying application:\n" + errors.decode("utf-8")
+      self.log.error(msg)
+      raise RuntimeWarning(msg)
+    
     self.log.debug("Application deployed. Configuration stored in " + perm_filename)
 
     return "Application deployed"
@@ -106,7 +112,7 @@ class App(Base):
         app_id = app["id"]
     except IOError as e:
       self.log.error(e)
-      return "Unable to remove application because: " + str(e) + ". See the log for full details."
+      raise e
 
     self.log.debug("Removing app with the ID " + app_id)
     p = sub.Popen(['dcos', 'marathon', 'app', "remove", app_id],stdout=sub.PIPE,stderr=sub.PIPE)

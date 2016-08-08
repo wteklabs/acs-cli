@@ -38,14 +38,6 @@ NOTE 3: If you want to work with the latest development version (may
 have more features, but may also have more bugs) replace
 `rgardler/acs` with `rgardler/acs:dev` in the above commands.
 
-Once you have run one of the commands above you should log into your
-Azure subscription:
-
-```
-azure config mode arm
-azure login
-```
-
 At this point you are ready to start using the CLI.
 
 NOTE: the run-docker.sh script linked above will always attempt to
@@ -143,8 +135,14 @@ git clone https://github.com/rgardler/acs-cli/tree/dev acs-cli
 
 ```
 
-Once you have the source code, you can start a development container
+Once you have the source code, you can build a development container
 with:
+
+``` bash
+./scripts/build-docker.sh
+```
+
+To run your container with local files mapped into it:
 
 ``` bash
 ./scripts/run-docker.sh

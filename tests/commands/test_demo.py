@@ -21,6 +21,7 @@ class TestDemo():
         try:
             result = demo.lbweb()
             assert("Application deployed" in result)
+            assert(self.isSimpleWebUp(service))
         except RuntimeWarning as e:
             demo.log.warning("The application was already installed so the test was not as thorough as it could have been")
 
@@ -42,6 +43,7 @@ class TestDemo():
         try:
             result = demo.lbweb()
             assert("Application deployed" in result)
+            assert(self.isSimpleWebUp(service))
         except RuntimeWarning as e:
             demo.log.warning("The application was already installed so the test was not as thorough as it could have been")
         
@@ -49,3 +51,22 @@ class TestDemo():
         demo.args["--remove"] = True
         result = demo.lbweb()
         assert("Application removed" in result)
+
+
+    def isSimpleWebUp(self, service):
+        isConnected = False
+        attempts = 0
+        while not isConnected and attempts < 50:
+          req = urllib.request.Request("http://" + service.getAgentEndpont())
+          try:
+            with urllib.request.urlopen(req) as response:
+              html = response.read()
+              if "Real Visit Results" in html:
+                  isConnected = True
+              else:
+                  self.log.debug("Got a response from the server, but didn't container the expected results.")
+          except urllib.error.URLError as e:
+            isConnected = False
+            attempts = attempts + 1
+            self.log.debug("SSH tunnel not established, waiting for 1/10th of a second")
+            time.sleep(0.1)

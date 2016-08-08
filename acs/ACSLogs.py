@@ -45,3 +45,6 @@ class ACSLog:
 
     def error(self, msg):
         self.logger.error(msg)
+
+    def exception(self, err):
+        self.logger.exception(err)

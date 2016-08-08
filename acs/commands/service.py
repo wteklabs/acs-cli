@@ -41,6 +41,7 @@ import sys
 from tempfile import mkstemp
 import signal
 import time
+import urllib.request
 from shutil import move
 from os import remove, close
 
@@ -190,12 +191,15 @@ class Service(Base):
                       indent=4, separators=(',', ': '))
 
   def openTunnel(self):
-    """
-    Open an SSH tunnel to the management endpoint, if one doesn't
+    """Open an SSH tunnel to the management endpoint, if one doesn't
     already exist. The PID for the tunnel is written to
     `~/.acs/ssh.pid`.  If a tunnel already exiss then a new one will
     not be created instead PID for the existing tunnel will be
     returned.
+
+    This method attempts to block until we have an active connection
+    to the master endpoint.
+
     """
 
     pidpath = os.path.expanduser("~/.acs/ssh.pid")
@@ -221,8 +225,28 @@ class Service(Base):
         pidfile = open(pidpath, 'w')
         pidfile.write(str(pid))
         pidfile.close()
-        # sys.exit(0)
-        return "Connection opened (PID " + str(pid) + ")"
+
+        # wait until we can connect to the master endpoint
+        isConnected = False
+        attempts = 0
+        while not isConnected and attempts < 50:
+          req = urllib.request.Request("http://localhost")
+          try:
+            with urllib.request.urlopen(req) as response:
+              html = response.read()
+              isConnected = True
+          except urllib.error.URLError as e:
+            isConnected = False
+            attempts = attempts + 1
+            self.log.debug("SSH tunnel not established, waiting for 1/10th of a second")
+            time.sleep(0.1)
+
+        if attempts < 50:
+          msg = "Connection opened (PID " + str(pid) + ")"
+        else:
+          raise RuntimeError("Unable to open an SSH tunnel to the management endpoint.")
+          
+        return msg
     except OSError as e:
         self.log.error("Unable to create forked proces for the SSH Tunnel: " + str(e))
         sys.exit(1)

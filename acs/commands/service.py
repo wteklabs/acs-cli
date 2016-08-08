@@ -14,6 +14,7 @@ Commands:
   scale                 Scale the agent cluster up
   show                  display the current service configuration
   openTunnel            open an SSH tunnel to the management interface
+  closeTunnel           close the current SSH tunnel
   execOnMaster          execute a command on the lead master
 
 Options:
@@ -38,6 +39,7 @@ import os
 import subprocess
 import sys  
 from tempfile import mkstemp
+import signal
 import time
 from shutil import move
 from os import remove, close
@@ -128,9 +130,9 @@ class Service(Base):
     self.log.debug("Deleting ACS Deployment")
     self.log.debug(json.dumps(self.config.getACSParams()))
     
+    dns = self.config.get("ACS", "dnsPrefix")
+    group = self.config.get("Group", "name")
     if not quiet and not self.args["--quiet"]:
-      dns = self.config.get("ACS", "dnsPrefix")
-      group = self.config.get("Group", "name")
       responded = False
       while not responded:
         resp = input("Do you really want to delete the ACS cluster '" + dns + "' in resource group '" + group + "' ('y' or 'yes' to confirm, 'n' or 'no' to abort)?\n")
@@ -219,34 +221,41 @@ class Service(Base):
         pidfile = open(pidpath, 'w')
         pidfile.write(str(pid))
         pidfile.close()
-        return "To stop the SSH tunnel run 'kill " + str(pid) + "'"
         # sys.exit(0)
+        return "Connection opened (PID " + str(pid) + ")"
     except OSError as e:
-        print >> sys.stderr, "fork failed: %d (%s)" % (e.errno, e.strerror)
+        self.log.error("Unable to create forked proces for the SSH Tunnel: " + str(e))
         sys.exit(1)
 
-    # Descouple from the parent environment
+    # Decouple from the parent environment
     os.chdir("/")
     os.setsid()
     os.umask(0)
 
     Base.sshTunnel(self)
 
-  def closeTunnel(self, pid):
+  def closeTunnel(self):
     """
     Close the SSH tunnel to the management endpoint with the supplied pid
     """
-    self.log.info("Attempting to kill the process " + str(int))
-    try:
-      while 1:
-        os.kill(pid, SIGTERM)
-        time.sleep(1.0)
-    except OSError as err:
-      err = str(err)
-      if err.find("No such process") > 0:
-        self.log.error("Failed to kill the process\n " + str(err))
-        sys.exit(1)
+    pidpath = os.path.expanduser("~/.acs/ssh.pid")
+    if os.path.isfile(pidpath):
+      pidfile = open(pidpath)
+      pid = pidfile.read()
+      pidfile.close()
+    else:
+      raise RuntimeWarning("No SSH PID file, assuming there is no active tunnel")
 
+    self.log.info("Attempting to kill the SSH tunnel, process: " + pid)
+    try:
+      os.kill(int(pid), signal.SIGTERM)
+      time.sleep(1.0)
+      os.remove(pidpath)
+      return "Connection closed"
+    except OSError as err:
+      self.log.exception(err)
+      raise RuntimeError("Unable to close the SSH Tunnel process: " + str(err))
+    
   def execOnMaster(self, command):
     """
     Execute the supplied sommand on the lead master.

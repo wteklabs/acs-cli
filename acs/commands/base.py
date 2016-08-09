@@ -57,11 +57,14 @@ class Base(object):
     
     ips = []
     for nic in nics:
-      self.log.debug("Extracting IP from: " + json.dumps(nic, indent=True))
-      ip = nic["properties"]["ipConfigurations"][0]["properties"]["privateIPAddress"]
-      self.log.debug("IP is: " + str(ip))
-      ips.append(ip)
-
+      try:
+        ip = nic["ipConfigurations"][0]["privateIPAddress"]
+        self.log.debug("IP for " + nic["name"] + " is: " + str(ip))
+        ips.append(ip)
+      except KeyError:
+        self.log.warning("NIC doesn't seem to have the information we need")
+        
+    self.log.debug("Agent IPs: " + str(ips))
     return ips
 
   def executeOnAgent(self, cmd, ip):

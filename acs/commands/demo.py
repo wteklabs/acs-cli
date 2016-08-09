@@ -70,7 +70,7 @@ class Demo(Base):
 
     service = Service(self.config, self.options)
     service.create()
-    service.openTunnel()
+    service.connect()
 
     service.install_dcos_cli()
 

@@ -21,7 +21,7 @@ First we need to create our cluster and open the tunnel::
 
   acs login
   acs service create
-  acs service openTunnel
+  acs service connect
 
 Install the DC/OS command line::
 

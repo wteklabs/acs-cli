@@ -47,7 +47,7 @@ class TestService():
         assert "azure.com" in result
 
     def test_connect(self, service):
-        results = service.openTunnel()
+        results = service.connect()
 
         isConnected = False
         req = urllib.request.Request("http://localhost")
@@ -56,13 +56,13 @@ class TestService():
             isConnected = True
         assert(isConnected)
 
-        service.closeTunnel()
+        service.disconnect()
 
     def test_disconnect(self, service):
-        results = service.openTunnel()
+        results = service.connect()
         isConnected = True
         
-        results = service.closeTunnel()
+        results = service.disconnect()
         req = urllib.request.Request("http://localhost")
         try:
             with urllib.request.urlopen(req) as response:

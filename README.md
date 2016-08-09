@@ -96,7 +96,7 @@ you.
 To easily create a tunnel to your cluster run:
 
 ``` bash
-acs service openTunnel
+acs service connect
 ```
 
 Take a note of the pid file this command outputs as you may want to kill this tunnel at a later time with:
@@ -107,17 +107,20 @@ kill $PID
 
 ## Working with DCOS
 
-If your cluster is using DC/OS as the orchestrator then you can
-install the DC/OS CLI with the following commands:
+If your cluster is using DC/OS as the orchestrator and you created it
+using this set of tools then the DC/OS CLI will have been installed
+for you when you created the cluster. If, however, you deployed the
+cluster using a different method you can install the DC/OS cli with
+the following commands.
 
 ``` bash
-acs service openTunnel
-acs dcos install
-source /src/bin/env-setup
+acs service install_dcos_cli
+. /src/bin/env-setup
 ```
 
 Once installed you can run DCOS command directly with `dcos COMMAND`
-(you must first have a tunnel open with `acs service openTunnel`).
+(you must first have connected to the cluster with `acs service
+connect`).
 
 # Development
 

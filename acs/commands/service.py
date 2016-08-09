@@ -13,8 +13,8 @@ Commands:
   delete                delete an Azure Container Service
   scale                 Scale the agent cluster up
   show                  display the current service configuration
-  openTunnel            open an SSH tunnel to the management interface
-  closeTunnel           close the current SSH tunnel
+  connect               open an SSH tunnel to the management interface
+  disconnect            close the current SSH tunnel
   execOnMaster          execute a command on the lead master
 
 Options:
@@ -42,6 +42,7 @@ import sys
 from tempfile import mkstemp
 import signal
 import time
+from time import sleep
 import urllib.request
 from shutil import move
 from os import remove, close
@@ -103,7 +104,7 @@ class Service(Base):
   def install_dcos_cli(self):
     self.log.info("Installing DCOS CLI")
 
-    self.openTunnel()
+    self.connect()
     
     cmd = "pip install virtualenv"
     os.system(cmd)
@@ -192,6 +193,11 @@ class Service(Base):
                       indent=4, separators=(',', ': '))
 
   def openTunnel(self):
+    """DEPRECATED: use connect() instead"""
+    self.connect()
+    self.log.warning("Service.openTunnel() is deprecated. Please use Service.connect instead.")
+  
+  def connect(self):
     """Open an SSH tunnel to the management endpoint, if one doesn't
     already exist. The PID for the tunnel is written to
     `~/.acs/ssh.pid`.  If a tunnel already exiss then a new one will
@@ -271,26 +277,41 @@ class Service(Base):
         sleep(10)
 
   def closeTunnel(self):
+    """DEPRECATED: use disconnect() instead"""
+    self.disconnect()
+    self.log.warningxo("Service.closeTunnel() is deprecated. Please use Service.disconnect instead.")
+  
+  def disconnect(self):
     """
     Close the SSH tunnel to the management endpoint with the supplied pid
     """
+
     pidpath = os.path.expanduser("~/.acs/ssh.pid")
     if os.path.isfile(pidpath):
       pidfile = open(pidpath)
       pid = pidfile.read()
       pidfile.close()
+
+      # check the process exists
+      # 'kill(pid, 0)' does not kill the process, it just throws an `OSError` if the PID does not exist
+      try:
+        os.kill(int(pid), 0)
+      except OSError:
+        # seems the old tunnel has gone away
+        self.log.debug("A PIDFile exists, but the process does not seem to be present. Removing the PIDFile.")
+        os.remove(pidpath)
     else:
-      raise RuntimeWarning("No SSH PID file, assuming there is no active tunnel")
+      raise RuntimeWarning("No SSH PID file, therefore assuming there is no active tunnel to close.")
 
     self.log.info("Attempting to kill the SSH tunnel, process: " + pid)
     try:
       os.kill(int(pid), signal.SIGTERM)
       time.sleep(1.0)
       os.remove(pidpath)
-      return "Connection closed"
+      return "Disconnected"
     except OSError as err:
       self.log.exception(err)
-      raise RuntimeError("Unable to close the SSH Tunnel process: " + str(err))
+      raise RuntimeError("Unable to killthe SSH Tunnel process: " + str(err))
     
   def execOnMaster(self, command):
     """
@@ -299,12 +320,12 @@ class Service(Base):
     return self.executeOnMaster(command)
         
   def marathonCommand(self, command, method = 'GET', data = None):
-    self.openTunnel()
+    self.connect()
     curl = 'curl -s -X ' + method 
     if data != None:
       curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
     cmd = curl + ' localhost/marathon/v2/' + command 
     self.log.debug('Command to execute: ' + cmd)
     result = self.shell_execute(cmd)
-    self.closeTunnel
+    self.disconnect()
     return result

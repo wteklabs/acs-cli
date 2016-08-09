@@ -36,6 +36,7 @@ from docopt import docopt
 from inspect import getmembers, ismethod
 import json
 import os
+from sshtunnel import SSHTunnelForwarder
 import subprocess
 import sys  
 from tempfile import mkstemp
@@ -226,6 +227,8 @@ class Service(Base):
         pidfile.write(str(pid))
         pidfile.close()
 
+        time.sleep(0.5)
+
         # wait until we can connect to the master endpoint
         isConnected = False
         attempts = 0
@@ -248,15 +251,24 @@ class Service(Base):
           
         return msg
     except OSError as e:
-        self.log.error("Unable to create forked proces for the SSH Tunnel: " + str(e))
-        sys.exit(1)
+      msg = "Unable to create forked proces for the SSH Tunnel: " + str(e)
+      self.log.error(msg)
+      raise RuntimeError(msg)
 
     # Decouple from the parent environment
     os.chdir("/")
     os.setsid()
     os.umask(0)
 
-    Base.sshTunnel(self)
+    with SSHTunnelForwarder(
+      (self.getManagementEndpoint(), 2200),
+      remote_bind_address = ('localhost', 80),
+      local_bind_address = ('', 80),
+      ssh_username = self.config.get('ACS', 'username'),
+      ssh_pkey = os.path.expanduser(self.config.get('SSH', "privatekey"))
+    ) as server:
+      while True:
+        sleep(10)
 
   def closeTunnel(self):
     """
@@ -287,9 +299,12 @@ class Service(Base):
     return self.executeOnMaster(command)
         
   def marathonCommand(self, command, method = 'GET', data = None):
+    self.openTunnel()
     curl = 'curl -s -X ' + method 
     if data != None:
       curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
     cmd = curl + ' localhost/marathon/v2/' + command 
     self.log.debug('Command to execute: ' + cmd)
-    return Base.sshTunnel(self, cmd)
+    result = self.shell_execute(cmd)
+    self.closeTunnel
+    return result

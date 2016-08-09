@@ -1,7 +1,6 @@
 """The base command class. All implemented commands should extend this class."""
 from ..AgentPool import AgentPool
 
-from sshtunnel import SSHTunnelForwarder
 import json
 import os.path
 from subprocess import call
@@ -130,24 +129,6 @@ class Base(object):
       result = "Exception: No cluster is available at " + self.getManagementEndpoint()
     ssh.close()
     return result
-
-  def sshTunnel(self, command = None):
-    """
-    Either open an SSH tunnel and keep it open (if command = None) 
-    or open the tunnel, execute the command and exit.
-    """
-    with SSHTunnelForwarder(
-      (self.getManagementEndpoint(), 2200),
-      remote_bind_address = ('localhost', 80),
-      local_bind_address = ('', 80),
-      ssh_username = self.config.get('ACS', 'username'),
-      ssh_pkey = os.path.expanduser(self.config.get('SSH', "privatekey"))
-    ) as server:
-      if command:
-        return subprocess.check_output(command, shell=True)
-      else:
-        while True:
-          sleep(1)
 
   def getClusterSetup(self):
     """

@@ -4,6 +4,7 @@ from acs.AgentPool import AgentPool
 
 import pytest
 import time
+import urllib.request
 
 class TestService():
 
@@ -45,6 +46,32 @@ class TestService():
         assert "rgDcosTest" in result
         assert "azure.com" in result
 
+    def test_connect(self, service):
+        results = service.openTunnel()
+
+        isConnected = False
+        req = urllib.request.Request("http://localhost")
+        with urllib.request.urlopen(req) as response:
+            html = response.read()
+            isConnected = True
+        assert(isConnected)
+
+        service.closeTunnel()
+
+    def test_disconnect(self, service):
+        results = service.openTunnel()
+        isConnected = True
+        
+        results = service.closeTunnel()
+        req = urllib.request.Request("http://localhost")
+        try:
+            with urllib.request.urlopen(req) as response:
+                html = response.read()
+                isConnected = True
+        except urllib.error.URLError as e:
+            isConnected = False
+        assert(not isConnected)
+        
     @slow
     def test_scale(self, service):
         initial_agents = service.config.getint('ACS', 'agentCount')

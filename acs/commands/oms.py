@@ -54,10 +54,11 @@ class Oms(Base):
           self.help()
 
   def install(self):
-      """
-      Install the OMS agent on all ACS agents
+      """Install the OMS agent on all ACS agents
+
       """
 
+      
       ips = Base.getAgentIPs(self)
       for ip in ips:
         self.log.debug("Installing OMS on: " + ip)
@@ -65,22 +66,28 @@ class Oms(Base):
         result = ""
 
         cmd = "wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh\n"
-        result = result + self.executeOnAgent(cmd, ip)
+        # FIXME: do some error checking
+        result = self.executeOnAgent(cmd, ip)
 
         cmd = "chmod +x ./omsagent-1.1.0-28.universal.x64.sh\n"
-        result = result + self.executeOnAgent(cmd, ip)
+        # FIXME: do some error checking
+        result = self.executeOnAgent(cmd, ip)
 
         workspace_id = self.config.get('OMS', "workspace_id")
         workspace_key = self.config.get('OMS', "workspace_primary_key")
         cmd = "sudo ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w " + workspace_id + " -s " + workspace_key + "\n"
-        result = result + self.executeOnAgent(cmd, ip)
+        # FIXME: do some error checking
+        result = self.executeOnAgent(cmd, ip)
 
-        cmd = "sudo sed -i -E \"s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g\" /etc/default/docker\n"
-        result = result + self.executeOnAgent(cmd, ip)
+        cmd = 'sudo sed -i -E "s/(DOCKER_OPTS=\\\")(.*)\\\"/\\1\\2 --log-driver=fluentd --log-opt fluentd-address=localhost:25225\\\"/g" /etc/default/docker'
+        # FIXME: do some error checking
+        result = self.executeOnAgent(cmd, ip)
 
         cmd = "sudo service docker restart\n"
-        result = result + self.executeOnAgent(cmd, ip)
+        # FIXME: do some error checking
+        result = self.executeOnAgent(cmd, ip)
 
+        result = "OMS installed on all agents (though we don't actually do error checking on the install at this point, so be vigilant)"
         return result
 
   def help(self):

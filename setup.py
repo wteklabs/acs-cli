@@ -25,7 +25,7 @@ class RunTests(Command):
 
     def run(self):
         """Run all tests"""
-        errno = call(['py.test', '--cov=acs', '--cov-report=term-missing'])
+        errno = call(['py.test', '--cov=acs', '--cov-report=term-missing', '--ignore=lib/python3.5/site-packages'])
         raise SystemExit(errno)
 
 setup(

@@ -33,19 +33,14 @@ class AgentPool:
         """
         rg_name = self.config.get('Group', 'name')
         nics = []
-        vmss_list = self.getPools()
-        for vmss in vmss_list:
-            vmss_name = vmss['name']
-            self.log.debug("Looking up VMs in VMSS called " + vmss_name)
-
-            cmd = "azure network nic list " + rg_name + " --json"
-            nic_list = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
+        cmd = "azure network nic list " + rg_name + " --json"
+        nic_list = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
             
-            for nic in nic_list:
-                cmd = "azure network nic show " + rg_name + " " + nic["name"] + " --json"
-                nics.append(json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8")))
-
-        self.log.debug("List of VMSS NICs: " + json.dumps(nics, indent=True))
+        for nic in nic_list:
+            if "agent" in nic["name"]:
+                self.log.debug("Adding NIC to list of Agent NICs:\n" + json.dumps(nic, indent=True))
+                nics.append(nic)
+            
         return nics
 
     def getAgents(self):

@@ -71,21 +71,24 @@ class Base(object):
     """
     Execute command on an agent identified by agent_name
     """
+    sshadd = "ssh-add " + self.config.get("SSH", "privatekey")
+    self.shell_execute(sshadd)
+    
     sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + ip
     self.log.debug("SSH Connection to agent: " + sshAgentConnection)
     
     self.log.debug("Command to run on agent: " + cmd)
     
-    cmd = cmd.replace("\"", "\\\"")
     sshCmd = sshAgentConnection + ' \'' + cmd + '\''
-    return self.executeOnMaster(sshCmd)
+    self.shell_execute("exit")
+    result = self.executeOnMaster(sshCmd)
+
+    return result
 
   def executeOnMaster(self, cmd):
     """
     Execute command on the current master leader
     """
-    self.log.debug("Executing on master: " + cmd)
-
     if self._hostnameResolves(self.getManagementEndpoint()):
       ssh = SSHClient()
       ssh.load_system_host_keys()
@@ -96,16 +99,19 @@ class Base(object):
         port = 2200,
         key_filename = os.path.expanduser(self.config.get('SSH', "privatekey")))
       session = ssh.get_transport().open_session()
+      self.log.debug("Session opened on master.")
+      self.log.debug("Executing on master: " + cmd)
+
       AgentRequestHandler(session)
       stdin, stdout, stderr = ssh.exec_command(cmd)
       stdin.close()
       
       result = ""
       for line in stdout.read().splitlines():
-        self.log.debug(line)
+        self.log.debug(line.decude("utf-8"))
         result = result + line.decode("utf-8") + "\n"
       for line in stderr.read().splitlines():
-        self.log.error(line)
+        self.log.error(line.decode("utf-8"))
     else:
       self.log.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
       result = "Exception: No cluster is available at " + self.getManagementEndpoint()
@@ -151,6 +157,7 @@ class Base(object):
     return data
 
   def shell_execute(self, cmd):
+    """ Execute a command on the client in a bash shell. """
     self.log.debug("Executing command in shell: " + str(cmd))
 
     dcos_config = os.path.expanduser('~/.dcos/dcos.toml')
@@ -161,8 +168,6 @@ class Base(object):
     try:
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
       output, errors = p.communicate()
-      if errors:
-        self.log.error("Error executing command: " + str(cmd) + ". \n" + errors.decode("utf-8"))
     except OSError as e:
       self.log.error("Error executing command " + str(cmd) + ". " + e)
       raise e

@@ -23,6 +23,19 @@ class Base(object):
     self.args = args
     self.kwargs = kwargs
     os.makedirs(self.temp_filepath, exist_ok=True)
+    self.login()
+    
+  def login(self):
+    p = subprocess.Popen(["azure", "account", "show"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, errors = p.communicate()
+    if errors:
+      # Not currently logged in
+  
+      p = subprocess.Popen(["azure", "login"], stderr=subprocess.PIPE)
+      output, errors = p.communicate()
+      if errors:
+        return "Failed to login: " + errors.decode("utf-8")
+      return "Logged in to Azure"
 
   def _hostnameResolves(self, hostname):
     try:

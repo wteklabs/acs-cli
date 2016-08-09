@@ -1,6 +1,7 @@
 """Tests for `acs demo` subcommand."""
 
 import pytest
+import urllib.request
 
 class TestDemo():
     slow = pytest.mark.skipif(
@@ -31,7 +32,6 @@ class TestDemo():
         result = demo.lbweb()
         assert("Application removed" in result)
 
-        
     def test_lbweb(self, demo, service):
         """Tests the creation of the lbweb demo. This version of the test will fail if the test cluster dows not already exist.
 

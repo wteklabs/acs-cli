@@ -11,11 +11,8 @@ class TestDCOS():
         reason="need --runslow option to run"
     )
 
+    @slow
     def test_deployment(self, service):
-        response = str(service.marathonCommand('apps'))
-        service.log.info("response from marathon command: " + response)
-        assert '{\"apps\":[]}' in response
-
         with open ('marathon-app.json', "r") as marathonfile:
             data=marathonfile.read().replace('\n', '').replace("\"", "\\\"")
         response = service.marathonCommand('groups', 'POST', data)
@@ -33,6 +30,3 @@ class TestDCOS():
 
         assert i >= 9
 
-        service.marathonCommand('groups/azure?force=true', 'DELETE')
-        response = str(service.marathonCommand('apps'))
-        assert '{"apps":[]}' in response

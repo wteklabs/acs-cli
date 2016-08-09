@@ -145,7 +145,7 @@ with:
 To run your container with local files mapped into it:
 
 ``` bash
-./scripts/run-docker.sh
+./scripts/dev-docker.sh
 ```
 
 Now you can edit the files using your favorite editor and test the

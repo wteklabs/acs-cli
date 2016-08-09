@@ -7,7 +7,6 @@ from subprocess import call
 import paramiko
 from paramiko import SSHClient
 from paramiko.agent import AgentRequestHandler
-from time import sleep
 import socket
 import subprocess, os
 

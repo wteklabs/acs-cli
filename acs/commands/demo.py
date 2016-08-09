@@ -20,7 +20,6 @@ Help:
 import acs.cli
 from .base import Base
 from .service import Service
-from .dcos import Dcos
 from .app import App
 
 from docopt import docopt

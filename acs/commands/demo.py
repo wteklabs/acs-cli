@@ -72,9 +72,12 @@ class Demo(Base):
     service.create()
     service.openTunnel()
 
+    service.install_dcos_cli()
+
     cmd = ["dcos package install marathon-lb --yes"]
     output, errors = self.shell_execute(cmd)
     self.log.debug(output)
+    self.log.error(errors)
     if "successfully installed!" not in output:
       if "already installed" not in errors:
         self.log.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");

@@ -57,7 +57,7 @@ class TestDemo():
         isConnected = False
         attempts = 0
         while not isConnected and attempts < 50:
-          req = urllib.request.Request("http://" + service.getAgentEndpont())
+          req = urllib.request.Request("http://" + service.getAgentEndpoint())
           try:
             with urllib.request.urlopen(req) as response:
               html = response.read()

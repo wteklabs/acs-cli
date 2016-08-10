@@ -10,38 +10,31 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="module")
 def base():
-    config = Config("tests/test_dcos_cluster.ini")
-    return commands.Base(config, None)
+    return commands.Base(config(), None)
 
 @pytest.fixture(scope="module")
 def afs():
-    config = Config("tests/test_dcos_cluster.ini")
-    return commands.Afs(config, None)
+    return commands.Afs(config(), None)
 
 @pytest.fixture(scope="module")
 def demo():
-    config = Config("tests/test_dcos_cluster.ini")
-    return commands.Demo(config, None)
+    return commands.Demo(config(), None)
 
 @pytest.fixture(scope="module")
 def lb():
-    config = Config("tests/test_dcos_cluster.ini")
-    return commands.Lb(config, None)
+    return commands.Lb(config(), None)
 
 @pytest.fixture(scope="module")
 def oms():
-    config = Config("tests/test_dcos_cluster.ini")
-    return commands.Oms(config, None)
+    return commands.Oms(config(), None)
 
 @pytest.fixture(scope="module")
 def service():
-    config = Config("tests/test_dcos_cluster.ini")
-    return commands.Service(config, None)
+    return commands.Service(config(), None)
 
 @pytest.fixture(scope="module")
 def agentPool():
-    config = Config("tests/test_dcos_cluster.ini")
-    return AgentPool(config)
+    return AgentPool(config())
 
 @pytest.fixture(scope="module")
 def config():

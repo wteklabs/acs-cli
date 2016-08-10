@@ -12,9 +12,14 @@ class TestAgentPool():
         agents = agentPool.getAgents();
         num_agents = len(agents)
         expected_agents = int(config.get("ACS", "agentCount"))
+        print("expected private agents = " + str(expected_agents))
         if (int(config.get("ACS", "masterCount")) >= 3):
             expected_agents = expected_agents + 3
         else:
             expected_agents = expected_agents + 1
         assert num_agents == expected_agents
 
+    def test_getAgentCount(self, agentPool, config):
+        agent_count = agentPool.getAgentCount()
+        expected_count = int(config.get("ACS", "agentCount"))
+        assert expected_count == agent_count

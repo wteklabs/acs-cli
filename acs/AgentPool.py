@@ -61,3 +61,11 @@ class AgentPool:
 
         return vms
 
+    def getAgentCount(self):
+        """ get a count of the agents in the public pool """
+        cmd = "azure vmss list " + self.config.get("Group", "name") + " --json"
+        vmss_list = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
+        count = 0
+        for vmss in vmss_list:
+            count = count + int(vmss["sku"]["capacity"])
+        return count

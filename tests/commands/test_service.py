@@ -73,9 +73,12 @@ class TestService():
         assert(not isConnected)
         
     @slow
-    def test_scale(self, service):
-        initial_agents = service.config.getint('ACS', 'agentCount')
-        service.args = {'--agents': initial_agents + 1}
+    def test_scale(self, service, agentPool):
+        initial_agents_count = service.config.getint('ACS', 'agentCount')
+        service.args = {'--agents': initial_agents_count + 1}
 
         result = service.scale()
-        assert "Scaled to " + str(initial_agents + 1) == result
+
+        final_agent_count = agentPool.getAgentCount()
+        # test for >= because of overprovisioning
+        assert final_agent_count >= initial_agents_count + 1

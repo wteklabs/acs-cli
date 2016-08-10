@@ -63,8 +63,6 @@ class TestDemo():
               html = response.read()
               if "Real Visit Results" in html:
                   isConnected = True
-              else:
-                  self.log.debug("Got a response from the server, but didn't container the expected results.")
           except urllib.error.URLError as e:
             isConnected = False
             attempts = attempts + 1

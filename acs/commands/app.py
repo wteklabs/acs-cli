@@ -82,8 +82,14 @@ class App(Base):
     
   def deploy(self):
     """Deploy the application dfined in the file referenced in
-    `--app-config`. If the application is already deployed a
-    `RunitmeWarning` will be raised.
+    `--app-config`. The command will block until the deployment
+    either succeeds.
+
+    If the application is already deployed a `RuntimeWarning` will be
+    raised.
+
+    Other errors will trigger a 'RuntimeWarning'.
+
     """
     config_path = self.args["--app-config"]
     try:
@@ -98,6 +104,22 @@ class App(Base):
       msg = "Error deploying application:\n" + errors.decode("utf-8")
       self.log.error(msg)
       raise RuntimeWarning(msg)
+
+    # FIXME: get appId from the app config
+    appId ="/web"
+
+    isDeployed = False
+    while not isDeployed:
+      p = sub.Popen(['dcos', 'marathon', 'deployemnt', 'list', appId, '--json'])
+      output, errors = p.communicate()
+      if errors:
+        msg = "Unable to get deployment list:\n" + errors.decode("utf-8")
+        self.log.exception(e)
+        raise RuntimeWarning(msg)
+      time.sleep(0.5)
+      
+      if "There are no deployments" in output:
+        isDeployed = True
     
     self.log.debug("Application deployed. Configuration stored in " + perm_filename)
 

@@ -66,5 +66,4 @@ class TestDemo():
           except urllib.error.URLError as e:
             isConnected = False
             attempts = attempts + 1
-            self.log.debug("SSH tunnel not established, waiting for 1/10th of a second")
             time.sleep(0.1)

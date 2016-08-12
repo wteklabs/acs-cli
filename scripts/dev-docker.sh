@@ -8,7 +8,7 @@ then
   exit 0
 fi
 
-if [ "$RUNNING" -eq "true" ]
+if [ -z $RUNNING ] || [ "$RUNNING" == "true" ]
 then
   echo "Connecting to running 'acs' container"
   docker exec -it acs bash

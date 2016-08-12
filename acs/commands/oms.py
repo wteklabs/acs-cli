@@ -57,7 +57,6 @@ class Oms(Base):
       """Install the OMS agent on all ACS agents
 
       """
-
       
       ips = Base.getAgentIPs(self)
       for ip in ips:
@@ -87,8 +86,8 @@ class Oms(Base):
         # FIXME: do some error checking
         result = self.executeOnAgent(cmd, ip)
 
-        result = "OMS installed on all agents (though we don't actually do error checking on the install at this point, so be vigilant)"
-        return result
+      result = "OMS installed on all agents (though we don't actually do error checking on the install at this point, so be vigilant)"
+      return result
 
   def help(self):
     print(__doc__)

@@ -13,27 +13,35 @@ def base():
     return commands.Base(config(), None)
 
 @pytest.fixture(scope="module")
-def afs():
+def afs(service):
     return commands.Afs(config(), None)
 
 @pytest.fixture(scope="module")
-def demo():
+def demo(service):
     return commands.Demo(config(), None)
 
 @pytest.fixture(scope="module")
-def lb():
+def lb(service):
     return commands.Lb(config(), None)
 
 @pytest.fixture(scope="module")
-def oms():
+def oms(service):
     return commands.Oms(config(), None)
 
 @pytest.fixture(scope="module")
 def service():
-    return commands.Service(config(), None)
+    commands.Service(config(), None)
+    
+    if not service.exists():
+        service.log.debug("The test ACS cluster does not exist, creating")
+        service.create()
+
+    assert service.exists()
+    
+    return service
 
 @pytest.fixture(scope="module")
-def agentPool():
+def agentPool(service):
     return AgentPool(config())
 
 @pytest.fixture(scope="module")

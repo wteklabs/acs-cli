@@ -30,7 +30,7 @@ def oms(service):
 
 @pytest.fixture(scope="module")
 def service():
-    commands.Service(config(), None)
+    service = commands.Service(config(), None)
     
     if not service.exists():
         service.log.debug("The test ACS cluster does not exist, creating")

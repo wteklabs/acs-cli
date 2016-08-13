@@ -30,8 +30,8 @@ class Demo(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
-    # print("Command args")
-    # print(args)
+    # self.logger.debug("Command args")
+    # self.logger.debug(args)
     self.args = args
 
     command = self.args["<command>"]
@@ -51,13 +51,12 @@ class Demo(Base):
   def help(self):
     print(__doc__)
 
-
   def lbweb(self):
     """
     Deploy or remove a simple load balanced web application.
     """
     args = self.args
-    self.log.debug("`demo lbweb` args before adding app-config:\n" + str(args))
+    self.logger.debug("`demo lbweb` args before adding app-config:\n" + str(args))
     args["--app-config"] = "config/demo/web/simple-web.json"
 
     app = App(self.config, self.options)
@@ -76,11 +75,11 @@ class Demo(Base):
 
     cmd = ["dcos package install marathon-lb --yes"]
     output, errors = self.shell_execute(cmd)
-    self.log.debug(output)
-    self.log.error(errors)
+    self.logger.debug(output)
+    self.logger.error(errors)
     if "successfully installed!" not in output:
       if "already installed" not in errors:
-        self.log.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
+        self.logger.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
         raise OSError("Failed to install Marathon-lb")
 
     return app.deploy()

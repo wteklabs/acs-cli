@@ -60,7 +60,7 @@ class Oms(Base):
       
       ips = Base.getAgentIPs(self)
       for ip in ips:
-        self.log.debug("Installing OMS on: " + ip)
+        self.logger.debug("Installing OMS on: " + ip)
         
         result = ""
 

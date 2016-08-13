@@ -63,7 +63,7 @@ class Afs(Base):
         
         ips = Base.getAgentIPs(self)
         for ip in ips:
-            self.log.debug("Installing AFS on: " + ip)
+            self.logger.debug("Installing AFS on: " + ip)
      
             result = ""
 
@@ -117,7 +117,7 @@ class Afs(Base):
         """
         Create a storage account for this cluster as defined in the config file.
         """
-        self.log.debug("Creating Storage Account")
+        self.logger.debug("Creating Storage Account")
 
         Base.createResourceGroup(self)
     
@@ -141,7 +141,7 @@ class Afs(Base):
         except:
             # FIXME: test if the share already exists, if it does then don't try to recreate it
             # For now we just assume that an error is always that the share alrady exists 
-            self.log.warning("Failed to create share, assuming it is because it already exists")
+            self.logger.warning("Failed to create share, assuming it is because it already exists")
 
     def getShareEndpoint(self):
         """
@@ -166,7 +166,7 @@ class Afs(Base):
         command = command + " --resource-group " + self.config.get('Group', 'name')
         command = command + " " + self.config.get('Storage', 'name')
         command = command + " --json"
-        self.log.debug("Command to get storage keys: " + command)
+        self.logger.debug("Command to get storage keys: " + command)
 
         keys = json.loads(subprocess.check_output(command, shell=True))
         return keys['key1']

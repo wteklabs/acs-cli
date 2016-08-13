@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 from .AgentPool import *
-from .ACSLogs import *
 from .commands.afs import *
 
 import configparser
@@ -16,8 +15,6 @@ import subprocess
 
 class ACSUtils:
     def __init__(self, configfile = "cluster.ini"):
-        self.log = ACSLog("ACSUtils")
-        self.log.debug("Reading config from " + configfile)
         defaults = {"orchestratorType": "Mesos"}
         config = configparser.configparser(defaults)
         config.read(configfile)
@@ -66,14 +63,12 @@ class ACSUtils:
         url = self.getManagementEndpoint()
         cmd = 'docker ' + command
 
-        self.log.debug('Command to execute: ' + cmd)
         return subprocess.check_output(cmd, env={'DOCKER_HOST': ':2375'}, shell=True)
 
     def composeCommand(self, command, file = 'docker-compose.yml', options = ''):
         url = self.getManagementEndpoint()
         cmd = 'docker-compose -f ' + file + ' ' + command + ' ' + options
 
-        self.log.debug('Command to execute: ' + cmd)
         return subprocess.check_output(cmd, env={'DOCKER_HOST': ':2375'}, shell=True)
 
     def openSwarmTunnel(self):
@@ -97,8 +92,6 @@ class ACSUtils:
         localfile = expanduser(self.config.get('SSH', 'privatekey'))
         remotefile = "~/.ssh/id_rsa"
 
-        self.log.debug("Copying " + localfile + " to remote " + remotefile)
-
         with SCPClient(self.ssh.get_transport()) as scp:
             scp.put(localfile, remotefile)
 
@@ -113,14 +106,9 @@ class ACSUtils:
         parameter (as a comma separated list) to this cluster. """
         if (features == None):
             features = self.config.get('Features', "featureList")
-        if features == "":
-            self.log.info("No features to add")
-        else:
-            self.log.info("Adding features to ACS: " + features)
 
         featureList = [x.strip() for x in features.split(',')]
         for feature in featureList:
-            self.log.debug("Adding feature: " + feature)
             hosts = self.getAgentHostNames()
             if feature == "afs":
                 self.createStorage()
@@ -131,6 +119,6 @@ class ACSUtils:
                 print("'addFeature pull' is deprecated. Please use 'docker pull' instead")
                 self.agentDockerCommand(feature)
             else:
-                self.log.error("Unknown feature: " + feature)
+                raise RuntimeError("Unknown feature: " + feature)
 
 

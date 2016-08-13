@@ -2,6 +2,7 @@
 from ..AgentPool import AgentPool
 
 import json
+import logging
 import os.path
 from subprocess import call
 import paramiko
@@ -15,14 +16,49 @@ class Base(object):
   temp_filepath = os.path.expanduser("~/.acs/tmp")
   
   def __init__(self, config, options, *args, **kwargs):
-    self.log = ACSLog("Base")
+    self.initLogger()
     self.config = config
     self.options = options
     self.args = args
     self.kwargs = kwargs
     os.makedirs(self.temp_filepath, exist_ok=True)
     self.login()
+
+  def initLogger(self, name = "acs"):
+    output_dir = os.path.expanduser('~/.acs/logs')
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+
+    self.logger = logging.getLogger(name)
+    self.logger.setLevel(logging.DEBUG)
     
+    if (not self.logger.handlers):
+      # create console handler and set level to info
+      handler = logging.StreamHandler()
+      handler.setLevel(logging.DEBUG)
+      formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
+      #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+      handler.setFormatter(formatter)
+      self.logger.addHandler(handler)
+      
+      # create error file handler and set level to error
+      handler = logging.FileHandler(os.path.join(output_dir, "error.log"),"w", encoding=None, delay="true")
+      handler.setLevel(logging.ERROR)
+      formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
+      #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+      handler.setFormatter(formatter)
+      self.logger.addHandler(handler)
+      
+      # create debug file handler and set level to debug
+      handler = logging.FileHandler(os.path.join(output_dir, "all.log"),"w")
+      handler.setLevel(logging.DEBUG)
+      formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
+      #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+      handler.setFormatter(formatter)
+      self.logger.addHandler(handler)
+      
+      self.logger.debug("Logs being written to " + output_dir)
+      
   def login(self):
     p = subprocess.Popen(["azure", "account", "show"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, errors = p.communicate()
@@ -49,7 +85,7 @@ class Base(object):
     return self.config.get('ACS', 'dnsPrefix') + 'agents.' + self.config.get('Group', 'region').replace(" ", "").replace('"', '') + '.cloudapp.azure.com'
 
   def createResourceGroup(self):
-    self.log.debug("Creating Resource Group")
+    self.logger.debug("Creating Resource Group")
 
     command = "azure group create " + self.config.get('Group', 'name')  + " " + self.config.get('Group', 'region')
     os.system(command)
@@ -70,12 +106,12 @@ class Base(object):
     for nic in nics:
       try:
         ip = nic["ipConfigurations"][0]["privateIPAddress"]
-        self.log.debug("IP for " + nic["name"] + " is: " + str(ip))
+        self.logger.debug("IP for " + nic["name"] + " is: " + str(ip))
         ips.append(ip)
       except KeyError:
-        self.log.warning("NIC doesn't seem to have the information we need")
+        self.logger.warning("NIC doesn't seem to have the information we need")
         
-    self.log.debug("Agent IPs: " + str(ips))
+    self.logger.debug("Agent IPs: " + str(ips))
     return ips
 
   def executeOnAgent(self, cmd, ip):
@@ -86,9 +122,9 @@ class Base(object):
     self.shell_execute(sshadd)
     
     sshAgentConnection = "ssh -o StrictHostKeyChecking=no " + self.config.get('ACS', 'username') + '@' + ip
-    self.log.debug("SSH Connection to agent: " + sshAgentConnection)
+    self.logger.debug("SSH Connection to agent: " + sshAgentConnection)
     
-    self.log.debug("Command to run on agent: " + cmd)
+    self.logger.debug("Command to run on agent: " + cmd)
     
     sshCmd = sshAgentConnection + ' \'' + cmd + '\''
     self.shell_execute("exit")
@@ -110,8 +146,8 @@ class Base(object):
         port = 2200,
         key_filename = os.path.expanduser(self.config.get('SSH', "privatekey")))
       session = ssh.get_transport().open_session()
-      self.log.debug("Session opened on master.")
-      self.log.debug("Executing on master: " + cmd)
+      self.logger.debug("Session opened on master.")
+      self.logger.debug("Executing on master: " + cmd)
 
       AgentRequestHandler(session)
       stdin, stdout, stderr = ssh.exec_command(cmd)
@@ -119,12 +155,12 @@ class Base(object):
       
       result = ""
       for line in stdout.read().splitlines():
-        self.log.debug(line.decude("utf-8"))
+        self.logger.debug(line.decude("utf-8"))
         result = result + line.decode("utf-8") + "\n"
       for line in stderr.read().splitlines():
-        self.log.error(line.decode("utf-8"))
+        self.logger.error(line.decode("utf-8"))
     else:
-      self.log.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
+      self.logger.error("Endpoint " + self.getManagementEndpoint() + " does not exist, cannot SSH into it.")
       result = "Exception: No cluster is available at " + self.getManagementEndpoint()
     ssh.close()
     return result
@@ -151,7 +187,7 @@ class Base(object):
 
   def shell_execute(self, cmd):
     """ Execute a command on the client in a bash shell. """
-    self.log.debug("Executing command in shell: " + str(cmd))
+    self.logger.debug("Executing command in shell: " + str(cmd))
 
     dcos_config = os.path.expanduser('~/.dcos/dcos.toml')
     os.environ['PATH'] = ':'.join([os.getenv('PATH'), '/src/bin'])
@@ -162,13 +198,12 @@ class Base(object):
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
       output, errors = p.communicate()
     except OSError as e:
-      self.log.error("Error executing command " + str(cmd) + ". " + e)
+      self.logger.error("Error executing command " + str(cmd) + ". " + e)
       raise e
 
     return output.decode("utf-8"), errors.decode("utf-8")
   
 """The cofiguration for an ACS cluster to work with"""
-from acs.ACSLogs import ACSLog
 
 import configparser
 import os 
@@ -176,16 +211,13 @@ import os
 class Config(object):
 
   def __init__(self, filename):
-    self.log = ACSLog("Config")
 
     if not filename:
       filename = "~/.acs/default.ini"
 
     self.filename = os.path.expanduser(filename)
-    self.log.debug("Using config file at " + self.filename)
 
     if not os.path.isfile(self.filename):
-      self.log.debug("Config file does not exist. Creating a new one.")
       dns = input("What is the DNS prefix for this cluster?\n")
       group = input("What is the name of the resource group you want to use/create?\n")
       region = input("In which region do you want to deploy the resource group (default: westus)?\n") or 'westus'
@@ -207,7 +239,6 @@ class Config(object):
         s = s.replace("MY-AGENT-COUNT", agentCount)
         s = s.replace("MY-AGENT-SIZE", agentSize)
         output.write(s)
-        self.log.debug("Writing config line: " + s)
 
       tmpl.close()
       output.close()
@@ -226,15 +257,11 @@ class Config(object):
       private_filepath = os.path.expanduser(self.config_parser.get('SSH', 'privatekey'))
 
       if name == "privateKey":
-        self.log.debug("Checking if private SSH key exists: " + private_filepath)
         if not os.path.isfile(private_filepath):
-          self.log.debug("Key does not exist")
           self._generateSSHKey(private_filepath, public_filepath)
         with open(private_filepath, 'r') as sshfile: 
-          self.log.debug("Key does not exist")
           value = sshfile.read().replace('\n', '') 
       elif name == "publickey":
-        self.log.debug("Checking if public SSH key exists: " + public_filepath)
         if not os.path.isfile(public_filepath):
           self._generateSSHKey(private_filepath, public_filepath)
         with open(public_filepath, 'r') as sshfile: 
@@ -272,11 +299,8 @@ class Config(object):
     Generate public and private keys. The filepath parameters 
     are the paths top the respective publoic and private key files.
     """
-    self.log.debug("Writing SSH keys to: " + private_filepath + " and " + public_filepath)
-
     (ssh_dir, filename) = os.path.split(os.path.expanduser(private_filepath))
     if not os.path.exists(ssh_dir):
-      self.log.debug("SSH Directory doesn't exist, creating " + ssh_dir)
       os.makedirs(ssh_dir)
 
     key = paramiko.RSAKey.generate(1024)

@@ -14,7 +14,7 @@ class TestDemo():
         """Tests the creation of a cluster and the lbweb demo. This version of the test will delete any pre-existing service.
         """
         if service.exists():
-            service.log.debug("The test ACS cluster already exists, deleting")
+            service.logger.debug("The test ACS cluster already exists, deleting")
             service.delete(True)
 
         demo.args = {'<command>': 'lbweb',
@@ -24,7 +24,7 @@ class TestDemo():
             assert("Application deployed" in result)
             assert(self.isSimpleWebUp(service))
         except RuntimeWarning as e:
-            demo.log.warning("The application was already installed so the test was not as thorough as it could have been")
+            demo.logger.warning("The application was already installed so the test was not as thorough as it could have been")
 
         
         # remove the appliction
@@ -45,7 +45,7 @@ class TestDemo():
             assert("Application deployed" in result)
             assert(self.isSimpleWebUp(service))
         except RuntimeWarning as e:
-            demo.log.warning("The application was already installed so the test was not as thorough as it could have been")
+            demo.logger.warning("The application was already installed so the test was not as thorough as it could have been")
         
         # remove the appliction
         demo.args["--remove"] = True

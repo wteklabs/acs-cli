@@ -35,7 +35,7 @@ class Docker(Base):
 
   def execute(self, cmd):
     """ Run a Docker command on each of the agents """
-    self.log.debug("Docker command to run: " + cmd)
+    self.logger.debug("Docker command to run: " + cmd)
 
     result = ""
     ips = Base.getAgentIPs(self)

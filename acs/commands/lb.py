@@ -53,7 +53,7 @@ class Lb(Base):
   def open(self):
     port = self.args["--port"]
     if not port:
-      self.log.error("Attempt to open an LB port without specifying '--port'")
+      self.logger.error("Attempt to open an LB port without specifying '--port'")
       return "Specify the port number with '--port'"
     base_name = "acsPort"
     probe_name = base_name + "Probe" + str(port)
@@ -69,39 +69,39 @@ class Lb(Base):
       id = lb["id"]
       if (id.find("-agent-lb-") >= 0):
         lb_name = lb["name"]
-        self.log.debug("Agent load balancer name is " + lb_name)
+        self.logger.debug("Agent load balancer name is " + lb_name)
         cluster_id = lb_name[-8:]
-        self.log.debug("Cluster ID " + cluster_id)
+        self.logger.debug("Cluster ID " + cluster_id)
 
     # Create a probe
     p = sub.Popen(['azure', 'network', 'lb', 'probe', "create", "-o", str(port), "-p", "tcp", "-g", rg, "-l", lb_name, "-n", probe_name],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:
-      self.log.error("Error creating probe for LB rule:\n" + errors.decode("utf-8"))
+      self.logger.error("Error creating probe for LB rule:\n" + errors.decode("utf-8"))
       return "Unable to create probe for LB rule, see log for full details."
-    self.log.debug("Created probe called " + probe_name)
+    self.logger.debug("Created probe called " + probe_name)
     
     backend_pool = "dcos-agent-pool-" + cluster_id
     # Create an LB rule
     p = sub.Popen(['azure', 'network', 'lb', 'rule', "create", "-g", rg, "-l", lb_name, "-n", rule_name, "-p", "tcp", "-f", str(port), "-b", str(port), "-o", backend_pool, "-a", probe_name],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:
-      self.log.error("Error creating LB rule:\n" + errors.decode("utf-8"))
-      self.log.error("FIXME: cleanup after failed LB port opening - delete probe that was created")
+      self.logger.error("Error creating LB rule:\n" + errors.decode("utf-8"))
+      self.logger.error("FIXME: cleanup after failed LB port opening - delete probe that was created")
       return "Unable to create LB rule, see log for full details."
-    self.log.debug("Created LB rule named " + rule_name)
+    self.logger.debug("Created LB rule named " + rule_name)
                    
     # Create an NSG Rule
     nsg_name = "dcos-agent-public-nsg-" + cluster_id
     priority = 350
-    self.log.warning("FIXME: Currently nsg rule priority is set at 350, this will clash if we try to setup a second rule")
+    self.logger.warning("FIXME: Currently nsg rule priority is set at 350, this will clash if we try to setup a second rule")
     p = sub.Popen(['azure', 'network', 'nsg', "rule", "create", "-g", rg, "-a", nsg_name, "-p", "*", "-u", str(port), "-n", nsg_rule_name, "-y", str(priority)],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:
-      self.log.error("Error creating NSG rule:\n" + errors.decode("utf-8"))
-      self.log.error("FIXME: cleanup after failed NSG rule creation - delete probe and LB rule that was created")
+      self.logger.error("Error creating NSG rule:\n" + errors.decode("utf-8"))
+      self.logger.error("FIXME: cleanup after failed NSG rule creation - delete probe and LB rule that was created")
       return "Unable to create LB rule, see log for full details."
-    self.log.debug("Created NSG rule named " + nsg_rule_name)
+    self.logger.debug("Created NSG rule named " + nsg_rule_name)
     
-    self.log.info("Opened port " + str(port) + " in lb called " + lb_name + " using probe named " + probe_name)
+    self.logger.info("Opened port " + str(port) + " in lb called " + lb_name + " using probe named " + probe_name)
     return "Opened port " + str(port)

@@ -51,8 +51,8 @@ class Service(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
-    # self.log.debug("Service args")
-    # self.log.debug(args)
+    # self.logger.debug("Service args")
+    # self.logger.debug(args)
     self.args = args
     
     command = self.args["<command>"]
@@ -85,11 +85,11 @@ class Service(Base):
   def create(self):
     if self.exists():
       msg = "It appears that the cluster already exists:\n" + self.show()
-      self.log.debug(msg)
+      self.logger.debug(msg)
       return msg
 
-    self.log.debug("Creating ACS Deployment")
-    self.log.debug(json.dumps(self.config.getACSParams()))
+    self.logger.debug("Creating ACS Deployment")
+    self.logger.debug(json.dumps(self.config.getACSParams()))
 
     Base.createResourceGroup(self)
     
@@ -102,7 +102,7 @@ class Service(Base):
       return self.show()
 
   def install_dcos_cli(self):
-    self.log.info("Installing DCOS CLI")
+    self.logger.info("Installing DCOS CLI")
 
     self.connect()
     
@@ -118,7 +118,7 @@ class Service(Base):
     cmd = "./install-optout-dcos-cli.sh . http://localhost --add-path yes"
     os.system(cmd)
 
-    self.log.info("DCOS installed. If you want to use the DC/OS command line directly then execute `. /src/bin/env-setup`")
+    self.logger.info("DCOS installed. If you want to use the DC/OS command line directly then execute `. /src/bin/env-setup`")
 
     
   def _deploy(self, deploymentName):
@@ -130,8 +130,8 @@ class Service(Base):
     os.system(command)
 
   def delete(self, quiet = False):
-    self.log.debug("Deleting ACS Deployment")
-    self.log.debug(json.dumps(self.config.getACSParams()))
+    self.logger.debug("Deleting ACS Deployment")
+    self.logger.debug(json.dumps(self.config.getACSParams()))
     
     dns = self.config.get("ACS", "dnsPrefix")
     group = self.config.get("Group", "name")
@@ -142,7 +142,7 @@ class Service(Base):
         if resp == "y" or resp == "yes":
           responded = True
         elif resp == "n" or resp == "no":
-          self.log.debug("Aborting delete at users request")
+          self.logger.debug("Aborting delete at users request")
           return "Delete aborted"
         
     command = "azure acs delete"
@@ -195,7 +195,7 @@ class Service(Base):
   def openTunnel(self):
     """DEPRECATED: use connect() instead"""
     self.connect()
-    self.log.warning("Service.openTunnel() is deprecated. Please use Service.connect instead.")
+    self.logger.warning("Service.openTunnel() is deprecated. Please use Service.connect instead.")
   
   def connect(self):
     """Open an SSH tunnel to the management endpoint, if one doesn't
@@ -222,7 +222,7 @@ class Service(Base):
         return "A tunnel already exists using PID " + str(pid)
       except OSError:
         # seems the old tunnel has gone away
-        self.log.info("A PIDFile exists, but the process does not seem to be present. Removing the PIDFile and opening a new tunnel.")
+        self.logger.info("A PIDFile exists, but the process does not seem to be present. Removing the PIDFile and opening a new tunnel.")
         os.remove(pidpath)
     
     try:
@@ -247,7 +247,7 @@ class Service(Base):
           except urllib.error.URLError as e:
             isConnected = False
             attempts = attempts + 1
-            self.log.debug("SSH tunnel not established, waiting for 1/10th of a second")
+            self.logger.debug("SSH tunnel not established, waiting for 1/10th of a second")
             time.sleep(0.1)
 
         if attempts < 50:
@@ -258,7 +258,7 @@ class Service(Base):
         return msg
     except OSError as e:
       msg = "Unable to create forked proces for the SSH Tunnel: " + str(e)
-      self.log.error(msg)
+      self.logger.error(msg)
       raise RuntimeError(msg)
 
     # Decouple from the parent environment
@@ -279,7 +279,7 @@ class Service(Base):
   def closeTunnel(self):
     """DEPRECATED: use disconnect() instead"""
     self.disconnect()
-    self.log.warningxo("Service.closeTunnel() is deprecated. Please use Service.disconnect instead.")
+    self.logger.warningxo("Service.closeTunnel() is deprecated. Please use Service.disconnect instead.")
   
   def disconnect(self):
     """
@@ -298,19 +298,19 @@ class Service(Base):
         os.kill(int(pid), 0)
       except OSError:
         # seems the old tunnel has gone away
-        self.log.debug("A PIDFile exists, but the process does not seem to be present. Removing the PIDFile.")
+        self.logger.debug("A PIDFile exists, but the process does not seem to be present. Removing the PIDFile.")
         os.remove(pidpath)
     else:
       raise RuntimeWarning("No SSH PID file, therefore assuming there is no active tunnel to close.")
 
-    self.log.info("Attempting to kill the SSH tunnel, process: " + pid)
+    self.logger.info("Attempting to kill the SSH tunnel, process: " + pid)
     try:
       os.kill(int(pid), signal.SIGTERM)
       time.sleep(1.0)
       os.remove(pidpath)
       return "Disconnected"
     except OSError as err:
-      self.log.exception(err)
+      self.logger.exception(err)
       raise RuntimeError("Unable to killthe SSH Tunnel process: " + str(err))
     
   def execOnMaster(self, command):
@@ -325,7 +325,7 @@ class Service(Base):
     if data != None:
       curl = curl + " -d \"" + data + "\" -H \"Content-type:application/json\""
     cmd = curl + ' localhost/marathon/v2/' + command 
-    self.log.debug('Command to execute: ' + cmd)
+    self.logger.debug('Command to execute: ' + cmd)
     result = self.shell_execute(cmd)
     self.disconnect()
     return result

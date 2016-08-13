@@ -18,7 +18,7 @@ class TestService():
     @slow
     def test_create(self, service):
         if service.exists():
-            service.log.debug("The test ACS cluster already exists, deleting")
+            service.logger.debug("The test ACS cluster already exists, deleting")
             service.delete(True)
         exists = service.exists()
         assert not exists
@@ -27,7 +27,7 @@ class TestService():
         service.create()
         assert service.exists()
         endtime = time.time()
-        service.log.info("Total deployment time: " + str((endtime - starttime)/60) + " minutes")
+        service.logger.info("Total deployment time: " + str((endtime - starttime)/60) + " minutes")
 
         dns_up = False
         start_time = time.time()

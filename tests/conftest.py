@@ -33,7 +33,7 @@ def service():
     service = commands.Service(config(), None)
     
     if not service.exists():
-        service.log.debug("The test ACS cluster does not exist, creating")
+        service.logger.debug("The test ACS cluster does not exist, creating")
         service.create()
 
     assert service.exists()

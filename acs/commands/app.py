@@ -25,6 +25,7 @@ import json
 from json import dumps
 import os
 import subprocess as sub 
+import time
 
 from .base import Base
 
@@ -33,8 +34,8 @@ class App(Base):
 
   def run(self):
     args = docopt(__doc__, argv=self.options)
-    # self.log.debug("App options:" + str(self.options))
-    # self.log.debug("App args:" + str(args))
+    # self.logger.debug("App options:" + str(self.options))
+    # self.logger.debug("App args:" + str(args))
     self.args = args
 
     command = self.args["<command>"]
@@ -61,10 +62,10 @@ class App(Base):
     will be stored in `~/.acs/app/config/`.
     """
     if not config_path:
-      self.log.error("--app-config not supplied, unable to deploy application")
+      self.logger.error("--app-config not supplied, unable to deploy application")
       raise IOError("Must provide an application config file as '--app-config'")
 
-    self.log.debug("Deploying application described by " + config_path)
+    self.logger.debug("Deploying application described by " + config_path)
     config_filename = os.path.expanduser(config_path)
     perm_filename = os.path.expanduser(self.app_config_dir + config_filename)
     os.makedirs(os.path.dirname(perm_filename), exist_ok=True)
@@ -95,14 +96,14 @@ class App(Base):
     try:
       perm_filename = self.parseAppConfig(config_path)
     except IOError as e:
-      self.log.error("Unable to deploy applicatoin.\n" + str(e))
+      self.logger.error("Unable to deploy applicatoin.\n" + str(e))
       raise e
 
     p = sub.Popen(['dcos', 'marathon', 'app', "add", perm_filename],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:
       msg = "Error deploying application:\n" + errors.decode("utf-8")
-      self.log.error(msg)
+      self.logger.error(msg)
       raise RuntimeWarning(msg)
 
     # FIXME: get appId from the app config
@@ -114,14 +115,14 @@ class App(Base):
       output, errors = p.communicate()
       if errors:
         msg = "Unable to get deployment list:\n" + errors.decode("utf-8")
-        self.log.exception(e)
+        self.logger.exception(e)
         raise RuntimeWarning(msg)
       time.sleep(0.5)
       
       if "There are no deployments" in output:
         isDeployed = True
     
-    self.log.debug("Application deployed. Configuration stored in " + perm_filename)
+    self.logger.debug("Application deployed. Configuration stored in " + perm_filename)
 
     return "Application deployed"
 
@@ -133,15 +134,15 @@ class App(Base):
         app = json.load(app_config)
         app_id = app["id"]
     except IOError as e:
-      self.log.error(e)
+      self.logger.error(e)
       raise e
 
-    self.log.debug("Removing app with the ID " + app_id)
+    self.logger.debug("Removing app with the ID " + app_id)
     p = sub.Popen(['dcos', 'marathon', 'app', "remove", app_id],stdout=sub.PIPE,stderr=sub.PIPE)
     output, errors = p.communicate()
     if errors:
-      self.log.error("Error removing application:\n" + errors.decode("utf-8"))
+      self.logger.error("Error removing application:\n" + errors.decode("utf-8"))
       return "Unable to remove application, see log for full details."
-    self.log.debug("Application removed. Configuration stored in " + perm_filename)
+    self.logger.debug("Application removed. Configuration stored in " + perm_filename)
 
     return "Application removed."

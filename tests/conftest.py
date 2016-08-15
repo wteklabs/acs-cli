@@ -1,13 +1,19 @@
 import pytest
 
 from acs.AgentPool import AgentPool
+from acs.dcos import Dcos
+from acs.acs import Acs
 from acs import commands
-from acs.commands.base import Config
+from acs.acs import Config
 
 def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true",
         help="run slow tests")
 
+@pytest.fixture(scope="module")
+def acs():
+    return Acs(config())
+    
 @pytest.fixture(scope="module")
 def base():
     return commands.Base(config(), None)
@@ -15,6 +21,10 @@ def base():
 @pytest.fixture(scope="module")
 def afs(service):
     return commands.Afs(config(), None)
+
+@pytest.fixture(scope="module")
+def dcos(acs):
+    return Dcos(acs)
 
 @pytest.fixture(scope="module")
 def demo(service):

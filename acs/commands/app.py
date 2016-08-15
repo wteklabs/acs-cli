@@ -19,15 +19,15 @@ Help:
   https://github.com/rgardler/acs-scripts
 """
 
+from .base import Base
+from ..dcos import Dcos
+
 from docopt import docopt
 from inspect import getmembers, ismethod
 import json
 from json import dumps
 import os
-import subprocess as sub 
 import time
-
-from .base import Base
 
 class App(Base):
   app_config_dir = "~/.acs/app/"
@@ -99,10 +99,11 @@ class App(Base):
       self.logger.error("Unable to deploy applicatoin.\n" + str(e))
       raise e
 
-    p = sub.Popen(['dcos', 'marathon', 'app', "add", perm_filename],stdout=sub.PIPE,stderr=sub.PIPE)
-    output, errors = p.communicate()
+    dcos = Dcos(self.acs)
+    cmd = "marathon app add " + perm_filename
+    output, errors = dcos.execute(cmd)
     if errors:
-      msg = "Error deploying application:\n" + errors.decode("utf-8")
+      msg = "Error deploying application:\n" + errors
       self.logger.error(msg)
       raise RuntimeWarning(msg)
 
@@ -111,16 +112,17 @@ class App(Base):
 
     isDeployed = False
     while not isDeployed:
-      p = sub.Popen(['dcos', 'marathon', 'deployemnt', 'list', appId, '--json'])
-      output, errors = p.communicate()
+      cmd = "marathon deployment list " + appId + " --json"
+      output, errors = dcos.execute(cmd)
       if errors:
-        msg = "Unable to get deployment list:\n" + errors.decode("utf-8")
+        msg = "Unable to get deployment list:\n" + errors
         self.logger.exception(e)
         raise RuntimeWarning(msg)
       time.sleep(0.5)
       
-      if "There are no deployments" in output:
-        isDeployed = True
+      if not output is None:
+        if "There are no deployments" in output:
+          isDeployed = True
     
     self.logger.debug("Application deployed. Configuration stored in " + perm_filename)
 
@@ -138,10 +140,11 @@ class App(Base):
       raise e
 
     self.logger.debug("Removing app with the ID " + app_id)
-    p = sub.Popen(['dcos', 'marathon', 'app', "remove", app_id],stdout=sub.PIPE,stderr=sub.PIPE)
-    output, errors = p.communicate()
+    dcos = Dcos(self.acs)
+    cmd = "marathon app remove " + app_id
+    output, errors = dcos.execute(cmd)
     if errors:
-      self.logger.error("Error removing application:\n" + errors.decode("utf-8"))
+      self.logger.error("Error removing application:\n" + errors)
       return "Unable to remove application, see log for full details."
     self.logger.debug("Application removed. Configuration stored in " + perm_filename)
 

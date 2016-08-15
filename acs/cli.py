@@ -25,7 +25,7 @@ Help:
 """
 
 from . import __version__ as VERSION
-from acs.commands.base import Config
+from acs.acs import Config
 
 from docopt import docopt
 from inspect import getmembers, isclass

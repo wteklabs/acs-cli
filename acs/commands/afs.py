@@ -18,7 +18,6 @@ Help:
   https://github.com/rgardler/acs-scripts
 """
 
-from ..acs_utils import *
 from .base import Base
 
 import subprocess
@@ -127,7 +126,7 @@ class Afs(Base):
         command = command + " --location " + self.config.get('Group', 'region')
         command = command + " " + self.config.get('Storage', 'name')
     
-        os.system(command)
+        self.utils.shell_sxecute(command)
 
         key = self.getStorageAccountKey()
 

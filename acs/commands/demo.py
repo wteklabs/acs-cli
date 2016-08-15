@@ -21,6 +21,7 @@ import acs.cli
 from .base import Base
 from .service import Service
 from .app import App
+from ..dcos import Dcos
 
 from docopt import docopt
 from inspect import getmembers, ismethod
@@ -73,10 +74,13 @@ class Demo(Base):
 
     service.install_dcos_cli()
 
-    cmd = ["dcos package install marathon-lb --yes"]
-    output, errors = self.shell_execute(cmd)
-    self.logger.debug(output)
-    self.logger.error(errors)
+    dcos = Dcos(self.acs)
+    cmd = "package install marathon-lb --yes"
+    result = dcos.execute(cmd)
+    if result is not None:
+      output = result[0]
+      errors = result[1]
+      
     if "successfully installed!" not in output:
       if "already installed" not in errors:
         self.logger.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");

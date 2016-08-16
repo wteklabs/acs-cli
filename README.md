@@ -262,6 +262,9 @@ git tag x.y.z
 git push --tags
 ```
 
+There is no need to manual build and push the new Docker container as
+this will be done by Docker Hub.
+
 Update the version numbers in `acs/__init__.py`:
 
 ``` python

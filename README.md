@@ -244,6 +244,7 @@ Ensure all tests pass:
 ``` bash
 docker run -it acs
 python setup.py test
+exit
 ```
 
 If all tests pass then merge dev into master:
@@ -251,6 +252,7 @@ If all tests pass then merge dev into master:
 ``` bash
 git checkout master
 git merge dev
+git push
 ```
 
 Create a tag in git:

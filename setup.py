@@ -25,7 +25,8 @@ class RunTests(Command):
 
     def run(self):
         """Run all tests"""
-        errno = call(['py.test', '--cov=acs', '--cov-report=term-missing', '--ignore=lib/python3.5/site-packages', '--runslow'])
+        #call(['acs', '--config-file', 'tests/test_dcos_config.ini'])
+        errno = call(['py.test', '--cov=acs', '--cov-report=term-missing', '--ignore=lib/python3.5/site-packages', '--runslow', '-s'])
         raise SystemExit(errno)
 
 setup(

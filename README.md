@@ -213,34 +213,67 @@ Subcommands are applied to commands, to add a subcommand do the following:
   
 ## Releasing
 
-## Python Package
+This section describes how to create a release of the acs-cli.
 
-Ensure all tests pass (see above).
+### Verify the code is ready for release
 
-Cut a release and publish to the [Python Package
-Index](https://pypi.python.org/pypi) install 
-[twine](http://pypi.python.org/pypi/twine. and then run:
+Ensure all local edits have been pushed to the dev branch:
 
+``` bash
+git status
+[git add <as necessary>]
+git push
 ```
-python3.5 setup.py sdist bdist_wheel
-twine upload dist/*
+
+Ensure we have all the latest changes in the dev branch:
+
+``` bash
+git checkout dev
+git pull origin master
+git merge master
 ```
 
-This will build both a surce tarball and a wheel build, which will run
-on all platforms.
+Build the container.
 
-Now create a tag in git:
-
+``` bash
+./scripts/build-docker.sh
 ```
+
+Ensure all tests pass:
+
+``` bash
+docker run -it acs
+python setup.py test
+```
+
+If all tests pass then merge dev into master:
+
+``` bash
+git checkout master
+git merge dev
+```
+
+Create a tag in git:
+
+``` bash
 git tag x.y.z
 git push --tags
 ```
 
-Finally update the version numbers in `acs/__init__.py`:
+Update the version numbers in `acs/__init__.py`:
 
-```
+``` python
 __version__ - 'x.y.z'
 ```
+
+Commit to dev in order to start the next development cycle:
+
+``` bash
+git checkout dev
+git add as/__init__.py
+git push
+```
+
 
 ### Updating Documentation
 

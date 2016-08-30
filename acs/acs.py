@@ -67,7 +67,7 @@ class Acs:
     
         dns = self.config.get("ACS", "dnsPrefix")
         group = self.config.get("Group", "name")
-        if not quiet and not self.args["--quiet"]:
+        if not quiet:
             responded = False
             while not responded:
                 resp = input("Do you really want to delete the ACS cluster '" + dns + "' in resource group '" + group + "' ('y' or 'yes' to confirm, 'n' or 'no' to abort)?\n")
@@ -85,7 +85,7 @@ class Acs:
         # FIXME: we shouldn't need to do the group delete, but currently container delete is not a deep delete
         self.logger.warning("'azure acs delete 'does not currently delete resources created within the container service. You can delete all resources by also deleting the associated resource group, however, be aware this will delete everything in the resource group.")
         command = "azure group delete " 
-        if quiet or self.args["--quiet"]:
+        if quiet:
             command = command + " --quiet "
         command = command + self.config.get('Group', 'name')
         os.system(command)

@@ -82,9 +82,9 @@ class App(Base):
     return perm_filename
     
   def deploy(self):
-    """Deploy the application dfined in the file referenced in
-    `--app-config`. The command will block until the deployment
-    either succeeds.
+    """Deploy the application (or group of applications defined in the
+    file referenced in `--app-config`. The command will block until
+    the deployment either succeeds.
 
     If the application is already deployed a `RuntimeWarning` will be
     raised.
@@ -96,19 +96,26 @@ class App(Base):
     try:
       perm_filename = self.parseAppConfig(config_path)
     except IOError as e:
-      self.logger.error("Unable to deploy applicatoin.\n" + str(e))
+      self.logger.error("Problem finding the application configuration.\n" + str(e))
       raise e
 
     dcos = Dcos(self.acs)
-    cmd = "marathon app add " + perm_filename
+    with open(perm_filename) as config_file:
+      app_config = json.load(config_file)
+
+    appId = app_config["id"]
+    self.logger.debug("App/Group to be deployed has id: " + appId)
+      
+    if "apps" in app_config:
+      cmd = "marathon group add " + perm_filename
+    else:
+      cmd = "marathon app add " + perm_filename
     output, errors = dcos.execute(cmd)
+
     if errors:
       msg = "Error deploying application:\n" + errors
       self.logger.error(msg)
       raise RuntimeWarning(msg)
-
-    # FIXME: get appId from the app config
-    appId ="/web"
 
     isDeployed = False
     while not isDeployed:

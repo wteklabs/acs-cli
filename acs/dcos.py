@@ -10,6 +10,7 @@ class Dcos():
         self.utils = AcsUtils()
         self.acs = acs
         self.logger = self.utils.getLogger("acs.dcos")
+        self.utils.shell_execute('. /src/bin/env-setup')
         
     def execute(self, cmd):
         """Execute a DCOS command. Return a tuple containing stdout and
@@ -24,9 +25,8 @@ stderr.
         
         if errors is not None:
             if 'Missing required config parameter: "core.dcos_url"' in errors:
-                self.logger.error("DC/OS CLI is installed, but core.dcos_url is not set. This indicates an incomplete installation of DCOS. Attempting to fix automatically by reinstalling DC/OS CLI.")
-                self.install_cli(acs)
-                self.execute(cmd, acs)
+                self.logger.error("DC/OS CLI is installed, but core.dcos_url is not set. This indicates an incomplete installation of DCOS. In most cases this means that the environment has not been setup, so lets try to fix it.")
+                self.execute(cmd)
             else:
                 self.logger.error("Unrecoverable error in DCOS CLI:\n" + errors)
             

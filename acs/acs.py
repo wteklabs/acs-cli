@@ -103,8 +103,9 @@ class Acs:
                         new_file.write("agentCount: " + str(desired_agents) + "\n")
                     else:
                         new_file.write(line)
-        close(new_file)
-        close(fh)
+        new_file.close()
+        old_file.close()
+        
         try:
             remove(self.config.filename + ".bak")
         except OSError:

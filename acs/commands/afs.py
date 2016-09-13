@@ -19,6 +19,7 @@ Help:
 """
 
 from .base import Base
+from ..storage import Storage
 
 import subprocess
 from docopt import docopt
@@ -54,8 +55,22 @@ class Afs(Base):
         """
         Add the AFS feature to the ACS cluster provided.
         """
-        self.createStorage()
+        storage = Storage()
+        key = storage.create(self.config.get('Storage', 'name'),
+                           self.config.get('Storage', 'type'))
 
+        try:
+            command = "azure storage share create"
+            command = command + " --account-name " + self.config.get('Storage', 'name')
+            command = command + " --account-key " + key
+            command = command + " " + self.config.get('Storage', 'shareName')
+
+            out = subprocess.check_output(command, shell=True)
+        except:
+            # FIXME: test if the share already exists, if it does then don't try to recreate it
+            # For now we just assume that an error is always that the share alrady exists 
+            self.logger.warning("Failed to create share, assuming it is because it already exists")
+        
         driver_version = "0.2"
         mount = self.config.get("Storage", "mount")
         package = "cifs-utils"
@@ -86,7 +101,7 @@ class Afs(Base):
             cmd = "echo 'AZURE_STORAGE_ACCOUNT=" + self.config.get("Storage", "name") + "' > azurefile-dockervolumedriver"
             result = result + self.executeOnAgent(cmd, ip)
         
-            cmd = "echo 'AZURE_STORAGE_ACCOUNT_KEY=" + self.getStorageAccountKey() + "' >> azurefile-dockervolumedriver"
+            cmd = "echo 'AZURE_STORAGE_ACCOUNT_KEY=" + key + "' >> azurefile-dockervolumedriver"
             result = result + self.executeOnAgent(cmd, ip)
             
             cmd = "sudo cp azurefile-dockervolumedriver /etc/default/azurefile-dockervolumedriver"
@@ -106,41 +121,11 @@ class Afs(Base):
         
             urn = self.getShareEndpoint().replace("https:", "") + self.config.get("Storage", "shareName")
             username = self.config.get("Storage", "name")
-            password = self.getStorageAccountKey()
+            password = key
             cmd = "sudo mount -t cifs " + urn + " " + mount + " -o uid=1000,gid=1000,vers=2.1,username=" + username + ",password=" + password
             result = result + self.executeOnAgent(cmd, ip)
 
             return result
-
-    def createStorage(self):
-        """
-        Create a storage account for this cluster as defined in the config file.
-        """
-        self.logger.debug("Creating Storage Account")
-
-        Base.createResourceGroup(self)
-    
-        command = "azure storage account create"
-        command = command + " --type " + self.config.get('Storage', 'type')
-        command = command + " --resource-group " + self.config.get('Group', 'name')
-        command = command + " --location " + self.config.get('Group', 'region')
-        command = command + " " + self.config.get('Storage', 'name')
-    
-        self.utils.shell_sxecute(command)
-
-        key = self.getStorageAccountKey()
-
-        try:
-            command = "azure storage share create"
-            command = command + " --account-name " + self.config.get('Storage', 'name')
-            command = command + " --account-key " + key
-            command = command + " " + self.config.get('Storage', 'shareName')
-
-            out = subprocess.check_output(command, shell=True)
-        except:
-            # FIXME: test if the share already exists, if it does then don't try to recreate it
-            # For now we just assume that an error is always that the share alrady exists 
-            self.logger.warning("Failed to create share, assuming it is because it already exists")
 
     def getShareEndpoint(self):
         """
@@ -156,19 +141,6 @@ class Afs(Base):
 
         return endpoint
 
-    def getStorageAccountKey(self):
-        """
-        Get the storage account key for the storage account defined in the ini file
-        FIXME: this and related storage methods should move to their own module or class
-        """
-        command = "azure storage account keys list"
-        command = command + " --resource-group " + self.config.get('Group', 'name')
-        command = command + " " + self.config.get('Storage', 'name')
-        command = command + " --json"
-        self.logger.debug("Command to get storage keys: " + command)
-
-        keys = json.loads(subprocess.check_output(command, shell=True))
-        return keys['key1']
 
 
 

@@ -7,6 +7,7 @@ Usage:
 
 Commands:
   lbweb        Deploy a load balanced web application
+  microsoaling Deploy an example of a multi-container application with microscaling support.
 
 Options:
   --remove     Remove the demo rather than deploy it
@@ -19,13 +20,16 @@ Help:
 
 import acs.cli
 from .base import Base
+from .lb import Lb
 from .service import Service
 from .app import App
 from ..dcos import Dcos
+from ..storage import Storage
 
 from docopt import docopt
 from inspect import getmembers, ismethod
-from json import dumps
+import json
+import time
 
 class Demo(Base):
 
@@ -88,5 +92,70 @@ class Demo(Base):
 
     return app.deploy()
 
+  def microscaling(self):
+    """Deploy or remove a multiocntianer application which demonstrates
+    microscaling of individual containers in response to workload.
 
+    """
+    args = self.args
+    args["--app-config"] = "config/demo/microscaling/marathon.json"
+
+    app = App(self.config, self.options)
+    app.args = args
+
+    if self.args["--remove"]:
+      return app.remove()
     
+    print(acs.cli.login())
+
+    service = Service(self.config, self.options)
+    service.create()
+    service.connect()
+
+    lb = Lb(self.config, self.options)
+    lb.args = self.args
+    lb.args["--port"] = 5555
+    lb.open()
+
+    timestamp = int(round(time.time() * 1000))
+    name = "demo" + str(timestamp)
+    storage = Storage(self.config)
+    key = storage.create(name)
+
+    # FIXME: workaround incorrect ports in ACS
+    self.workaroundBrokenProbes()
+    
+    tokens = {}
+    tokens["AZURE_STORAGE_QUEUE_NAME"] = "microscalingdemoqueue"
+    tokens["AZURE_STORAGE_SUMMARY_TABLE_NAME"] = "microscalingdemotable"
+    tokens["AZURE_STORAGE_ACCOUNT_NAME"] = name
+    tokens["AZURE_STORAGE_ACCOUNT_KEY"] = key
+    tokens["SLACK_WEBHOOK"] = "https://hooks.slack.com/services/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"
+    
+    return app.deploy(tokens)
+
+  def workaroundBrokenProbes(self):
+    """At the time of writing Sept 12 2016 ACS creates the probe for port
+    80 and 8080 as TCP probes, they should be HTTP. This method is
+    used to workaround this. Once it is fixed in the ACS RP we will
+    no longer need to do this.
+    
+    """
+
+    self.logger.warn("FIXME: working around incorrectly configured probes in ACS")
+    rg = self.config.get("Group", "name")
+    
+    # Get Public Agent LB name
+    output, errors = self.utils.shell_execute("azure network lb list " + rg +  " --json")
+    lbs = json.loads(output)
+    for lb in lbs:
+      id = lb["id"]
+      if (id.find("-agent-lb-") >= 0):
+        lb_name = lb["name"]
+        cluster_id = lb_name[-8:]
+
+    command = "azure network lb probe set --protocol http --path / " + rg + " " + lb_name + " tcpHTTPProbe"
+    self.utils.shell_execute(command)
+      
+    command = "azure network lb probe set --protocol http --path / " + rg + " " + lb_name + " tcpPort8080Probe"
+    self.utils.shell_execute(command)

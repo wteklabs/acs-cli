@@ -55,11 +55,17 @@ class App(Base):
   def help(self):
     print(__doc__)
 
-  def parseAppConfig(self, config_path):
+  def parseAppConfig(self, config_path, tokens = None):
     """
     Parse a use provided application configuration, replacing any
     tokens that appear within it as appropriate. The parsed file
     will be stored in `~/.acs/app/config/`.
+
+    Available tokens are:
+
+    ${AGENT_FQDN}  - replaced with the FQDN of the agent cluster
+    ${FOO_BAR} - replaced with the value of 'FOO_BAR' in the supplied dictionary of tokens
+
     """
     if not config_path:
       self.logger.error("--app-config not supplied, unable to deploy application")
@@ -73,7 +79,15 @@ class App(Base):
     tmpl = open(config_filename)
     output = open(perm_filename, 'w')
     for s in tmpl:
-        s = s.replace("$AGENT_FQDN", self.getAgentEndpoint())
+        s = s.replace("${AGENT_FQDN}", self.getAgentEndpoint())
+        if "${" in s:
+          start = s.index("${")
+          end = s.index("}", start)
+          name = s[start + 2:end]
+          self.logger.debug("Replacing token " + name)
+          value = tokens[name]
+          self.logger.debug("with " + value)
+          s= s.replace("${" + name + "}", value)
         output.write(s)
 
     tmpl.close()
@@ -81,7 +95,7 @@ class App(Base):
 
     return perm_filename
     
-  def deploy(self):
+  def deploy(self, tokens = None):
     """Deploy the application (or group of applications defined in the
     file referenced in `--app-config`. The command will block until
     the deployment either succeeds.
@@ -91,10 +105,15 @@ class App(Base):
 
     Other errors will trigger a 'RuntimeWarning'.
 
+    tokens is a dictionary continaing key value pairs that will be
+    used as substitutes in the application configuration file. That
+    is, if the cofig file contains ${FOO_BAR} then it will be replaced
+    with the value of "FOO_BAR" in the tokens dictionary.
+
     """
     config_path = self.args["--app-config"]
     try:
-      perm_filename = self.parseAppConfig(config_path)
+      perm_filename = self.parseAppConfig(config_path, tokens)
     except IOError as e:
       self.logger.error("Problem finding the application configuration.\n" + str(e))
       raise e

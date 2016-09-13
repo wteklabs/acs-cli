@@ -5,6 +5,7 @@ from acs.dcos import Dcos
 from acs.acs import Acs
 from acs import commands
 from acs.acs import Config
+from acs.storage import Storage
 
 def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true",
@@ -49,6 +50,11 @@ def service():
     assert service.exists()
     
     return service
+
+@pytest.fixture(scope="module")
+def storage():
+    storage = Storage(config(), None)
+    return storage
 
 @pytest.fixture(scope="module")
 def agentPool(service):

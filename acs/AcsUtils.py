@@ -15,7 +15,10 @@ class AcsUtils:
         self.logger = self.getLogger("acs.AcsUtils")
         
     def shell_execute(self, cmd):
-        """ Execute a command on the client in a bash shell. """
+        """ Execute a command on the client in a bash shell. 
+
+        Return a tuple of output, errors
+        """
         self.logger.debug("Executing command in shell: " + str(cmd))
 
         dcos_config = os.path.expanduser('~/.dcos/dcos.toml')

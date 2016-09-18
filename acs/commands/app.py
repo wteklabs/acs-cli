@@ -55,7 +55,7 @@ class App(Base):
   def help(self):
     print(__doc__)
 
-  def parseAppConfig(self, config_path, tokens = None):
+  def parseAppConfig(self, config_path, tokens = {}):
     """
     Parse a use provided application configuration, replacing any
     tokens that appear within it as appropriate. The parsed file
@@ -85,9 +85,12 @@ class App(Base):
           end = s.index("}", start)
           name = s[start + 2:end]
           self.logger.debug("Replacing token " + name)
-          value = tokens[name]
-          self.logger.debug("with " + value)
-          s= s.replace("${" + name + "}", value)
+          if name in tokens:
+            value = tokens[name]
+            self.logger.debug("with " + value)
+            s= s.replace("${" + name + "}", value)
+          else:
+            self.logger.debug("no value for token provided")
         output.write(s)
 
     tmpl.close()
@@ -142,33 +145,39 @@ class App(Base):
       output, errors = dcos.execute(cmd)
       if errors:
         msg = "Unable to get deployment list:\n" + errors
-        self.logger.exception(e)
+        self.logger.error(msg)
         raise RuntimeWarning(msg)
       time.sleep(0.5)
-      
-      if not output is None:
-        if "There are no deployments" in output:
-          isDeployed = True
+
+      deployments = json.loads(output)
+      if len(deployments) == 0:
+        isDeployed = True
     
     self.logger.debug("Application deployed. Configuration stored in " + perm_filename)
 
     return "Application deployed"
 
-  def remove(self):
+  def remove(self, tokens = None):
     config_path = self.args["--app-config"]
+
+    dcos = Dcos(self.acs)
     try:
       perm_filename = self.parseAppConfig(config_path)
-      with open(perm_filename) as app_config: 
-        app = json.load(app_config)
-        app_id = app["id"]
+      with open(perm_filename) as config_file:
+        app_config = json.load(config_file)
     except IOError as e:
       self.logger.error(e)
       raise e
 
+    app_id = app_config["id"]
     self.logger.debug("Removing app with the ID " + app_id)
-    dcos = Dcos(self.acs)
-    cmd = "marathon app remove " + app_id
+    
+    if "apps" in app_config:
+      cmd = "marathon group remove " + app_id + " --force"
+    else:
+      cmd = "marathon app remove " + app_id + " --force"
     output, errors = dcos.execute(cmd)
+
     if errors:
       self.logger.error("Error removing application:\n" + errors)
       return "Unable to remove application, see log for full details."

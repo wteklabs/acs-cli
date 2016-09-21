@@ -58,7 +58,7 @@ class Demo(Base):
     """
     args = self.args
     self.logger.debug("`demo lbweb` args before adding app-config:\n" + str(args))
-    args["--app-config"] = "config/demo/web/simple-web.json"
+    args["--app-config"] = "/src/config/demo/web/simple-web.json"
 
     app = App(self.config, self.options)
     app.args = args

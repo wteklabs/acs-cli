@@ -124,6 +124,29 @@ class Acs:
         return json.dumps(config, sort_keys=True,
                           indent=4, separators=(',', ': '))
 
+    def shutdown(self):
+        """
+        Shutdown all VM and VMSS inside the cluster.
+        """
+        self.logger.debug("Shuting down VM and VMSS")
+        commandListVm = "azure vm list -g " + self.config.get('Group', 'name') + " --json"
+        jsonVMresult = json.loads(subprocess.check_output(commandListVm, shell=True).decode("utf-8-sig"))
+        for indexVM in range(len(jsonVMresult)):
+            print("Shuting down : " + jsonVMresult[indexVM]['name'])
+            commandShutVm = "azure vm deallocate -g " + self.config.get('Group', 'name') + " -n " + jsonVMresult[indexVM]['name']
+            os.system(commandShutVm)
+
+        commandListVmss = "azure vmss list -g " + self.config.get('Group', 'name') + " --json"
+        jsonVMSSresult = json.loads(subprocess.check_output(commandListVmss, shell=True).decode("utf-8-sig"))
+        for indexVMSS in range(len(jsonVMSSresult)):
+            commandListVmssvm = "azure vmssvm list -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " --json"
+            jsonVMSSvmresult = json.loads(subprocess.check_output(commandListVmssvm, shell=True).decode("utf-8-sig"))
+            for indexVMSSVM in range(len(jsonVMSSvmresult)):
+                print("Shuting down : " + jsonVMSSresult[indexVMSS]['name'] + " instance : " + jsonVMSSvmresult[indexVMSSVM]['instanceId'])
+                commandShutVmss = "azure vmssvm deallocate -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " -d " + str(jsonVMSSvmresult[indexVMSSVM]['instanceId'])
+                print(commandShutVmss)
+                os.system(commandShutVmss)
+
     def connect(self):
         """Open an SSH tunnel to the management endpoint, if one doesn't
         already exist. The PID for the tunnel is written to

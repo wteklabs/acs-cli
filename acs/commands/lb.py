@@ -76,9 +76,9 @@ class Lb(Base):
     rg = self.config.get("Group", "name")
 
     # List the LBs in order to get the name of the public agent LB
-    p = sub.Popen(['azure', 'network', 'lb', 'list', rg, "--json"],stdout=sub.PIPE,stderr=sub.PIPE)
-    output, errors = p.communicate()
-    lbs = json.loads(output.decode("utf-8"))
+    cmd = "azure network lb list " + rg + " --json"
+    output, errors = self.utils.shell_execute(cmd)
+    lbs = json.loads(output)
     for lb in lbs:
       id = lb["id"]
       if (id.find("-agent-lb-") >= 0):

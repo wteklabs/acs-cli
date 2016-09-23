@@ -19,7 +19,7 @@
                 "SLACK_WEBHOOK": "${SLACK_WEBHOOK}",
                 "ANALYZER_SLEEP_TIME": "1"
             },
-            "instances": 4,
+            "instances": 1,
             "cpus": 0.16,
             "mem": 128,
             "disk": 0,
@@ -50,7 +50,7 @@
                     "network": "HOST",
                     "privileged": false,
                     "parameters": [],
-                    "forcePullImage": true
+                    "forcePullImage": false
                 }
             },
             "healthChecks": [],
@@ -62,70 +62,6 @@
             },
             "labels": {},
             "acceptedResourceRoles": null,
-            "ipAddress": null,
-            "residency": null
-        },
-        {
-            "id": "master-proxy",
-            "cmd": null,
-            "args": null,
-            "user": null,
-            "env": {},
-            "instances": 1,
-            "cpus": 0.2,
-            "mem": 128,
-            "disk": 0,
-            "executor": "",
-            "constraints": [],
-            "uris": [],
-            "fetch": [],
-            "storeUrls": [],
-            "ports": [
-                10004
-            ],
-            "portDefinitions": [
-                {
-                    "port": 10004,
-                    "protocol": "tcp",
-                    "labels": {}
-                }
-            ],
-            "requirePorts": false,
-            "backoffSeconds": 1,
-            "backoffFactor": 1.15,
-            "maxLaunchDelaySeconds": 3600,
-            "container": {
-                "type": "DOCKER",
-                "volumes": [],
-                "docker": {
-                    "image": "rgardler/acs-logging-test-master-proxy",
-                    "network": "BRIDGE",
-                    "portMappings": [
-                        {
-                            "containerPort": 8080,
-                            "hostPort": 8080,
-                            "servicePort": 10004,
-                            "protocol": "tcp",
-                            "name": "8080",
-                            "labels": {}
-                        }
-                    ],
-                    "privileged": false,
-                    "parameters": [],
-                    "forcePullImage": true
-                }
-            },
-            "healthChecks": [],
-            "readinessChecks": [],
-            "dependencies": [],
-            "upgradeStrategy": {
-                "minimumHealthCapacity": 1,
-                "maximumOverCapacity": 1
-            },
-            "labels": {},
-            "acceptedResourceRoles": [
-                "slave_public"
-            ],
             "ipAddress": null,
             "residency": null
         },
@@ -209,7 +145,7 @@
                 "SIMULATION_ACTIONS": "0",
                 "SIMULATION_DELAY": "1"
             },
-            "instances": 1,
+            "instances": 0,
             "cpus": 0.2,
             "mem": 128,
             "disk": 0,

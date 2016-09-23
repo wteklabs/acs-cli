@@ -104,7 +104,7 @@ class Demo(Base):
       self.logger.warning("FIXME: Crating management application failed, assuming it already exists - this is not a good assumption")
       
     args = self.args
-    args["--app-config"] = "config/demo/microscaling/marathon.json"
+    args["--app-config"] = "/src/config/demo/microscaling/marathon.json"
 
     app = App(self.config, self.options)
     app.args = args
@@ -146,7 +146,7 @@ class Demo(Base):
 
     """
     args = self.args
-    args["--app-config"] = "config/demo/management/marathon.json"
+    args["--app-config"] = "/src/config/demo/management/marathon.json"
 
     app = App(self.config, self.options)
     app.args = args

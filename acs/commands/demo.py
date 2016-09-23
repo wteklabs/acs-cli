@@ -1,6 +1,6 @@
 """Configure demo's for the user. Wherever possible the process is to be
 fully automated but in some cases there are manual steps
-involved. These are documented in the commadn output.
+involved. 
 
 Usage:
   demo <command> [help] [options]
@@ -8,6 +8,7 @@ Usage:
 Commands:
   lbweb        Deploy a load balanced web application
   microsoaling Deploy an example of a multi-container application with microscaling support.
+  management   Deploy a master proxy that will allow (insecure) access to the DC/OS UI through http://AGENTS_FQDN:8080
 
 Options:
   --remove     Remove the demo rather than deploy it
@@ -97,6 +98,11 @@ class Demo(Base):
     microscaling of individual containers in response to workload.
 
     """
+    try:
+      self.management()
+    except:
+      self.logger.warning("FIXME: Crating management application failed, assuming it already exists - this is not a good assumption")
+      
     args = self.args
     args["--app-config"] = "config/demo/microscaling/marathon.json"
 
@@ -134,6 +140,28 @@ class Demo(Base):
     
     return app.deploy(tokens)
 
+  def management(self):
+    """Deploy or remove a master proxy that allows (insecure) access to
+       the DC/OS UI through http://AGENTS_FQDN:8080
+
+    """
+    args = self.args
+    args["--app-config"] = "config/demo/management/marathon.json"
+
+    app = App(self.config, self.options)
+    app.args = args
+
+    if self.args["--remove"]:
+      return app.remove()
+    
+    print(acs.cli.login())
+
+    service = Service(self.config, self.options)
+    service.create()
+    service.connect()
+
+    return app.deploy()
+  
   def workaroundBrokenProbes(self):
     """At the time of writing Sept 12 2016 ACS creates the probe for port
     80 and 8080 as TCP probes, they should be HTTP. This method is

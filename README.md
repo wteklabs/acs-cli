@@ -1,8 +1,33 @@
 This project provides a convenience CLI for creating, testing and
 working with ACS clusters. It's a work in progress and we welcome
-contributions via the [project page](https://github.com/rgardler/acs-cli).
- 
-# Using as a Docker Container
+contributions via the [project issue tracker](https://github.com/rgardler/acs-cli/issues).
+
+# Quickstart
+
+1. Install Docker.
+
+2. Start the CLI container
+
+```bash
+docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs rgardler/acs
+```
+
+3. Deploy and ACS cluster complete with a multi-container demo application
+
+``` bash
+acs demo microscaling
+```
+
+The above command will:
+
+  * ask the user to interactively login to their Azure subscription
+  * create an ACS cluster to the specifications defined by the user
+  * customize the ACS instance to open an addiitonal public port
+  * create a storage account for our application
+  * deploy a multi-container demo application
+
+
+## Ways to run the ACS CLI
 
 Assuming you have Docker installed the application will run "out of the
 box" with the following command:
@@ -25,7 +50,7 @@ the same files across multiple versions of the cli container. To do
 this use the following mounts:
 
 ```
-docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs rgardler/acs
+docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs rgardler/acs:dev
 ```
 
 NOTE 1: the first time you run this you may need to create the `~/.ssh`

@@ -137,6 +137,18 @@ class Demo(Base):
     tokens["AZURE_STORAGE_ACCOUNT_NAME"] = name
     tokens["AZURE_STORAGE_ACCOUNT_KEY"] = key
     tokens["SLACK_WEBHOOK"] = "https://hooks.slack.com/services/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"
+
+    dcos = Dcos(self.acs)
+    cmd = "package install marathon-lb --yes"
+    result = dcos.execute(cmd)
+    if result is not None:
+      output = result[0]
+      errors = result[1]
+      
+    if "successfully installed!" not in output:
+      if "already installed" not in errors:
+        self.logger.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
+        raise OSError("Failed to install Marathon-lb")
     
     return app.deploy(tokens)
 

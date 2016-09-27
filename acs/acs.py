@@ -130,22 +130,24 @@ class Acs:
         """
         self.logger.debug("Shuting down VM and VMSS")
         commandListVm = "azure vm list -g " + self.config.get('Group', 'name') + " --json"
-        jsonVMresult = json.loads(subprocess.check_output(commandListVm, shell=True).decode("utf-8-sig"))
+        VMresult = self.utils.shell_execute(commandListVm)
+        jsonVMresult = json.loads(VMresult[0])
         for indexVM in range(len(jsonVMresult)):
-            print("Shuting down : " + jsonVMresult[indexVM]['name'])
+            self.logger.info("Shuting down : " + jsonVMresult[indexVM]['name'])
             commandShutVm = "azure vm deallocate -g " + self.config.get('Group', 'name') + " -n " + jsonVMresult[indexVM]['name']
-            os.system(commandShutVm)
+            self.utils.shell_execute(commandShutVm)
 
         commandListVmss = "azure vmss list -g " + self.config.get('Group', 'name') + " --json"
-        jsonVMSSresult = json.loads(subprocess.check_output(commandListVmss, shell=True).decode("utf-8-sig"))
+        VMSSresult = self.utils.shell_execute(commandListVmss)
+        jsonVMSSresult = json.loads(VMSSresult[0])
         for indexVMSS in range(len(jsonVMSSresult)):
             commandListVmssvm = "azure vmssvm list -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " --json"
-            jsonVMSSvmresult = json.loads(subprocess.check_output(commandListVmssvm, shell=True).decode("utf-8-sig"))
+            VMSSvmresult = self.utils.shell_execute(commandListVmssvm)
+            jsonVMSSvmresult = json.loads(VMSSvmresult[0])
             for indexVMSSVM in range(len(jsonVMSSvmresult)):
-                print("Shuting down : " + jsonVMSSresult[indexVMSS]['name'] + " instance : " + jsonVMSSvmresult[indexVMSSVM]['instanceId'])
+                self.logger.info("Shuting down : " + jsonVMSSresult[indexVMSS]['name'] + " instance : " + jsonVMSSvmresult[indexVMSSVM]['instanceId'])
                 commandShutVmss = "azure vmssvm deallocate -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " -d " + str(jsonVMSSvmresult[indexVMSSVM]['instanceId'])
-                print(commandShutVmss)
-                os.system(commandShutVmss)
+                self.utils.shell_execute(commandShutVmss)
 
     def connect(self):
         """Open an SSH tunnel to the management endpoint, if one doesn't

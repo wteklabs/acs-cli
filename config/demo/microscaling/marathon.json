@@ -250,7 +250,18 @@
                     "forcePullImage": true
                 }
             },
-            "healthChecks": [],
+	    "healthChecks": [
+		{
+		    "path": "/",
+		    "protocol": "HTTP",
+		    "gracePeriodSeconds": 100,
+		    "intervalSeconds": 10,
+		    "timeoutSeconds": 5,
+		    "maxConsecutiveFailures": 1,
+		    "ignoreHttp1xx": false,
+		    "port": 5555
+		}
+	    ],
             "readinessChecks": [],
             "dependencies": [],
             "upgradeStrategy": {
@@ -322,9 +333,20 @@
                     "parameters": [],
                     "forcePullImage": true
                 }
-            },
-            "healthChecks": [],
-            "readinessChecks": [],
+            },	    
+	    "healthChecks": [
+		{
+		    "path": "/",
+		    "protocol": "HTTP",
+		    "gracePeriodSeconds": 100,
+		    "intervalSeconds": 10,
+		    "timeoutSeconds": 5,
+		    "maxConsecutiveFailures": 1,
+		    "ignoreHttp1xx": false,
+		    "port": 80
+		}
+	    ],
+	    "readinessChecks": [],
             "dependencies": [],
             "upgradeStrategy": {
                 "minimumHealthCapacity": 1,

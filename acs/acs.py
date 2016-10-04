@@ -124,9 +124,9 @@ class Acs:
         return json.dumps(config, sort_keys=True,
                           indent=4, separators=(',', ': '))
 
-    def shutdown(self):
+    def deallocate(self):
         """
-        Shutdown all VM and VMSS inside the cluster.
+        Deallocate all VM and VMSS inside the cluster.
         """
         self.logger.debug("Shuting down VM and VMSS")
         commandListVm = "azure vm list -g " + self.config.get('Group', 'name') + " --json"

@@ -30,8 +30,16 @@ class Acs:
         
     def exists(self):
         """ Tests whether the management endpoint is accessible, if it is we assume the service exists """
-        exists = self._hostnameResolves(self.getManagementEndpoint())
-        return exists
+        dns_exists = self._hostnameResolves(self.getManagementEndpoint())
+        if dns_exists:
+            try:
+                self.connect()
+                return True
+            except:
+                self.logger.debug("Unable to open tunnel to the cluster, assume that it does not exist")
+                return False
+        else:
+            return False
 
     def create(self):
         if self.exists():
@@ -126,30 +134,49 @@ class Acs:
                           indent=4, separators=(',', ': '))
 
     def deallocate(self):
+        """Deallocate all VM and VMSS inside the cluster. In order to start
+        the cluster again use start().
+
         """
-        Deallocate all VM and VMSS inside the cluster.
+        self.logger.debug("Deallocating VMs and VMSS")
+        self._deallocate_or_tart("deallocate")
+
+    def start(self):
+        """Start all VM and VMSS inside the cluster. This should be called
+after the cluster has been deallocated.
+
         """
-        self.logger.debug("Shuting down VM and VMSS")
+                
+        self.logger.debug("Starting down VM and VMSS")
+        self._deallocate_or_start("start")
+
+    def _deallocate_or_start(self, command):                        
+        """Start or deallocate all VMs and VMSS in a cluster. 
+
+        """
         commandListVm = "azure vm list -g " + self.config.get('Group', 'name') + " --json"
-        VMresult = self.utils.shell_execute(commandListVm)
-        jsonVMresult = json.loads(VMresult[0])
+        output, error = self.utils.shell_execute(commandListVm)
+        # FIXME: needs some error checking
+        jsonVMresult = json.loads(output)
         for indexVM in range(len(jsonVMresult)):
-            self.logger.info("Shuting down : " + jsonVMresult[indexVM]['name'])
-            commandShutVm = "azure vm deallocate -g " + self.config.get('Group', 'name') + " -n " + jsonVMresult[indexVM]['name']
-            self.utils.shell_execute(commandShutVm)
+            self.logger.info(command + " : " + jsonVMresult[indexVM]['name'])
+            cmd = "azure vm " + command + " -g " + self.config.get('Group', 'name') + " -n " + jsonVMresult[indexVM]['name']
+            self.utils.shell_execute(cmd)
 
         commandListVmss = "azure vmss list -g " + self.config.get('Group', 'name') + " --json"
-        VMSSresult = self.utils.shell_execute(commandListVmss)
-        jsonVMSSresult = json.loads(VMSSresult[0])
+        output, error = self.utils.shell_execute(commandListVmss)
+        # FIXME: needs error checking
+        jsonVMSSresult = json.loads(output)
         for indexVMSS in range(len(jsonVMSSresult)):
             commandListVmssvm = "azure vmssvm list -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " --json"
-            VMSSvmresult = self.utils.shell_execute(commandListVmssvm)
-            jsonVMSSvmresult = json.loads(VMSSvmresult[0])
+            output, error = self.utils.shell_execute(commandListVmssvm)
+            jsonVMSSvmresult = json.loads(output)
             for indexVMSSVM in range(len(jsonVMSSvmresult)):
-                self.logger.info("Shuting down : " + jsonVMSSresult[indexVMSS]['name'] + " instance : " + jsonVMSSvmresult[indexVMSSVM]['instanceId'])
-                commandShutVmss = "azure vmssvm deallocate -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " -d " + str(jsonVMSSvmresult[indexVMSSVM]['instanceId'])
-                self.utils.shell_execute(commandShutVmss)
+                self.logger.info(command + " : " + jsonVMSSresult[indexVMSS]['name'] + " instance : " + jsonVMSSvmresult[indexVMSSVM]['instanceId'])
+                cmd = "azure vmssvm " + command + " -g " + self.config.get('Group', 'name') + " -n " + jsonVMSSresult[indexVMSS]['name'] + " -d " + str(jsonVMSSvmresult[indexVMSSVM]['instanceId'])
+                self.utils.shell_execute(cmd)
 
+                
     def connect(self):
         """Open an SSH tunnel to the management endpoint, if one doesn't
         already exist. The PID for the tunnel is written to
@@ -159,6 +186,9 @@ class Acs:
 
         This method attempts to block until we have an active connection
         to the master endpoint.
+
+        A RuntimeError is raised if the connection cannot be made for
+        any reason.
 
         """
         if not self.exists():

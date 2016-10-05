@@ -16,6 +16,7 @@ Commands:
   connect               open an SSH tunnel to the management interface
   disconnect            close the current SSH tunnel
   execOnMaster          execute a command on the lead master
+  deallocate            shutdown all the vms in your cluster
 
 Options:
   --agents=<number>            number of agents (currently scale only scale up is supported)
@@ -146,3 +147,5 @@ class Service(Base):
     """
     return self.acs.executeOnMaster(command)
         
+  def deallocate(self):
+    return self.acs.deallocate()

@@ -11,8 +11,11 @@ Commands:
 
 Options:
   --app-config=<file>   the application configuration (compose file for Docker Swarm, Marhon JSON for DC/OS).
+
                         Note that some special values in this file will be replaced, for example, $AGENT_FQDN
                         will be replaced with the Fully Qualifed Domain Name of the public agent pool.
+  --tag=<DOCKER_TAG>    If specified in the app-config file this tag will be used to customize the Docker tag used.
+
 
 Help:
   For help using the oms command please open an issue at 
@@ -64,6 +67,7 @@ class App(Base):
     Available tokens are:
 
     ${AGENT_FQDN}  - replaced with the FQDN of the agent cluster
+    ${DOCKER_TAG} - replaced with the value of the command line parameter `--tag` (default `latest`)
     ${FOO_BAR} - replaced with the value of 'FOO_BAR' in the supplied dictionary of tokens
 
     """
@@ -71,7 +75,18 @@ class App(Base):
       self.logger.error("--app-config not supplied, unable to deploy application")
       raise IOError("Must provide an application config file as '--app-config'")
 
+    if "--tag" in self.args:
+      if self.args["--tag"] == "":
+        tag = "latest"
+      else:
+        tag = self.args["--tag"]
+    else:
+      tag = "latest"
+
+      
     self.logger.debug("Deploying application described by " + config_path)
+    self.logger.debug("Using Docker tag of " + tag)
+
     config_filename = os.path.expanduser(config_path)
     perm_filename = os.path.expanduser(self.app_config_dir + config_filename)
     os.makedirs(os.path.dirname(perm_filename), exist_ok=True)
@@ -80,6 +95,7 @@ class App(Base):
     output = open(perm_filename, 'w')
     for s in tmpl:
         s = s.replace("${AGENT_FQDN}", self.getAgentEndpoint())
+        s = s.replace("${DOCKER_TAG}", tag)
         if "${" in s:
           start = s.index("${")
           end = s.index("}", start)

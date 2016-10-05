@@ -46,11 +46,11 @@
                 "type": "DOCKER",
                 "volumes": [],
                 "docker": {
-                    "image": "rgardler/acs-logging-test-analyze",
+                    "image": "rgardler/acs-logging-test-analyze:${DOCKER_TAG}",
                     "network": "HOST",
                     "privileged": false,
                     "parameters": [],
-                    "forcePullImage": false
+                    "forcePullImage": true
                 }
             },
             "healthChecks": [],
@@ -108,7 +108,7 @@
                 "type": "DOCKER",
                 "volumes": [],
                 "docker": {
-                    "image": "rgardler/acs-logging-test-microscaling",
+                    "image": "rgardler/acs-logging-test-microscaling:${DOCKER_TAG}",
                     "network": "HOST",
                     "privileged": false,
                     "parameters": [],
@@ -127,6 +127,36 @@
             "ipAddress": null,
             "residency": null
         },
+	{
+	    "id": "batch",
+	    "cmd": null,
+	    "cpus": 1.75,
+	    "mem": 1024,
+	    "disk": 1024,
+	    "instances": 1,
+	    "container": {
+		"type": "DOCKER",
+		"volumes": [],
+		"docker": {
+		    "image": "rgardler/acs-logging-test-batch:${DOCKER_TAG}",
+		    "network": "HOST",
+		    "privileged": false,
+		    "parameters": [],
+		    "forcePullImage": true
+		}
+	    },
+	    "ports": [
+		10101
+	    ],
+            "portDefinitions": [
+		{
+		    "port": 10101,
+		    "protocol": "tcp",
+		    "labels": {}
+		}
+	    ],
+	    "requirePorts": false,
+	},
         {
             "id": "producer",
             "cmd": null,
@@ -172,7 +202,7 @@
                 "type": "DOCKER",
                 "volumes": [],
                 "docker": {
-                    "image": "rgardler/acs-logging-test-simulate",
+                    "image": "rgardler/acs-logging-test-simulate:${DOCKER_TAG}",
                     "network": "HOST",
                     "privileged": false,
                     "parameters": [],
@@ -233,7 +263,7 @@
                 "type": "DOCKER",
                 "volumes": [],
                 "docker": {
-                    "image": "rgardler/acs-logging-test-rest-query",
+                    "image": "rgardler/acs-logging-test-rest-query:${DOCKER_TAG}",
                     "network": "BRIDGE",
                     "portMappings": [
                         {
@@ -318,7 +348,7 @@
                 "type": "DOCKER",
                 "volumes": [],
                 "docker": {
-                    "image": "rgardler/acs-logging-test-web",
+                    "image": "rgardler/acs-logging-test-web:${DOCKER_TAG}",
                     "network": "BRIDGE",
                     "portMappings": [
                         {

@@ -11,7 +11,8 @@ Commands:
   management   Deploy a master proxy that will allow (insecure) access to the DC/OS UI through http://AGENTS_FQDN:8080
 
 Options:
-  --remove     Remove the demo rather than deploy it
+  --remove          Remove the demo rather than deploy it
+  --tag=<VERSION>   The version tag for the application
 
 Help:
   For help using the oms command please open an issue at 

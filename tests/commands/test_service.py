@@ -34,7 +34,7 @@ class TestService():
         duration = 0
         while not dns_up and duration < (2 * 60):
             dns_up = service.exists()
-            duration- time.time() - start_time
+            duration = time.time() - start_time
         assert dns_up, "DNS for the masters did not seem to come up"
             
     def test_exists(self, service):
@@ -82,3 +82,33 @@ class TestService():
         final_agent_count = agentPool.getAgentCount()
         # test for >= because of overprovisioning
         assert final_agent_count >= initial_agents_count + 1
+
+    @slow
+    def test_deallocate_and_restart(self, service):
+        service_up = False
+        start_time = time.time()
+        duration = 0
+        while not service_up and duration < (2 * 60):
+            service_up = service.exists()
+            duration = time.time() - start_time
+        assert service_up, "DNS for the masters did not seem to come up"
+
+        service.deallocate()
+
+        service_up = False
+        start_time = time.time()
+        duration = 0
+        while not service_up and duration < (1 * 60):
+            service_up = service.exists()
+            duration = time.time() - start_time
+        assert not service_up, "We don't seem to have deallocated"
+
+        service.start()
+
+        service_up = False
+        start_time = time.time()
+        duration = 0
+        while not service_up and duration < (2 * 60):
+            service_up = service.exists()
+            duration = time.time() - start_time
+        assert service_up, "We don't seem to have restarted"

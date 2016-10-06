@@ -374,6 +374,7 @@ class Config(object):
       masterCount = input("How many masters do you want in your cluster (1, 3 or 5, default: 3)?\n") or '3'
       agentCount = input("How many agents do you want in your cluster (default: 3)?\n") or '3'
       agentSize = input("Agent size required (default: Standard_D2_v2)?\n") or 'Standard_D2_v2'
+      enableDiagnostics = input("Enable or disable VM diagnostics (default: false)?\n") or 'false'
       
       tmpl = open("config/cluster.ini.tmpl")
       output = open(self.filename, 'w')
@@ -386,6 +387,7 @@ class Config(object):
         s = s.replace("MY-MASTER-COUNT", masterCount)
         s = s.replace("MY-AGENT-COUNT", agentCount)
         s = s.replace("MY-AGENT-SIZE", agentSize)
+        s = s.replace("MY-DIAG-CHOICE", enableDiagnostics)
         output.write(s)
 
       tmpl.close()
@@ -420,6 +422,9 @@ class Config(object):
   def getint(self, section, name):
     return self.config_parser.getint(section, name)
 
+  def getbool(self, section, name):
+    return self.config_parser.getboolean(section, name)
+
   def value(self, set_to):
     value = {}
     value["value"] = set_to
@@ -438,6 +443,7 @@ class Config(object):
     params["agentVMSize"] = self.value(self.get('ACS', 'agentVMSize'))
     params["masterCount"] = self.value(self.getint('ACS', 'masterCount'))
     params["linuxAdminUsername"] = self.value(self.get('ACS', 'username'))
+    params["enableDiagnostics"] = self.value(self.getbool('ACS', 'enableDiagnostics'))
     params["sshRSAPublicKey"] = self.value(self.get('SSH', 'publickey'))
   
     return params

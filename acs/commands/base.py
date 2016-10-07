@@ -19,7 +19,6 @@ class Base(object):
     self.utils = AcsUtils()
     self.acs = Acs(config)
     self.logger = self.utils.getLogger("acs.command.base")
-    self.logger.debug("Created a new Command Object")
     self.config = config
     self.options = options
     self.args = args

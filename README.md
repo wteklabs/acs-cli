@@ -202,11 +202,25 @@ python setup.py test
 ```
 
 Note, by default this does not run the slow tests (like creating the
-cluster and installing features. You must therefore first have run the
+cluster and installing features). You must therefore first have run the
 full suite of tests at least once. You can do this with:
 
 ``` bash
 py.test --runslow 
+```
+
+You can also run selected tests. For example the following command runs only the (non-slow) tests in `test/commands/test_service.py`:
+
+``` bash
+py.test test/commands/test_service.py
+```
+
+To run a subset of the tests in a file us `-k` to provide a pattern to
+match, for example, to test creation of a service:
+
+
+``` bash
+py.test test/commands/test_service.py -k test_create
 ```
 
 ## Adding a new top level command

@@ -4,15 +4,30 @@ contributions via the [project issue tracker](https://github.com/rgardler/acs-cl
 
 # Quickstart
 
-1. Install Docker.
+  1. Install Docker.
 
-2. Start the CLI container
+  2. Start the CLI container
 
 ```bash
 docker run -it -v ~/.ssh:/root/.ssh -v ~/.acs:/root/.acs rgardler/acs
 ```
 
-3. Deploy and ACS cluster complete with a multi-container demo application
+  3. View the available commands
+  
+``` bash
+acs --help
+```
+
+## Demo application
+
+The CLI provides quick commands to deploy clusters and demo
+applications in those clusters. To see the available demo's run:
+
+``` bash
+acs demo --help
+```
+
+Do deploy a demo run:
 
 ``` bash
 acs demo microscaling
@@ -26,6 +41,12 @@ The above command will:
   * create a storage account for our application
   * deploy a multi-container demo application
 
+To remove a demo from a cluster run (this does not remove the cluster,
+only the demo application):
+
+``` bash
+acs demo microscaling --remove
+```
 
 ## Ways to run the ACS CLI
 

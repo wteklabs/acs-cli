@@ -42,7 +42,7 @@ def main():
   config = Config(args['--config-file'])
   command_name = args["<command>"]
   if command_name == "login":
-    print(login())
+    print(login(config))
     return
     
   argv = args['<args>']
@@ -57,14 +57,20 @@ def main():
     raise Exception("Unrecognized command: " + command_name)
   command.run()
 
-def login():
+def login(config):
   p = subprocess.Popen(["azure", "account", "show"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   output, errors = p.communicate()
   if errors:
     # Not currently logged in
-  
-    p = subprocess.Popen(["azure", "login"], stderr=subprocess.PIPE)
-    output, errors = p.communicate()
+
+    utils = AcsUtils()
+    output, errors = utils.shell_execute("azure login")
     if errors:
-      return "Failed to login: " + errors.decode("utf-8")
-  return "Logged in to Azure"
+      return "Failed to login: " + errors
+
+    id = config.get('Azure', 'SubscriptionID')
+    output, errors = utils.shell_execute("azure login")
+    if errors:
+      return "Failed to switch to subscription defined in config.py: " + errors
+    else:
+      return "Logged in to Azure subscription id: " + id

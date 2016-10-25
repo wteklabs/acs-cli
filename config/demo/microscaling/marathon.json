@@ -155,7 +155,7 @@
 		    "labels": {}
 		}
 	    ],
-	    "requirePorts": false,
+	    "requirePorts": false
 	},
         {
             "id": "producer",

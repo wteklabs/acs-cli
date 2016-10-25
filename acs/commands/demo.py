@@ -113,7 +113,7 @@ class Demo(Base):
     if self.args["--remove"]:
       return app.remove()
     
-    print(acs.cli.login())
+    print(acs.cli.login(self.config))
 
     service = Service(self.config, self.options)
     service.create()
@@ -167,7 +167,7 @@ class Demo(Base):
     if self.args["--remove"]:
       return app.remove()
     
-    print(acs.cli.login())
+    print(acs.cli.login(self.config))
 
     service = Service(self.config, self.options)
     service.create()

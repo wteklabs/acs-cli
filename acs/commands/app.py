@@ -75,17 +75,13 @@ class App(Base):
       self.logger.error("--app-config not supplied, unable to deploy application")
       raise IOError("Must provide an application config file as '--app-config'")
 
-    if "--tag" in self.args:
-      if self.args["--tag"] == "":
-        tag = "latest"
-      else:
-        tag = self.args["--tag"]
-    else:
+    if self.args["--tag"] is None or self.args["--tag"] == "":
       tag = "latest"
-
+    else:
+      tag = self.args["--tag"]
       
     self.logger.debug("Deploying application described by " + config_path)
-    self.logger.debug("Using Docker tag of " + tag)
+    self.logger.debug("Using Docker tag of " + str(tag))
 
     config_filename = os.path.expanduser(config_path)
     perm_filename = os.path.expanduser(self.app_config_dir + config_filename)
@@ -139,6 +135,7 @@ class App(Base):
 
     dcos = Dcos(self.acs)
     with open(perm_filename) as config_file:
+      self.logger.debug("Loading config from: " + perm_filename)
       app_config = json.load(config_file)
 
     appId = app_config["id"]

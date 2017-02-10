@@ -139,6 +139,11 @@ class Demo(Base):
     tokens["AZURE_STORAGE_ACCOUNT_KEY"] = key
     tokens["SLACK_WEBHOOK"] = "https://hooks.slack.com/services/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"
 
+    service = Service(self.config, self.options)
+    service.create()
+    service.connect()
+    service.install_dcos_cli()
+
     dcos = Dcos(self.acs)
     cmd = "package install marathon-lb --yes"
     result = dcos.execute(cmd)

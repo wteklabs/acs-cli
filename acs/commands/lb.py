@@ -84,7 +84,7 @@ class Lb(Base):
       if (id.find("-agent-lb-") >= 0):
         lb_name = lb["name"]
         self.logger.debug("Agent load balancer name is " + lb_name)
-        cluster_id = lb_name[-8:]
+        cluster_id = lb_name[-7:]
         self.logger.debug("Cluster ID " + cluster_id)
 
     # Create a probe

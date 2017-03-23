@@ -6,9 +6,10 @@ Usage:
   demo <command> [help] [options]
 
 Commands:
-  lbweb        Deploy a load balanced web application
-  microsoaling Deploy an example of a multi-container application with microscaling support.
-  management   Deploy a master proxy that will allow (insecure) access to the DC/OS UI through http://AGENTS_FQDN:8080
+  lbweb         Deploy a load balanced web application
+  management    Deploy a master proxy that will allow (insecure) access to the DC/OS UI through http://AGENTS_FQDN:8080
+  microscaling  Deploy an example of a multi-container application with microscaling support.
+  smack         Deploy the Smack stack
 
 Options:
   --remove          Remove the demo rather than deploy it
@@ -79,20 +80,40 @@ class Demo(Base):
     service.connect()
 
     service.install_dcos_cli()
-
+    
+  def dcos_package_install(self, package):
     dcos = Dcos(self.acs)
-    cmd = "package install marathon-lb --yes"
+    cmd = "package install " + package + " --yes"
     result = dcos.execute(cmd)
     if result is not None:
       output = result[0]
       errors = result[1]
       
-    if "successfully installed!" not in output:
+    if "successfully installed!" not in output and "being installed" not in output:
       if "already installed" not in errors:
         self.logger.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
-        raise OSError("Failed to install Marathon-lb")
+        raise OSError("Failed to install " + package)
 
-    return app.deploy()
+    return output, errors
+
+  def smack (self):
+    """Deploy the SMACK stack on DC/OS using Universe packages."""
+
+    service = Service(self.config, self.options)
+    service.create()
+    service.connect()
+
+    try:
+      self.management()
+    except:
+      self.logger.warning("FIXME: Creating management application failed, assuming it already exists - this is not a good assumption, need better error checking")
+
+    if self.args["--remove"]:
+      return "FIXME: We do not currently support removing of the SMACK stack"
+    
+    self.dcos_package_install("cassandra")
+    self.dcos_package_install("kafka")
+    self.dcos_package_install("spark")
 
   def microscaling(self):
     """Deploy or remove a multiocntianer application which demonstrates
@@ -102,7 +123,7 @@ class Demo(Base):
     try:
       self.management()
     except:
-      self.logger.warning("FIXME: Crating management application failed, assuming it already exists - this is not a good assumption")
+      self.logger.warning("FIXME: Creating management application failed, assuming it already exists - this is not a good assumption, need better error checking")
       
     args = self.args
     args["--app-config"] = "/src/config/demo/microscaling/marathon.json"
@@ -144,18 +165,8 @@ class Demo(Base):
     service.connect()
     service.install_dcos_cli()
 
-    dcos = Dcos(self.acs)
-    cmd = "package install marathon-lb --yes"
-    result = dcos.execute(cmd)
-    if result is not None:
-      output = result[0]
-      errors = result[1]
-      
-    if "successfully installed!" not in output:
-      if "already installed" not in errors:
-        self.logger.error("Output of dcos package install does not include 'successfuly installed!' and it is not already installed");
-        raise OSError("Failed to install Marathon-lb")
-    
+    self.dcos_package_install("marathon-lb")
+
     return app.deploy(tokens)
 
   def management(self):

@@ -1,6 +1,10 @@
 # RETIRED
 
-Almost all of the useful features of this tool have now been incorporated into the new Azure CLI. This project is no longer maintained.
+Almost all of the useful features of this CLI have now been incorporated into the new Azure CLI. 
+
+The exception to this is the automated configuration of demo content. This has been moved into http://github.com/Azure/acs-demos.
+
+This project is no longer maintained.
 
 
 ## Original README

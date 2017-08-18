@@ -1,4 +1,4 @@
-# RETIRED
+# ACS-CLI (Azure Container Service)
 
 Almost all of the useful features of this CLI have now been incorporated into the new Azure CLI. 
 

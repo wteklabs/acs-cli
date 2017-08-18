@@ -32,168 +32,175 @@ from json import dumps
 import os
 import time
 
+
 class App(Base):
-  app_config_dir = "~/.acs/app/"
+    app_config_dir = "~/.acs/app/"
 
-  def run(self):
-    args = docopt(__doc__, argv=self.options)
-    # self.logger.debug("App options:" + str(self.options))
-    # self.logger.debug("App args:" + str(args))
-    self.args = args
+    def run(self):
+        args = docopt(__doc__, argv=self.options)
+        # self.logger.debug("App options:" + str(self.options))
+        # self.logger.debug("App args:" + str(args))
+        self.args = args
 
-    command = self.args["<command>"]
-    result = None
-    methods = getmembers(self, predicate = ismethod)
-    for name, method in methods:
-      if name == command:
-        result = method()
-        if result is None:
-          result = command + " returned no results"
-    if result:
-      print(result)
-    else:
-      print("Unknown command: '" + command + "'")
-      self.help()
-   	  
-  def help(self):
-    print(__doc__)
+        command = self.args["<command>"]
+        result = None
+        methods = getmembers(self, predicate=ismethod)
+        for name, method in methods:
+            if name == command:
+                result = method()
+                if result is None:
+                    result = command + " returned no results"
+        if result:
+            print(result)
+        else:
+            print("Unknown command: '" + command + "'")
+            self.help()
 
-  def parseAppConfig(self, config_path, tokens = {}):
-    """
-    Parse a use provided application configuration, replacing any
-    tokens that appear within it as appropriate. The parsed file
-    will be stored in `~/.acs/app/config/`.
+    def help(self):
+        print(__doc__)
 
-    Available tokens are:
+    def parseAppConfig(self, config_path, tokens={}):
+        """
+        Parse a use provided application configuration, replacing any
+        tokens that appear within it as appropriate. The parsed file
+        will be stored in `~/.acs/app/config/`.
 
-    ${AGENT_FQDN}  - replaced with the FQDN of the agent cluster
-    ${DOCKER_TAG} - replaced with the value of the command line parameter `--tag` (default `latest`)
-    ${FOO_BAR} - replaced with the value of 'FOO_BAR' in the supplied dictionary of tokens
+        Available tokens are:
 
-    """
-    if not config_path:
-      self.logger.error("--app-config not supplied, unable to deploy application")
-      raise IOError("Must provide an application config file as '--app-config'")
+        ${AGENT_FQDN}  - replaced with the FQDN of the agent cluster
+        ${DOCKER_TAG} - replaced with the value of the command line parameter `--tag` (default `latest`)
+        ${FOO_BAR} - replaced with the value of 'FOO_BAR' in the supplied dictionary of tokens
 
-    if self.args["--tag"] is None or self.args["--tag"] == "":
-      tag = "latest"
-    else:
-      tag = self.args["--tag"]
-      
-    self.logger.debug("Deploying application described by " + config_path)
-    self.logger.debug("Using Docker tag of " + str(tag))
+        """
+        if not config_path:
+            self.logger.error(
+                "--app-config not supplied, unable to deploy application")
+            raise IOError(
+                "Must provide an application config file as '--app-config'")
 
-    config_filename = os.path.expanduser(config_path)
-    perm_filename = os.path.expanduser(self.app_config_dir + config_filename)
-    os.makedirs(os.path.dirname(perm_filename), exist_ok=True)
+        if self.args["--tag"] is None or self.args["--tag"] == "":
+            tag = "latest"
+        else:
+            tag = self.args["--tag"]
 
-    tmpl = open(config_filename)
-    output = open(perm_filename, 'w')
-    for s in tmpl:
-        s = s.replace("${AGENT_FQDN}", self.getAgentEndpoint())
-        s = s.replace("${DOCKER_TAG}", tag)
-        if "${" in s:
-          start = s.index("${")
-          end = s.index("}", start)
-          name = s[start + 2:end]
-          self.logger.debug("Replacing token " + name)
-          if name in tokens:
-            value = tokens[name]
-            self.logger.debug("with " + value)
-            s= s.replace("${" + name + "}", value)
-          else:
-            self.logger.debug("no value for token provided")
-        output.write(s)
+        self.logger.debug("Deploying application described by " + config_path)
+        self.logger.debug("Using Docker tag of " + str(tag))
 
-    tmpl.close()
-    output.close()
+        config_filename = os.path.expanduser(config_path)
+        perm_filename = os.path.expanduser(
+            self.app_config_dir + config_filename)
+        os.makedirs(os.path.dirname(perm_filename), exist_ok=True)
 
-    return perm_filename
-    
-  def deploy(self, tokens = None):
-    """Deploy the application (or group of applications defined in the
-    file referenced in `--app-config`. The command will block until
-    the deployment either succeeds.
+        tmpl = open(config_filename)
+        output = open(perm_filename, 'w')
+        for s in tmpl:
+            s = s.replace("${AGENT_FQDN}", self.getAgentEndpoint())
+            s = s.replace("${DOCKER_TAG}", tag)
+            if "${" in s:
+                start = s.index("${")
+                end = s.index("}", start)
+                name = s[start + 2:end]
+                self.logger.debug("Replacing token " + name)
+                if name in tokens:
+                    value = tokens[name]
+                    self.logger.debug("with " + value)
+                    s = s.replace("${" + name + "}", value)
+                else:
+                    self.logger.debug("no value for token provided")
+            output.write(s)
 
-    If the application is already deployed a `RuntimeWarning` will be
-    raised.
+        tmpl.close()
+        output.close()
 
-    Other errors will trigger a 'RuntimeWarning'.
+        return perm_filename
 
-    tokens is a dictionary continaing key value pairs that will be
-    used as substitutes in the application configuration file. That
-    is, if the cofig file contains ${FOO_BAR} then it will be replaced
-    with the value of "FOO_BAR" in the tokens dictionary.
+    def deploy(self, tokens=None):
+        """Deploy the application (or group of applications defined in the
+        file referenced in `--app-config`. The command will block until
+        the deployment either succeeds.
 
-    """
-    config_path = self.args["--app-config"]
-    try:
-      perm_filename = self.parseAppConfig(config_path, tokens)
-    except IOError as e:
-      self.logger.error("Problem finding the application configuration.\n" + str(e))
-      raise e
+        If the application is already deployed a `RuntimeWarning` will be
+        raised.
 
-    dcos = Dcos(self.acs)
-    with open(perm_filename) as config_file:
-      self.logger.debug("Loading config from: " + perm_filename)
-      app_config = json.load(config_file)
+        Other errors will trigger a 'RuntimeWarning'.
 
-    appId = app_config["id"]
-    self.logger.debug("App/Group to be deployed has id: " + appId)
-      
-    if "apps" in app_config:
-      cmd = "marathon group add " + perm_filename
-    else:
-      cmd = "marathon app add " + perm_filename
-    output, errors = dcos.execute(cmd)
+        tokens is a dictionary continaing key value pairs that will be
+        used as substitutes in the application configuration file. That
+        is, if the cofig file contains ${FOO_BAR} then it will be replaced
+        with the value of "FOO_BAR" in the tokens dictionary.
 
-    if errors:
-      msg = "Error deploying application:\n" + errors
-      self.logger.error(msg)
-      raise RuntimeWarning(msg)
+        """
+        config_path = self.args["--app-config"]
+        try:
+            perm_filename = self.parseAppConfig(config_path, tokens)
+        except IOError as e:
+            self.logger.error(
+                "Problem finding the application configuration.\n" + str(e))
+            raise e
 
-    isDeployed = False
-    while not isDeployed:
-      cmd = "marathon deployment list " + appId + " --json"
-      output, errors = dcos.execute(cmd)
-      if errors:
-        msg = "Unable to get deployment list:\n" + errors
-        self.logger.error(msg)
-        raise RuntimeWarning(msg)
-      time.sleep(0.5)
+        dcos = Dcos(self.acs)
+        with open(perm_filename) as config_file:
+            self.logger.debug("Loading config from: " + perm_filename)
+            app_config = json.load(config_file)
 
-      deployments = json.loads(output)
-      if len(deployments) == 0:
-        isDeployed = True
-    
-    self.logger.debug("Application deployed. Configuration stored in " + perm_filename)
+        appId = app_config["id"]
+        self.logger.debug("App/Group to be deployed has id: " + appId)
 
-    return "Application deployed"
+        if "apps" in app_config:
+            cmd = "marathon group add " + perm_filename
+        else:
+            cmd = "marathon app add " + perm_filename
+        output, errors = dcos.execute(cmd)
 
-  def remove(self, tokens = None):
-    config_path = self.args["--app-config"]
+        if errors:
+            msg = "Error deploying application:\n" + errors
+            self.logger.error(msg)
+            raise RuntimeWarning(msg)
 
-    dcos = Dcos(self.acs)
-    try:
-      perm_filename = self.parseAppConfig(config_path)
-      with open(perm_filename) as config_file:
-        app_config = json.load(config_file)
-    except IOError as e:
-      self.logger.error(e)
-      raise e
+        isDeployed = False
+        while not isDeployed:
+            cmd = "marathon deployment list " + appId + " --json"
+            output, errors = dcos.execute(cmd)
+            if errors:
+                msg = "Unable to get deployment list:\n" + errors
+                self.logger.error(msg)
+                raise RuntimeWarning(msg)
+            time.sleep(0.5)
 
-    app_id = app_config["id"]
-    self.logger.debug("Removing app with the ID " + app_id)
-    
-    if "apps" in app_config:
-      cmd = "marathon group remove " + app_id + " --force"
-    else:
-      cmd = "marathon app remove " + app_id + " --force"
-    output, errors = dcos.execute(cmd)
+            deployments = json.loads(output)
+            if len(deployments) == 0:
+                isDeployed = True
 
-    if errors:
-      self.logger.error("Error removing application:\n" + errors)
-      return "Unable to remove application, see log for full details."
-    self.logger.debug("Application removed. Configuration stored in " + perm_filename)
+        self.logger.debug(
+            "Application deployed. Configuration stored in " + perm_filename)
 
-    return "Application removed."
+        return "Application deployed"
+
+    def remove(self, tokens=None):
+        config_path = self.args["--app-config"]
+
+        dcos = Dcos(self.acs)
+        try:
+            perm_filename = self.parseAppConfig(config_path)
+            with open(perm_filename) as config_file:
+                app_config = json.load(config_file)
+        except IOError as e:
+            self.logger.error(e)
+            raise e
+
+        app_id = app_config["id"]
+        self.logger.debug("Removing app with the ID " + app_id)
+
+        if "apps" in app_config:
+            cmd = "marathon group remove " + app_id + " --force"
+        else:
+            cmd = "marathon app remove " + app_id + " --force"
+        output, errors = dcos.execute(cmd)
+
+        if errors:
+            self.logger.error("Error removing application:\n" + errors)
+            return "Unable to remove application, see log for full details."
+        self.logger.debug(
+            "Application removed. Configuration stored in " + perm_filename)
+
+        return "Application removed."

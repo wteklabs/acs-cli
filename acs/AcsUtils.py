@@ -6,14 +6,15 @@ function is used at present. So I've killed it all to see what breaks.
 
 """
 
-import os
 import logging
+import os
 import subprocess
+
 
 class AcsUtils:
     def __init__(self):
         self.logger = self.getLogger("acs.AcsUtils")
-        
+
     def shell_execute(self, cmd):
         """ Execute a command on the client in a bash shell. 
 
@@ -25,9 +26,10 @@ class AcsUtils:
         os.environ['PATH'] = ':'.join([os.getenv('PATH'), '/src/bin'])
         os.environ['DCOS_CONFIG'] = dcos_config
         os.makedirs(os.path.dirname(dcos_config), exist_ok=True)
-    
+
         try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, shell=True)
             output, errors = p.communicate()
         except OSError as e:
             self.logger.error("Error executing command " + str(cmd) + ". " + e)
@@ -46,29 +48,34 @@ class AcsUtils:
 
         logger = logging.getLogger(name)
         logger.setLevel(logging.DEBUG)
-    
+
         if (not logger.handlers):
             # create console handler and set level to debug
             handler = logging.StreamHandler()
             handler.setLevel(logging.DEBUG)
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
+            formatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
-      
+
             # create error file handler and set level to error
-            handler = logging.FileHandler(os.path.join(output_dir, "error.log"),"w", encoding=None, delay="true")
+            handler = logging.FileHandler(os.path.join(output_dir, "error.log"),
+                                          "w", encoding=None, delay="true")
             handler.setLevel(logging.ERROR)
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
+            formatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
-      
+
             # create debug file handler and set level to debug
-            handler = logging.FileHandler(os.path.join(output_dir, "all.log"),"w")
+            handler = logging.FileHandler(os.path.join(output_dir, "all.log"),
+                                          "w")
             handler.setLevel(logging.DEBUG)
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
+            formatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s - %(name)s : %(lineno)d in %(filename)s : %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
-      
+
             logger.debug("Logs being written to " + output_dir)
 
         return logger

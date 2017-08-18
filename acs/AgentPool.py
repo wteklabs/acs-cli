@@ -1,6 +1,7 @@
 import json
 import subprocess
 
+
 class AgentPool:
     """
 
@@ -9,6 +10,7 @@ class AgentPool:
     (VMSS).
 
     """
+
     def __init__(self, config):
         defaults = {"orchestratorType": "Mesos"}
         self.config = config
@@ -19,7 +21,8 @@ class AgentPool:
         """
         rg_name = self.config.get('Group', 'name')
         cmd = "azure vmss list " + rg_name + " --json"
-        vmss_list = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
+        vmss_list = json.loads(
+            subprocess.check_output(cmd, shell=True).decode("utf-8"))
 
         return vmss_list
 
@@ -30,12 +33,13 @@ class AgentPool:
         rg_name = self.config.get('Group', 'name')
         nics = []
         cmd = "azure network nic list " + rg_name + " --json"
-        nic_list = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
-            
+        nic_list = json.loads(
+            subprocess.check_output(cmd, shell=True).decode("utf-8"))
+
         for nic in nic_list:
             if "agent" in nic["name"]:
                 nics.append(nic)
-            
+
         return nics
 
     def getAgents(self):
@@ -49,7 +53,8 @@ class AgentPool:
             vmss_name = vmss['name']
 
             cmd = "azure vmssvm list " + rg_name + " " + vmss_name + " --json"
-            vmssvms = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
+            vmssvms = json.loads(
+                subprocess.check_output(cmd, shell=True).decode("utf-8"))
             for vm in vmssvms:
                 vms.append(vm)
 
@@ -58,7 +63,8 @@ class AgentPool:
     def getAgentCount(self):
         """ get a count of the agents in the public pool """
         cmd = "azure vmss list " + self.config.get("Group", "name") + " --json"
-        vmss_list = json.loads(subprocess.check_output(cmd, shell=True).decode("utf-8"))
+        vmss_list = json.loads(
+            subprocess.check_output(cmd, shell=True).decode("utf-8"))
         count = 0
         for vmss in vmss_list:
             count = count + int(vmss["sku"]["capacity"])

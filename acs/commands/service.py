@@ -30,119 +30,111 @@ Help:
   https://github.com/rgardler/acs-scripts
 
 """
+import json
+from inspect import getmembers, ismethod
+
+from docopt import docopt
+
 from .base import Base
 from ..acs import Acs
 from ..dcos import Dcos
 
-from docopt import docopt
-from inspect import getmembers, ismethod
-import json
-import os
-import subprocess
-import sys  
-from tempfile import mkstemp
-import signal
-import time
-from time import sleep
-import urllib.request
-from shutil import move
-from os import remove, close
 
 class Service(Base):
+    def run(self):
+        args = docopt(__doc__, argv=self.options)
+        # self.logger.debug("Service args")
+        # self.logger.debug(args)
+        self.args = args
 
-  def run(self):
-    args = docopt(__doc__, argv=self.options)
-    # self.logger.debug("Service args")
-    # self.logger.debug(args)
-    self.args = args
-    
-    command = self.args["<command>"]
-    result = None
+        command = self.args["<command>"]
+        result = None
 
-    self.acs = Acs(self.config)
-    
-    if self.args["execOnMaster"]:
-      print(self.execOnMaster(command))
-      return
+        self.acs = Acs(self.config)
 
-    methods = getmembers(self, predicate = ismethod)
-    for name, method in methods:
-      if name == command:
-        result = method()
-        if result is None:
-          result = command + " returned no results"
-    if result:
-      print(result)
-    else:
-      print("Unknown command: '" + command + "'")
-      self.help()
-   	  
-  def help(self):
-    print(__doc__)
+        if self.args["execOnMaster"]:
+            print(self.execOnMaster(command))
+            return
 
-  def exists(self):
-    """ Tests whether the management endpoint is accessible, if it is we assume the service exists """
-    return self.acs.exists()
+        methods = getmembers(self, predicate=ismethod)
+        for name, method in methods:
+            if name == command:
+                result = method()
+                if result is None:
+                    result = command + " returned no results"
+        if result:
+            print(result)
+        else:
+            print("Unknown command: '" + command + "'")
+            self.help()
 
-  def create(self):
-    """ Deploy an instance of ACS """
-    return self.acs.create()
-  
-  def install_dcos_cli(self):
-    """DEPRECATED as of 1.12: use Dcos.installCli() instead.
+    def help(self):
+        print(__doc__)
 
-    """
-    dcos = Dcos(self.acs)
-    return dcos.install_cli()
-    
-  def delete(self, quiet = False):
-    """ Delete an instance of ACS. """
-    return self.acs.delete(quiet)
+    def exists(self):
+        """ Tests whether the management endpoint is accessible, if it is we assume the service exists """
+        return self.acs.exists()
 
-  def show(self):
-    """
-    Output the configuration of this cluster in json format.
-    """
-    config = self.getClusterSetup()
-    return json.dumps(config, sort_keys=True,
-                      indent=4, separators=(',', ': '))
+    def create(self):
+        """ Deploy an instance of ACS """
+        return self.acs.create()
 
-  def openTunnel(self):
-    """DEPRECATED: use connect() instead"""
-    self.connect()
-    self.logger.warning("Service.openTunnel() is deprecated. Please use Service.connect instead.")
-  
-  def connect(self):
-    """Open an SSH tunnel to the management endpoint, if one doesn't
-    already exist. The PID for the tunnel is written to
-    `~/.acs/ssh.pid`.  If a tunnel already exiss then a new one will
-    not be created instead PID for the existing tunnel will be
-    returned.
+    def install_dcos_cli(self):
+        """DEPRECATED as of 1.12: use Dcos.installCli() instead.
 
-    This method attempts to block until we have an active connection
-    to the master endpoint.
+        """
+        dcos = Dcos(self.acs)
+        return dcos.install_cli()
 
-    """
-    return self.acs.connect()
-    
-  def closeTunnel(self):
-    """DEPRECATED: use disconnect() instead"""
-    self.disconnect()
-    self.logger.warningxo("Service.closeTunnel() is deprecated. Please use Service.disconnect instead.")
-  
-  def disconnect(self):
-    """
-    Close the SSH tunnel to the management endpoint with the supplied pid
-    """
-    return self.acs.disconnect()
+    def delete(self, quiet=False):
+        """ Delete an instance of ACS. """
+        return self.acs.delete(quiet)
 
-  def scale(self):
-    desired_agents = self.args["--agents"]
-    self.acs.scale(desired_agents)
-    
-  def execOnMaster(self, command):
-    """
-    Execute the supplied sommand on the lead master.
-    """
-    return self.acs.executeOnMaster(command)
-        
+    def show(self):
+        """
+        Output the configuration of this cluster in json format.
+        """
+        config = self.getClusterSetup()
+        return json.dumps(config, sort_keys=True,
+                          indent=4, separators=(',', ': '))
+
+    def openTunnel(self):
+        """DEPRECATED: use connect() instead"""
+        self.connect()
+        self.logger.warning(
+            "Service.openTunnel() is deprecated. Please use Service.connect instead.")
+
+    def connect(self):
+        """Open an SSH tunnel to the management endpoint, if one doesn't
+        already exist. The PID for the tunnel is written to
+        `~/.acs/ssh.pid`.  If a tunnel already exiss then a new one will
+        not be created instead PID for the existing tunnel will be
+        returned.
+
+        This method attempts to block until we have an active connection
+        to the master endpoint.
+
+        """
+        return self.acs.connect()
+
+    def closeTunnel(self):
+        """DEPRECATED: use disconnect() instead"""
+        self.disconnect()
+        self.logger.warningxo(
+            "Service.closeTunnel() is deprecated. Please use Service.disconnect instead.")
+
+    def disconnect(self):
+        """
+        Close the SSH tunnel to the management endpoint with the supplied pid
+        """
+        return self.acs.disconnect()
+
+    def scale(self):
+        desired_agents = self.args["--agents"]
+        self.acs.scale(desired_agents)
+
+    def execOnMaster(self, command):
+        """
+        Execute the supplied sommand on the lead master.
+        """
+        return self.acs.executeOnMaster(command)

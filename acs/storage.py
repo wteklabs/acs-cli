@@ -1,9 +1,10 @@
 """
 Storage account management for Azure Container Service.
 """
-from .AcsUtils import AcsUtils
 import json
-import subprocess
+
+from .AcsUtils import AcsUtils
+
 
 class Storage:
     def __init__(self, config):
@@ -11,7 +12,7 @@ class Storage:
         self.utils = AcsUtils()
         self.logger = self.utils.getLogger("Storage")
 
-    def create(self, name, account_sku = "LRS"):
+    def create(self, name, account_sku="LRS"):
         """
         Create a storage account for this cluster.
 
@@ -23,10 +24,11 @@ class Storage:
         command = "azure storage account create"
         command = command + " --kind Storage"
         command = command + " --sku-name " + account_sku
-        command = command + " --resource-group " + self.config.get('Group', 'name')
+        command = command + " --resource-group " + self.config.get('Group',
+                                                                   'name')
         command = command + " --location " + self.config.get('Group', 'region')
         command = command + " " + name
-    
+
         output, errors = self.utils.shell_execute(command)
         if errors:
             self.logger.error("Problem creating storage account: \n" + errors)
@@ -39,7 +41,8 @@ class Storage:
 
         """
         command = "azure storage account keys list"
-        command = command + " --resource-group " + self.config.get('Group', 'name')
+        command = command + " --resource-group " + self.config.get('Group',
+                                                                   'name')
         command = command + " " + name
         command = command + " --json"
         self.logger.debug("Command to get storage keys: " + command)
@@ -50,5 +53,5 @@ class Storage:
             raise RuntimeError(errors)
         else:
             keys = json.loads(output)
-            
+
         return keys[0]['value']

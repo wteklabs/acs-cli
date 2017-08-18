@@ -4,15 +4,11 @@ Almost all of the useful features of this CLI have now been incorporated into th
 
 The exception to this is the automated configuration of demo content. This has been moved into http://github.com/Azure/acs-demos.
 
-This project is no longer maintained.
-
-
 ## Original README
-
 
 This project provides a convenience CLI for creating, testing and
 working with ACS clusters. It's a work in progress and we welcome
-contributions via the [project issue tracker](https://github.com/rgardler/acs-cli/issues).
+contributions via the [project issue tracker](https://github.com/wteklabs/acs-cli/issues).
 
 # Quickstart
 

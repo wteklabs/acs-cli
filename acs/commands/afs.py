@@ -8,10 +8,8 @@ Commands:
   install               Install the AFS driver on all agents
 
 Options:
-  -n --name=NAME
-    Azure storage account name
-  -k --key
-    Azure storage account key
+  -n --name=NAME Azure storage account name
+  -k --key Azure storage account key
 
 Help:
   For help using the oms command please open an issue at 
@@ -55,7 +53,7 @@ class Afs(Base):
         """
         Add the AFS feature to the ACS cluster provided.
         """
-        storage = Storage()
+        storage = Storage(self.config)
         key = storage.create(self.config.get('Storage', 'name'),
                              self.config.get('Storage', 'type'))
 

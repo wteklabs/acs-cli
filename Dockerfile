@@ -7,6 +7,7 @@ RUN apt-get update
 RUN curl -sL https://deb.nodesource.com/setup_4.x | bash -
 RUN apt-get install -qqy nodejs
 RUN apt-get install -qqy build-essential
+RUN apt-get install -qqy vim
 
 RUN npm install azure-cli -g
 RUN azure telemetry --disable
